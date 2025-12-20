@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen_Mizu | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Serif+JP:wght@700&family=Sawarabi+Gothic&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #D32F2F;
+            --bg: #FFFFFF;
+            --text: #1A1A1A;
+            --border: rgba(0,0,0,0.08);
+            --transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- PRELOADER --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .loader-text { font-family: 'Noto Serif JP', serif; letter-spacing: 12px; font-size: 1.2rem; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Sawarabi Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 30px;
+        }
+
+        /* --- HAMBURGER MENU & OVERLAY --- */
+        .menu-btn {
+            position: fixed;
+            top: 40px; right: 40px;
+            width: 30px; height: 20px;
+            z-index: 9500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .line { width: 100%; height: 1px; background: var(--text); transition: 0.3s; }
+        .menu-btn.active .line:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .menu-btn.active .line:nth-child(2) { opacity: 0; }
+        .menu-btn.active .line:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
+
+        #menu-overlay {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 9000;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        #menu-overlay.active { right: 0; }
+
+        .menu-content {
+            max-width: 500px;
+            padding: 60px 40px;
+            width: 100%;
+        }
+
+        /* --- SECTIONS --- */
+        .info-section h3 { 
+            font-family: 'Noto Serif JP', serif; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+            margin-top: 40px; 
+            font-size: 1.1rem;
+        }
+        .info-section p { font-size: 0.9rem; line-height: 1.8; opacity: 0.7; }
+
+        .jlpt-item { margin-bottom: 15px; }
+        .jlpt-bar { height: 2px; background: #f0f0f0; width: 100%; margin-top: 8px; position: relative; }
+        .jlpt-fill { height: 100%; background: var(--primary-red); position: absolute; left: 0; top: 0; }
+
+        #japan-clock {
+            font-size: 1.8rem;
+            color: var(--primary-red);
+            font-weight: 300;
+            margin: 10px 0;
+        }
+
+        /* --- MAIN PAGE CONTENT --- */
+        .hanko {
+            width: 40px; height: 40px; border: 2px solid var(--primary-red);
+            color: var(--primary-red); display: flex; align-items: center;
+            justify-content: center; font-family: 'Noto Serif JP', serif;
+            font-size: 0.7rem; font-weight: bold; margin-bottom: 30px;
+            line-height: 1.1; text-align: center;
+        }
+
+        header h1 { font-family: 'Noto Serif JP', serif; font-size: 4.5rem; margin: 0; line-height: 0.9; letter-spacing: -3px; }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-top: 80px;
+        }
+        .gallery-item img {
+            width: 100%; height: auto; border: 1px solid var(--border);
+            filter: grayscale(100%); transition: var(--transition);
+        }
+        .gallery-item:hover img { filter: grayscale(0%); }
+        .caption { margin-top: 15px; font-size: 0.75rem; border-left: 2px solid var(--primary-red); padding-left: 12px; }
+
+        footer { margin-top: 150px; padding-bottom: 50px; font-size: 0.7rem; opacity: 0.4; letter-spacing: 1px; }
+
+        /* --- ANIMATIONS --- */
+        [data-aos] { opacity: 0; transform: translateY(30px); transition: 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 3rem; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 30px; }
+            .menu-btn { top: 30px; right: 30px; }
+            .menu-content { padding: 40px 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader"><div class="loader-text">待機中</div></div>
+
+    <audio id="bg-music" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="menu-btn" onclick="toggleMenu()">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+
+    <div id="menu-overlay">
+        <div class="menu-content info-section">
+            <div class="hanko">詳細<br>情報</div>
+            
+            <h3>Local Time / 日本時間</h3>
+            <div id="japan-clock">00:00:00</div>
+            <p style="font-size: 0.7rem; margin-top: -5px;">Osaka, JST (GMT+9)</p>
+
+            <h3>About Me / 自己紹介</h3>
+            <p>I am a full-stack developer and photographer based in Osaka, Japan. Focusing on minimalist aesthetics and robust digital solutions.</p>
+
+            <h3>Language Mastery / 日本語能力</h3>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N1</span><span>Native Level</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N2</span><span>Business Level</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N3</span><span>Daily Level</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+
+            <h3>Core Skills / スキル</h3>
+            <p>Node.js, Python, Full-stack Web Dev, Server Optimization, Urban Photography.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header data-aos>
+            <div class="hanko">水<br>平</div>
+            <h1>Fallen<br>Mizu</h1>
+            <p style="font-size: 0.7rem; letter-spacing: 6px; color: var(--primary-red); margin-top: 20px; font-weight: 600;">OSAKA / DIGITAL ARCHITECT</p>
+        </header>
+
+        <section class="gallery-container" data-aos>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="photo1.jpg" alt="Work 01">
+                    <div class="caption">
+                        <strong>Purple Hair /紫色の髪</strong><br>Design with Zen
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="photo2.jpg" alt="Work 02">
+                    <div class="caption">
+                        <strong>Izumi Shiho / 泉志保</strong><br>Concept with Zen
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div style="text-align: center; margin-top: 120px;" data-aos>
+            <a href="https://wa.me/+819049193090" style="text-decoration: none; color: inherit; border: 1px solid var(--border); padding: 18px 45px; font-size: 0.75rem; letter-spacing: 4px; transition: 0.3s;" onmouseover="this.style.background='#1a1a1a'; this.style.color='#fff'" onmouseout="this.style.background='transparent'; this.style.color='inherit'">CONNECT / 連絡する</a>
+        </div>
+
+        <footer data-aos>
+            <p>© 2025 Fallen_Mizu. Built with Zen principles in Osaka.</p>
+        </footer>
+    </div>
+
+    <script>
+        // 1. Loading & Music Autoplay
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            const music = document.getElementById('bg-music');
+            
+            setTimeout(() => {
+                loader.style.transform = 'translateY(-100%)';
+                // Play music on interaction to bypass browser blocks
+                const startMusic = () => {
+                    music.play();
+                    document.removeEventListener('click', startMusic);
+                };
+                document.addEventListener('click', startMusic);
+                music.play().catch(() => {});
+            }, 1800);
+        });
+
+        // 2. Japan Time Function (GMT+9)
+        function updateJapanTime() {
+            const options = {
+                timeZone: 'Asia/Tokyo',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+            };
+            const formatter = new Intl.DateTimeFormat('en-GB', options);
+            document.getElementById('japan-clock').textContent = formatter.format(new Date());
+        }
+        setInterval(updateJapanTime, 1000);
+        updateJapanTime();
+
+        // 3. Toggle Hamburger Menu
+        function toggleMenu() {
+            document.querySelector('.menu-btn').classList.toggle('active');
+            document.getElementById('menu-overlay').classList.toggle('active');
+            // Prevent scrolling when menu is open
+            document.body.style.overflow = document.getElementById('menu-overlay').classList.contains('active') ? 'hidden' : 'auto';
+        }
+
+        // 4. Scroll Reveal (AOS)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
