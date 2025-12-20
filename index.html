@@ -143,6 +143,20 @@
 
     <div id="menu-overlay">
         <div class="menu-content info-section">
+            
+            <h3>Local Time / 日本時間</h3>
+<div id="japan-clock" style="font-family: 'Inter'; font-size: 1.5rem; letter-spacing: 2px; font-weight: 300;">
+    00:00:00 <span style="font-size: 0.8rem; opacity: 0.5;">JST (GMT+9)</span>
+</div>
+            
+            #japan-clock {
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    color: var(--primary-red);
+}
+            
+            
             <div class="hanko">詳細</div>
             
             <h3>About Me / 自己紹介</h3>
@@ -240,6 +254,27 @@
             });
         }, { threshold: 0.1 });
         document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
-    </script>
+    </script> function updateJapanTime() {
+    const now = new Date();
+    // Konversi ke timezone Tokyo (GMT+9)
+    const options = {
+        timeZone: 'Asia/Tokyo',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    };
+    
+    const formatter = new Intl.DateTimeFormat('en-GB', options);
+    const timeString = formatter.format(now);
+    
+    document.getElementById('japan-clock').innerHTML = 
+        `${timeString} <span style="font-size: 0.8rem; opacity: 0.5; color: var(--text);">JST (GMT+9)</span>`;
+}
+
+// Jalankan setiap detik
+setInterval(updateJapanTime, 1000);
+updateJapanTime(); // Panggil langsung agar tidak menunggu 1 detik pertama
+    
 </body>
 </html>
