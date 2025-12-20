@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen_Mizu | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Serif+JP:wght@700&family=Sawarabi+Gothic&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #D32F2F;
+            --bg: #FFFFFF;
+            --text: #1A1A1A;
+            --border: rgba(0,0,0,0.1);
+            --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- PRELOADER --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .loader-text { font-family: 'Noto Serif JP', serif; letter-spacing: 12px; font-size: 1.2rem; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Sawarabi Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 30px;
+        }
+
+        /* --- MENU OVERLAY --- */
+        #menu-overlay {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 9000;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        #menu-overlay.active { right: 0; }
+
+        .menu-content {
+            max-width: 600px;
+            padding: 40px;
+            width: 100%;
+        }
+
+        .jlpt-tag {
+            display: inline-block;
+            padding: 5px 15px;
+            border: 1px solid var(--text);
+            font-size: 0.7rem;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* --- HAMBURGER MENU --- */
+        .menu-btn {
+            position: fixed;
+            top: 40px; right: 40px;
+            width: 30px; height: 30px;
+            z-index: 9500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .line { width: 100%; height: 1px; background: var(--text); transition: 0.3s; }
+        .menu-btn.active .line:nth-child(1) { transform: translateY(10px) rotate(45deg); }
+        .menu-btn.active .line:nth-child(2) { opacity: 0; }
+        .menu-btn.active .line:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
+
+        /* --- HEADER & CONTENT --- */
+        header { margin-bottom: 120px; }
+        .hanko {
+            width: 40px; height: 40px; border: 2px solid var(--primary-red);
+            color: var(--primary-red); display: flex; align-items: center;
+            justify-content: center; font-family: 'Noto Serif JP', serif;
+            font-size: 0.7rem; font-weight: bold; margin-bottom: 30px;
+        }
+        h1 { font-family: 'Noto Serif JP', serif; font-size: 4rem; margin: 0; line-height: 1; }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        .gallery-item img {
+            width: 100%; height: auto; border: 1px solid var(--border);
+            filter: grayscale(100%); transition: var(--transition);
+        }
+        .gallery-item:hover img { filter: grayscale(0%); }
+        .caption { margin-top: 15px; font-size: 0.75rem; letter-spacing: 1px; border-left: 2px solid var(--primary-red); padding-left: 10px; }
+
+        /* --- SECTION STYLES --- */
+        .info-section h3 { font-family: 'Noto Serif JP', serif; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 40px; }
+        .info-section p { font-size: 0.9rem; line-height: 1.8; opacity: 0.8; }
+
+        .jlpt-item { margin-bottom: 20px; }
+        .jlpt-bar { height: 2px; background: #eee; width: 100%; margin-top: 5px; position: relative; }
+        .jlpt-fill { height: 100%; background: var(--primary-red); position: absolute; left: 0; top: 0; }
+
+        footer { margin-top: 150px; padding-bottom: 50px; font-size: 0.7rem; opacity: 0.4; letter-spacing: 1px; }
+
+        [data-aos] { opacity: 0; transform: translateY(20px); transition: 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.8rem; }
+            .gallery-grid { grid-template-columns: 1fr; }
+            .menu-btn { top: 25px; right: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader"><div class="loader-text">待機中</div></div>
+
+    <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+
+    <div class="menu-btn" onclick="toggleMenu()">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+
+    <div id="menu-overlay">
+        <div class="menu-content info-section">
+            <div class="hanko">詳細</div>
+            
+            <h3>About Me / 自己紹介</h3>
+            <p>I am a full-stack developer and photographer based in Osaka. Combining logic with visual aesthetics to create immersive digital experiences.</p>
+
+            <h3>Core Skills / スキル</h3>
+            <p>Node.js, Python, React, Modern UI/UX, Server Management, and Professional Photography.</p>
+
+            <h3>Language / 資格</h3>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                    <span>JLPT N1 (Professional)</span>
+                    <span>100%</span>
+                </div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                    <span>JLPT N2 (Business)</span>
+                    <span>100%</span>
+                </div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                    <span>JLPT N3 (Daily)</span>
+                    <span>100%</span>
+                </div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+
+            <p style="font-size: 0.7rem; margin-top: 30px;">Click the menu icon again to close.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header data-aos>
+            <div class="hanko">水平</div>
+            <h1>Fallen<br>mizu</h1>
+            <p style="font-size: 0.75rem; letter-spacing: 5px; color: var(--primary-red); margin-top: 15px;">OSAKA / JAPAN</p>
+        </header>
+
+        <section class="gallery-container" data-aos>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="photo1.jpg" alt="Purple Hair / 紫色の髪">
+                    <div class="caption">
+                        <strong>Urban V1</strong><br>Design with Zen
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="photo2.jpg" alt="Izumi Shiho / 泉志保">
+                    <div class="caption">
+                        <strong>V2</strong><br>Concept with Zen
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div style="text-align: center; margin-top: 100px;" data-aos>
+            <a href="https://wa.me/+819049193090" style="text-decoration: none; color: inherit; border: 1px solid var(--border); padding: 15px 40px; font-size: 0.8rem; letter-spacing: 3px;">GET IN TOUCH</a>
+        </div>
+
+        <footer data-aos>
+            <p>© 2025 Fallen_Mizu. Designed in Osaka.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Preloader & Music
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            const music = document.getElementById('bg-music');
+            setTimeout(() => {
+                loader.style.transform = 'translateY(-100%)';
+                music.play().catch(() => {
+                    document.addEventListener('click', () => music.play(), { once: true });
+                });
+            }, 1500);
+        });
+
+        // Toggle Menu
+        function toggleMenu() {
+            document.querySelector('.menu-btn').classList.toggle('active');
+            document.getElementById('menu-overlay').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('menu-overlay').classList.contains('active') ? 'hidden' : 'auto';
+        }
+
+        // Scroll Animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
