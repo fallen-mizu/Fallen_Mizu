@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen_Mizu | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=Noto+Serif+JP:wght@900&family=Sawarabi+Gothic&family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #FF2D55; /* Warna neon red yang lebih berani */
+            --bg: #0A0A0B; /* Darker theme untuk kesan anime modern */
+            --text: #F0F0F0;
+            --accent-bg: rgba(255, 45, 85, 0.1);
+            --border: rgba(255, 255, 255, 0.1);
+            --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* --- PRELOADER --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: transform 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        .loader-text { 
+            font-family: 'Noto Serif JP', serif; 
+            letter-spacing: 20px; 
+            font-size: 1.5rem;
+            color: var(--primary-red);
+            text-shadow: 0 0 15px var(--primary-red);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Space Grotesk', 'Sawarabi Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            /* Grid Pattern Background */
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 100px 30px;
+            position: relative;
+        }
+
+        /* --- DEKORASI ANIME MODERN --- */
+        .decor-text {
+            position: fixed;
+            writing-mode: vertical-rl;
+            font-size: 10rem;
+            font-weight: 900;
+            opacity: 0.03;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            color: white;
+        }
+
+        /* --- HAMBURGER MENU --- */
+        .menu-btn {
+            position: fixed;
+            top: 40px; right: 40px;
+            width: 40px; height: 40px;
+            z-index: 9500;
+            cursor: pointer;
+            background: var(--primary-red);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 45, 85, 0.4);
+        }
+        .line { width: 20px; height: 2px; background: white; margin: 2px; transition: 0.3s; }
+        .menu-btn.active .line:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .menu-btn.active .line:nth-child(2) { opacity: 0; }
+        .menu-btn.active .line:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+        #menu-overlay {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 100%; height: 100%;
+            background: rgba(10, 10, 11, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 9000;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        #menu-overlay.active { right: 0; }
+
+        /* --- INFO SECTION (OVERLAY) --- */
+        .menu-content { max-width: 600px; padding: 40px; }
+        #japan-full-date { color: var(--primary-red); letter-spacing: 3px; font-weight: bold; }
+        #japan-clock { font-size: 4rem; font-weight: 900; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        
+        .jlpt-bar { height: 4px; background: rgba(255,255,255,0.1); margin-top: 10px; overflow: hidden; }
+        .jlpt-fill { height: 100%; background: var(--primary-red); box-shadow: 0 0 10px var(--primary-red); }
+
+        /* --- HEADER --- */
+        header { position: relative; margin-bottom: 150px; }
+        .hanko {
+            background: var(--primary-red); color: white;
+            width: 50px; height: 50px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 30px; transform: rotate(-5deg);
+        }
+        header h1 { 
+            font-family: 'Noto Serif JP', serif; 
+            font-size: 7rem; 
+            line-height: 0.8; 
+            margin: 0;
+            background: linear-gradient(45deg, #fff 30%, var(--primary-red) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle { letter-spacing: 12px; color: var(--primary-red); font-weight: 900; margin-top: 20px; font-size: 0.8rem; }
+
+        /* --- GALLERY --- */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+        .gallery-item { position: relative; }
+        .img-wrapper {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .gallery-item img {
+            width: 100%; height: auto; display: block;
+            transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .gallery-item:hover img { transform: scale(1.1); }
+        
+        /* Frame Aksen */
+        .gallery-item::after {
+            content: ""; position: absolute; top: -15px; right: -15px;
+            width: 100px; height: 100px; border-top: 4px solid var(--primary-red);
+            border-right: 4px solid var(--primary-red); z-index: -1;
+        }
+
+        .caption { 
+            margin-top: 30px; 
+            padding-left: 20px; 
+            border-left: 4px solid var(--primary-red);
+        }
+        .caption strong { font-size: 1.2rem; display: block; margin-bottom: 5px; }
+
+        /* --- CONTACT --- */
+        .cta-box {
+            margin-top: 150px;
+            background: var(--accent-bg);
+            padding: 80px 40px;
+            text-align: center;
+            border: 1px dashed var(--primary-red);
+            position: relative;
+        }
+        .cta-btn {
+            background: var(--primary-red);
+            color: white;
+            text-decoration: none;
+            padding: 20px 50px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .cta-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(255, 45, 85, 0.4); }
+
+        footer { 
+            margin-top: 100px; 
+            padding: 40px 0; 
+            border-top: 1px solid var(--border); 
+            font-size: 0.7rem; 
+            opacity: 0.5;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- ANIMATIONS --- */
+        [data-aos] { opacity: 0; transform: skewX(-5deg) translateY(50px); transition: 1s var(--transition); }
+        .visible { opacity: 1; transform: skewX(0) translateY(0); }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 4rem; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 50px; }
+            .decor-text { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="decor-text">FALLEN MIZU OSK</div>
+
+    <div id="loader">
+        <div class="loader-text">待機中</div>
+        <div style="color: var(--primary-red); margin-top: 10px; letter-spacing: 5px; font-size: 0.6rem;">INITIALIZING...</div>
+    </div>
+
+    <audio id="bg-music" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="menu-btn" onclick="toggleMenu()">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+
+    <div id="menu-overlay">
+        <div class="menu-content">
+            <div id="japan-full-date">Loading...</div>
+            <div id="japan-clock">00:00:00</div>
+            
+            <div style="margin: 60px 0;">
+                <h3 style="color: var(--primary-red); text-transform: uppercase;">About</h3>
+                <p style="opacity: 0.8; line-height: 1.8;">Full-stack developer and urban photographer. Mastering the art of code and visual aesthetics in the heart of Osaka.</p>
+            </div>
+
+            <h3 style="color: var(--primary-red); text-transform: uppercase;">Skills & Mastery</h3>
+            <div style="margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;"><span>JAPANESE JLPT N3-N5</span><span>100%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+            <div style="margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;"><span>WEB ARCHITECTURE</span><span>95%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 95%;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header data-aos>
+            <div class="hanko">水平</div>
+            <h1>FALLEN<br>MIZU</h1>
+            <p class="subtitle">OSAKA // DIGITAL ARCHITECT // [06]</p>
+        </header>
+
+        <section class="gallery-container">
+            <div class="gallery-grid">
+                <div class="gallery-item" data-aos>
+                    <div class="img-wrapper">
+                        <img src="photo1.jpg" alt="Work 1">
+                    </div>
+                    <div class="caption">
+                        <strong>PURPLE HAIR</strong>
+                        <span style="opacity: 0.5; font-size: 0.8rem;">URBAN_CONCEPT_01 // 2024</span>
+                    </div>
+                </div>
+                <div class="gallery-item" data-aos style="margin-top: 80px;">
+                    <div class="img-wrapper">
+                        <img src="photo2.jpg" alt="Work 2">
+                    </div>
+                    <div class="caption">
+                        <strong>IZUMI SHIHO</strong>
+                        <span style="opacity: 0.5; font-size: 0.8rem;">VISUAL_CONCEPT_02 // 2025</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-box" data-aos>
+            <div style="margin-bottom: 40px;">
+                <h2 style="font-size: 2rem; margin: 0;">READY TO START?</h2>
+                <p style="opacity: 0.6;">Let's build something extraordinary together.</p>
+            </div>
+            <a href="https://wa.me/+819049193090" class="cta-btn">ESTABLISH_CONNECTION</a>
+        </section>
+
+        <footer>
+            <span>© 2025 FALLEN_MIZU</span>
+            <span>OSAKA_CORE_SYSTEM_V.3.0</span>
+        </footer>
+    </div>
+
+    <script>
+        // 1. Loading & Autoplay Music
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            const music = document.getElementById('bg-music');
+            
+            setTimeout(() => {
+                loader.style.transform = 'translateY(-100%)';
+                
+                // Autoplay attempt
+                let playPromise = music.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        const forcePlay = () => {
+                            music.play();
+                            document.removeEventListener('click', forcePlay);
+                        };
+                        document.addEventListener('click', forcePlay);
+                    });
+                }
+            }, 1800);
+        });
+
+        // 2. Precision JST Clock & Date
+        function updateJapanTime() {
+            const now = new Date();
+            const timeOptions = { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const dateOptions = { timeZone: 'Asia/Tokyo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            
+            document.getElementById('japan-clock').textContent = new Intl.DateTimeFormat('en-GB', timeOptions).format(now);
+            document.getElementById('japan-full-date').textContent = new Intl.DateTimeFormat('en-GB', dateOptions).format(now).toUpperCase();
+        }
+        setInterval(updateJapanTime, 1000);
+        updateJapanTime();
+
+        // 3. Toggle Menu
+        function toggleMenu() {
+            document.querySelector('.menu-btn').classList.toggle('active');
+            document.getElementById('menu-overlay').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('menu-overlay').classList.contains('active') ? 'hidden' : 'auto';
+        }
+
+        // 4. Scroll Reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
