@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen_Mizu | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Serif+JP:wght@700&family=Sawarabi+Gothic&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #D32F2F;
+            --mal-blue: #2e51a2;
+            --bg: #FFFFFF;
+            --text: #1A1A1A;
+            --border: rgba(0,0,0,0.08);
+            --transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- PRELOADER DETAIL --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .loader-text { 
+            font-family: 'Noto Serif JP', serif; 
+            letter-spacing: 15px; 
+            font-size: 1.2rem;
+            position: relative;
+            padding-left: 15px;
+        }
+        .loader-bar {
+            width: 100px;
+            height: 1px;
+            background: var(--border);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-progress {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-red);
+            left: -100%;
+            animation: loadProgress 1.8s ease-in-out forwards;
+        }
+        @keyframes loadProgress { to { left: 0; } }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Sawarabi Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            /* Subtil Noise Texture */
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 30px;
+        }
+
+        /* --- HAMBURGER MENU DETAIL --- */
+        .menu-btn {
+            position: fixed;
+            top: 40px; right: 40px;
+            width: 35px; height: 20px;
+            z-index: 9500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            mix-blend-mode: difference; /* Agar terlihat di atas gambar apa pun */
+        }
+        .line { width: 100%; height: 1px; background: var(--text); transition: 0.3s; }
+        .menu-btn.active .line { background: var(--text); }
+        .menu-btn.active .line:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .menu-btn.active .line:nth-child(2) { opacity: 0; }
+        .menu-btn.active .line:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
+
+        #menu-overlay {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.99);
+            z-index: 9000;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        #menu-overlay.active { right: 0; }
+
+        .menu-content {
+            max-width: 500px;
+            padding: 80px 40px;
+            width: 100%;
+        }
+
+        /* --- INFO SECTION DETAIL --- */
+        .info-section h3 { 
+            font-family: 'Noto Serif JP', serif; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+            margin-top: 50px; 
+            font-size: 1.1rem;
+            position: relative;
+        }
+        .info-section h3::before {
+            content: "";
+            position: absolute;
+            bottom: -1px; left: 0;
+            width: 30px; height: 1px;
+            background: var(--primary-red);
+        }
+        .info-section p { font-size: 0.9rem; line-height: 2; opacity: 0.8; }
+
+        .jlpt-item { margin-bottom: 25px; }
+        .jlpt-bar { height: 1px; background: #eee; width: 100%; margin-top: 10px; position: relative; }
+        .jlpt-fill { height: 100%; background: var(--primary-red); position: absolute; left: 0; top: 0; transition: width 2s ease-in-out; }
+
+        #japan-clock {
+            font-size: 2.2rem;
+            color: var(--primary-red);
+            font-weight: 300;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        /* --- MAIN PAGE DETAIL --- */
+        .hanko {
+            width: 45px; height: 45px; border: 2px solid var(--primary-red);
+            color: var(--primary-red); display: flex; align-items: center;
+            justify-content: center; font-family: 'Noto Serif JP', serif;
+            font-size: 0.75rem; font-weight: bold; margin-bottom: 40px;
+            line-height: 1.1; text-align: center;
+            position: relative;
+        }
+        .hanko::after {
+            content: ""; position: absolute; top: 3px; left: 3px;
+            width: 100%; height: 100%; border: 1px solid rgba(211, 47, 47, 0.2);
+            z-index: -1;
+        }
+
+        header h1 { 
+            font-family: 'Noto Serif JP', serif; 
+            font-size: 5rem; 
+            margin: 0; 
+            line-height: 0.85; 
+            letter-spacing: -4px; 
+        }
+        
+        /* --- GALLERY DETAIL --- */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-top: 100px;
+        }
+        .gallery-item {
+            position: relative;
+            transition: var(--transition);
+        }
+        .gallery-item img {
+            width: 100%; height: auto; border: 1px solid var(--border);
+            filter: grayscale(100%); transition: var(--transition);
+            display: block;
+        }
+        .gallery-item:hover img { 
+            filter: grayscale(0%);
+            border-color: var(--primary-red);
+        }
+        .caption { 
+            margin-top: 20px; 
+            font-size: 0.75rem; 
+            border-left: 2px solid var(--primary-red); 
+            padding-left: 15px;
+            position: relative;
+        }
+        .gallery-item::before {
+            content: "VIEW";
+            position: absolute; top: 20px; right: 20px;
+            font-size: 0.6rem; letter-spacing: 3px;
+            opacity: 0; transition: 0.3s;
+        }
+        .gallery-item:hover::before { opacity: 0.5; }
+
+        /* --- MAL CARD DETAIL --- */
+        .mal-section {
+            margin-top: 120px;
+            border: 1px solid var(--border);
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .mal-section::before {
+            content: "ANIME"; position: absolute; left: -10px; bottom: -10px;
+            font-size: 4rem; font-weight: 900; opacity: 0.03;
+        }
+        .mal-section:hover { border-color: var(--mal-blue); background: #fcfcfc; }
+        .mal-info { display: flex; align-items: center; gap: 25px; z-index: 1; }
+        .mal-logo {
+            width: 45px; height: 45px; background: var(--mal-blue);
+            color: white; font-weight: 900; display: flex;
+            align-items: center; justify-content: center; border-radius: 4px;
+            font-size: 0.7rem; box-shadow: 0 4px 10px rgba(46, 81, 162, 0.2);
+        }
+
+        footer { 
+            margin-top: 150px; 
+            padding-bottom: 60px; 
+            font-size: 0.7rem; 
+            opacity: 0.4; 
+            letter-spacing: 2px;
+            border-top: 1px solid var(--border);
+            padding-top: 40px;
+        }
+
+        /* --- ANIMATIONS --- */
+        [data-aos] { opacity: 0; transform: translateY(40px); transition: 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 3.5rem; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 50px; }
+            .menu-btn { top: 30px; right: 30px; }
+            .mal-section { flex-direction: column; text-align: center; padding: 30px; }
+            .mal-info { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-text">待機中</div>
+        <div class="loader-bar"><div class="loader-progress"></div></div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="menu-btn" onclick="toggleMenu()">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+
+    <div id="menu-overlay">
+        <div class="menu-content info-section">
+            <div class="hanko">詳細<br>情報</div>
+            
+            <h3>Local Time / 日本時間</h3>
+            <div id="japan-clock">00:00:00</div>
+            <p style="font-size: 0.7rem; margin-top: -5px; letter-spacing: 1px;">Osaka, Japan — JST (GMT+9)</p>
+
+            <h3>About Me / 自己紹介</h3>
+            <p>I am a digital architect and urban photographer based in the heart of Osaka. My work explores the intersection between minimalist Zen philosophy and robust modern technology.</p>
+
+            <h3>Language Mastery / 日本語能力</h3>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N5 (Basic)</span><span>100%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N4 (Intermediate)</span><span>100%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N3 (Daily Business)</span><span>100%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill" style="width: 100%;"></div></div>
+            </div>
+
+            <h3>Core Expertise / スキル</h3>
+            <p>Full-stack Development (Node.js, Python), System Architecture, Server Optimization, and Urban Visual Storytelling.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header data-aos>
+            <div class="hanko">水<br>平</div>
+            <h1>Fallen<br>Mizu</h1>
+            <p style="font-size: 0.7rem; letter-spacing: 8px; color: var(--primary-red); margin-top: 25px; font-weight: 600; text-indent: 5px;">OSAKA / DIGITAL ARCHITECT</p>
+        </header>
+
+        <section class="gallery-container" data-aos>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="photo1.jpg" alt="Purple Hair Story">
+                    <div class="caption">
+                        <strong style="font-size: 0.9rem; letter-spacing: 1px;">Purple Hair / 紫色の髪</strong><br>
+                        <span style="opacity: 0.6;">Exploration of Urban Zen — Series 01</span>
+                    </div>
+                </div>
+                <div class="gallery-item" style="margin-top: 40px;"> <img src="photo2.jpg" alt="Izumi Shiho Story">
+                    <div class="caption">
+                        <strong style="font-size: 0.9rem; letter-spacing: 1px;">Izumi Shiho / 泉志保</strong><br>
+                        <span style="opacity: 0.6;">Minimalist Conceptual — Series 02</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mal-section" data-aos>
+            <div class="mal-info">
+                <div class="mal-logo">MAL</div>
+                <div class="mal-text">
+                    <h4 style="letter-spacing: 1px;">MyAnimeList Profile</h4>
+                    <p>アニメリスト / Curating my visual journey through animation.</p>
+                </div>
+            </div>
+            <a href="https://myanimelist.net/" target="_blank" class="mal-link">VIEW LIST / 閲覧する</a>
+        </section>
+
+        <div style="text-align: center; margin-top: 150px;" data-aos>
+            <p style="font-size: 0.7rem; letter-spacing: 3px; opacity: 0.5; margin-bottom: 25px;">SAY HELLO</p>
+            <a href="https://wa.me/+819049193090" style="text-decoration: none; color: inherit; border: 1px solid var(--border); padding: 22px 60px; font-size: 0.8rem; letter-spacing: 5px; transition: 0.4s; position: relative;" onmouseover="this.style.background='#1a1a1a'; this.style.color='#fff'; this.style.borderColor='#1a1a1a'" onmouseout="this.style.background='transparent'; this.style.color='inherit'; this.style.borderColor='var(--border)'">GET IN TOUCH</a>
+        </div>
+
+        <footer data-aos>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                <p>© 2025 Fallen_Mizu. Engineered in Osaka, JP.</p>
+                <p>水平 / ZEN PORTFOLIO v2.0</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 1. Loader & Dynamic Music Play
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            const music = document.getElementById('bg-music');
+            
+            setTimeout(() => {
+                loader.style.transform = 'translateY(-100%)';
+                const initAudio = () => {
+                    music.play();
+                    document.removeEventListener('click', initAudio);
+                    document.removeEventListener('touchstart', initAudio);
+                };
+                document.addEventListener('click', initAudio);
+                document.addEventListener('touchstart', initAudio);
+                music.play().catch(() => {});
+            }, 2000);
+        });
+
+        // 2. High-Precision Japan Time
+        function updateJapanTime() {
+            const timeOptions = { 
+                timeZone: 'Asia/Tokyo', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hour12: false 
+            };
+            const jstTime = new Intl.DateTimeFormat('en-GB', timeOptions).format(new Date());
+            document.getElementById('japan-clock').textContent = jstTime;
+        }
+        setInterval(updateJapanTime, 1000);
+        updateJapanTime();
+
+        // 3. Smooth Menu Interaction
+        function toggleMenu() {
+            const btn = document.querySelector('.menu-btn');
+            const overlay = document.getElementById('menu-overlay');
+            btn.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : 'auto';
+        }
+
+        // 4. Enhanced AOS (Intersection Observer)
+        const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Tambahan detail: stop observing once visible
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
