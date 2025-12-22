@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen_Mizu | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Serif+JP:wght@700&family=Sawarabi+Gothic&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #D32F2F;
+            --whatsapp-green: #25D366;
+            --signal-blue: #3A76F0;
+            --bg: #FFFFFF;
+            --text: #1A1A1A;
+            --border: rgba(0,0,0,0.08);
+            --transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* --- PRELOADER DETAIL --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: transform 1.2s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        .loader-text { 
+            font-family: 'Noto Serif JP', serif; 
+            letter-spacing: 15px; 
+            font-size: 1.2rem;
+            position: relative;
+            padding-left: 15px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        .loader-bar {
+            width: 100px;
+            height: 1px;
+            background: var(--border);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-progress {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-red);
+            left: -100%;
+            animation: loadProgress 1.8s ease-in-out forwards;
+        }
+        @keyframes loadProgress { to { left: 0; } }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Sawarabi Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 30px;
+        }
+
+        /* --- HAMBURGER MENU --- */
+        .menu-btn {
+            position: fixed;
+            top: 40px; right: 40px;
+            width: 35px; height: 20px;
+            z-index: 9500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            mix-blend-mode: difference;
+            transition: transform 0.3s ease;
+        }
+        .menu-btn:hover { transform: scale(1.1); }
+        .line { width: 100%; height: 1px; background: var(--text); transition: 0.3s; }
+        .menu-btn.active .line:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        .menu-btn.active .line:nth-child(2) { opacity: 0; }
+        .menu-btn.active .line:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
+
+        #menu-overlay {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.99);
+            z-index: 9000;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        #menu-overlay.active { right: 0; }
+
+        .menu-content {
+            max-width: 500px;
+            padding: 80px 40px;
+            width: 100%;
+        }
+
+        /* --- INFO SECTION --- */
+        .info-section h3 { 
+            font-family: 'Noto Serif JP', serif; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+            margin-top: 50px; 
+            font-size: 1.1rem;
+            position: relative;
+        }
+        .info-section h3::before {
+            content: "";
+            position: absolute;
+            bottom: -1px; left: 0;
+            width: 0; height: 1px;
+            background: var(--primary-red);
+            transition: width 1s ease 0.5s;
+        }
+        #menu-overlay.active .info-section h3::before { width: 40px; }
+
+        #japan-full-date {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        #japan-clock {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+            font-weight: 300;
+            margin: 5px 0;
+            letter-spacing: 2px;
+        }
+
+        .jlpt-item { margin-bottom: 25px; }
+        .jlpt-bar { height: 1px; background: #eee; width: 100%; margin-top: 10px; position: relative; }
+        .jlpt-fill { height: 100%; background: var(--primary-red); position: absolute; left: 0; top: 0; width: 0; transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1) 0.3s; }
+        #menu-overlay.active .jlpt-fill { width: 100%; }
+
+        /* --- MAIN PAGE --- */
+        .hanko {
+            width: 45px; height: 45px; border: 2px solid var(--primary-red);
+            color: var(--primary-red); display: flex; align-items: center;
+            justify-content: center; font-family: 'Noto Serif JP', serif;
+            font-size: 0.75rem; font-weight: bold; margin-bottom: 40px;
+            line-height: 1.1; text-align: center;
+            animation: floatHanko 4s infinite ease-in-out;
+        }
+        @keyframes floatHanko {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        header h1 { font-family: 'Noto Serif JP', serif; font-size: 5rem; margin: 0; line-height: 0.85; letter-spacing: -4px; overflow: hidden; }
+        header h1 span { display: inline-block; transform: translateY(100%); transition: transform 1s var(--transition); }
+        header.visible h1 span { transform: translateY(0); }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-top: 100px;
+        }
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .gallery-item img {
+            width: 100%; height: auto; border: 1px solid var(--border);
+            filter: grayscale(100%); transition: filter 1s ease, transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+            display: block;
+        }
+        .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.05); }
+        .caption { margin-top: 20px; font-size: 0.75rem; border-left: 2px solid var(--primary-red); padding-left: 15px; transition: transform 0.5s ease; }
+        .gallery-item:hover .caption { transform: translateX(10px); }
+
+        /* --- CONTACT SECTION (WA & SIGNAL) --- */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 150px;
+        }
+        .contact-card {
+            text-decoration: none;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.4);
+            position: relative;
+            z-index: 1;
+        }
+        .contact-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 0;
+            transition: height 0.4s ease;
+            z-index: -1;
+        }
+        /* Hover WhatsApp */
+        .card-wa:hover { border-color: var(--whatsapp-green); color: #fff; }
+        .card-wa:hover::after { background: var(--whatsapp-green); height: 100%; }
+        /* Hover Signal */
+        .card-signal:hover { border-color: var(--signal-blue); color: #fff; }
+        .card-signal:hover::after { background: var(--signal-blue); height: 100%; }
+
+        .contact-card svg {
+            width: 45px; height: 45px;
+            margin-bottom: 20px;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .contact-card:hover svg { transform: scale(1.3) rotate(10deg); fill: #fff; }
+        .contact-label {
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        footer { 
+            margin-top: 150px; 
+            padding-bottom: 60px; 
+            font-size: 0.7rem; 
+            opacity: 0.4; 
+            letter-spacing: 2px;
+            border-top: 1px solid var(--border);
+            padding-top: 40px;
+        }
+
+        [data-aos] { opacity: 0; transform: translateY(60px); transition: 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 3.5rem; }
+            .gallery-grid, .contact-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-text">待機中</div>
+        <div class="loader-bar"><div class="loader-progress"></div></div>
+    </div>
+
+    <audio id="bg-music" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="menu-btn" onclick="toggleMenu()">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+
+    <div id="menu-overlay">
+        <div class="menu-content info-section">
+            <div class="hanko">詳細<br>情報</div>
+            
+            <h3>Current Time / 日本時間</h3>
+            <div id="japan-full-date">Loading Date...</div>
+            <div id="japan-clock">00:00:00</div>
+            <p style="font-size: 0.7rem; margin-top: -5px; letter-spacing: 1px;">Osaka, Japan — JST (GMT+9)</p>
+
+            <h3>About Me / 自己紹介</h3>
+            <p>Digital architect and urban photographer based in Osaka. Combining Zen philosophy with modern development.</p>
+
+            <h3>Language Mastery / 日本語能力</h3>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N5 (Basic)</span><span>100%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N4 (Intermediate)</span><span>100%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill"></div></div>
+            </div>
+            <div class="jlpt-item">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>JLPT N3 (Daily Business)</span><span>100%</span></div>
+                <div class="jlpt-bar"><div class="jlpt-fill"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header data-aos id="main-header">
+            <div class="hanko">水<br>平</div>
+            <h1><span>Fallen</span><br><span>Mizu</span></h1>
+            <p style="font-size: 0.7rem; letter-spacing: 8px; color: var(--primary-red); margin-top: 25px; font-weight: 600;">OSAKA / DIGITAL ARCHITECT</p>
+        </header>
+
+        <section class="gallery-container" data-aos>
+            <div class="gallery-grid">
+                <div class="gallery-item" onmousemove="parallax(event, this)">
+                    <img src="photo1.jpg" alt="Photo 1">
+                    <div class="caption"><strong>Purple Hair / 紫色の髪</strong><br><span style="opacity: 0.6;">Urban Zen Series 01</span></div>
+                </div>
+                <div class="gallery-item" style="margin-top: 40px;" onmousemove="parallax(event, this)">
+                    <img src="photo2.jpg" alt="Photo 2">
+                    <div class="caption"><strong>Izumi Shiho / 泉志保</strong><br><span style="opacity: 0.6;">Minimalist Concept Series 02</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact-grid" data-aos>
+            <a href="https://wa.me/+819049193090" target="_blank" class="contact-card card-wa">
+                <svg viewBox="0 0 24 24" fill="var(--whatsapp-green)"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.459 3.419 1.263 4.858L2 22l5.335-1.4c1.4.759 2.993 1.188 4.677 1.188 5.508 0 9.987-4.479 9.987-9.987 0-5.508-4.479-9.987-9.987-9.987zm0 1.745c4.553 0 8.242 3.689 8.242 8.242 0 4.553-3.689 8.242-8.242 8.242-1.505 0-2.911-.403-4.126-1.106l-.297-.173-3.076.808.822-3.003-.191-.304c-.759-1.208-1.161-2.612-1.161-4.137 0-4.553 3.689-8.242 8.242-8.242zm-1.636 2.611c-.302 0-.547.245-.547.547 0 .301.245.547.547.547h1.094c.302 0 .547-.245.547-.547 0-.302-.245-.547-.547-.547h-1.094zm-2.188 2.188c-.604 0-1.094.49-1.094 1.094s.49 1.094 1.094 1.094 1.094-.49 1.094-1.094-.49-1.094-1.094-1.094zm6.562 0c-.604 0-1.094.49-1.094 1.094s.49 1.094 1.094 1.094 1.094-.49 1.094-1.094-.49-1.094-1.094-1.094zm-4.375 2.188c-.302 0-.547.245-.547.547v2.188c0 .302.245.547.547.547s.547-.245.547-.547v-2.188c0-.302-.245-.547-.547-.547zm2.188 0c-.302 0-.547.245-.547.547v2.188c0 .302.245.547.547.547s.547-.245.547-.547v-2.188c0-.302-.245-.547-.547-.547z"/></svg>
+                <span class="contact-label">WhatsApp</span>
+            </a>
+            <a href="https://signal.me/#eu/5v6uZK3GEphH3uALQAK9V47K2FuLvOlpCgLaVWu9CMnoyyIU4uFPFaEoayfR8MHX" target="_blank" class="contact-card card-signal">
+                <svg viewBox="0 0 24 24" fill="var(--signal-blue)"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.659 1.432 5.167L2 22l4.833-1.432C8.341 21.476 10.109 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 1.745c4.553 0 8.255 3.702 8.255 8.255s-3.702 8.255-8.255 8.255c-1.505 0-2.912-.404-4.127-1.107l-.297-.173-3.076.809.822-3.003-.191-.304c-.759-1.208-1.162-2.613-1.162-4.138 0-4.553 3.702-8.255 8.255-8.255z"/></svg>
+                <span class="contact-label">Signal</span>
+            </a>
+        </section>
+
+        <footer data-aos>
+            <p>© 2025 Fallen_Mizu. Engineered in Osaka, JP.</p>
+        </footer>
+    </div>
+
+    <script>
+        // 1. Loader & Music
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            const music = document.getElementById('bg-music');
+            setTimeout(() => {
+                loader.style.transform = 'translateY(-100%)';
+                document.getElementById('main-header').classList.add('visible');
+                let playPromise = music.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        const forcePlay = () => {
+                            music.play();
+                            document.removeEventListener('click', forcePlay);
+                        };
+                        document.addEventListener('click', forcePlay);
+                    });
+                }
+            }, 2000);
+        });
+
+        // 2. Time Logic
+        function updateJapanTime() {
+            const now = new Date();
+            const timeOpt = { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const dateOpt = { timeZone: 'Asia/Tokyo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('japan-clock').textContent = new Intl.DateTimeFormat('en-GB', timeOpt).format(now);
+            document.getElementById('japan-full-date').textContent = new Intl.DateTimeFormat('en-GB', dateOpt).format(now);
+        }
+        setInterval(updateJapanTime, 1000);
+        updateJapanTime();
+
+        // 3. Parallax Effect
+        function parallax(e, el) {
+            const img = el.querySelector('img');
+            const rect = el.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            img.style.transform = `scale(1.1) translate(${x * 20}px, ${y * 20}px)`;
+        }
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('mouseleave', () => {
+                item.querySelector('img').style.transform = 'scale(1) translate(0, 0)';
+            });
+        });
+
+        // 4. Navigation
+        function toggleMenu() {
+            document.querySelector('.menu-btn').classList.toggle('active');
+            document.getElementById('menu-overlay').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('menu-overlay').classList.contains('active') ? 'hidden' : 'auto';
+        }
+
+        // 5. Reveal Observer
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+    </script>
+</body>
+  </html>
+      
