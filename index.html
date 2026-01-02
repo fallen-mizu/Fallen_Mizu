@@ -410,4 +410,66 @@ window.addEventListener('scroll', () => {
     });
 });
 </script>
-      
+    
+<style>
+    /* =========================
+   AUTO DARK MODE — JAPANESE ZEN
+   (ADD-ONLY)
+========================= */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper-white: #0F1113;      /* Washoku black */
+        --ink-black: #E6E6E6;        /* Soft white ink */
+        --border-light: rgba(255,255,255,0.08);
+    }
+
+    body {
+        background-color: var(--paper-white);
+        color: var(--ink-black);
+        background-image: url("https://www.transparenttextures.com/patterns/asfalt-light.png");
+    }
+
+    .gallery-item,
+    .app-icon {
+        background: #141618;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+
+    .caption,
+    .journey-text,
+    .japanese-text {
+        color: #CFCFCF;
+    }
+
+    .legal-section {
+        color: #AAA;
+        border-top-color: rgba(255,255,255,0.1);
+    }
+
+    .profile-img {
+        filter: grayscale(100%) brightness(0.9);
+    }
+
+    .gallery-item img {
+        filter: grayscale(60%) brightness(0.9);
+    }
+
+    .section-title::after {
+        background: var(--wasabi-red);
+        opacity: 0.8;
+    }
+}
+
+      <script>
+/* =========================
+   DARK MODE TRANSITION
+   (ADD-ONLY)
+========================= */
+
+(() => {
+    const root = document.documentElement;
+    root.style.transition =
+        'background-color 0.8s ease, color 0.8s ease';
+})();
+</script>
