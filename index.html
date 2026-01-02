@@ -193,6 +193,11 @@
     </style>
 </head>
 <body>
+    <!-- DARK MODE TOGGLE (ADD-ONLY) -->
+<div class="zen-toggle" aria-label="Toggle dark mode">
+    <span class="sun">太陽</span>
+    <span class="moon">月</span>
+</div>
 
     <div class="container">
         <div class="osaka-time-box" data-aos>
@@ -471,5 +476,78 @@ window.addEventListener('scroll', () => {
     const root = document.documentElement;
     root.style.transition =
         'background-color 0.8s ease, color 0.8s ease';
+})();
+</script>
+<style>
+    /* =========================
+   MANUAL DARK MODE TOGGLE
+   (ADD-ONLY)
+========================= */
+
+.zen-toggle {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 999;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-light);
+    border-radius: 30px;
+    padding: 6px 14px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.7rem;
+    display: flex;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.4s ease, background 0.4s ease;
+}
+
+.zen-toggle:hover {
+    transform: translateY(-3px);
+}
+
+.zen-toggle span {
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+}
+
+html.light .zen-toggle .sun,
+html.dark .zen-toggle .moon {
+    opacity: 1;
+}
+
+/* Dark mode toggle style */
+html.dark .zen-toggle {
+    background: rgba(20,22,24,0.9);
+    color: #E6E6E6;
+    }
+<script>
+/* =========================
+   DARK MODE TOGGLE LOGIC
+   (ADD-ONLY)
+========================= */
+
+(() => {
+    const root = document.documentElement;
+    const toggle = document.querySelector('.zen-toggle');
+
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedMode = localStorage.getItem('zen-mode');
+
+    if (savedMode) {
+        root.classList.add(savedMode);
+    } else {
+        root.classList.add(systemDark ? 'dark' : 'light');
+    }
+
+    toggle.addEventListener('click', () => {
+        if (root.classList.contains('dark')) {
+            root.classList.replace('dark', 'light');
+            localStorage.setItem('zen-mode', 'light');
+        } else {
+            root.classList.replace('light', 'dark');
+            localStorage.setItem('zen-mode', 'dark');
+        }
+    });
 })();
 </script>
