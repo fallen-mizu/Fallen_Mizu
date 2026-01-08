@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL ERROR: 404 NOT FOUND</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
+        :root {
+            --hacker-green: #00ff41;
+            --dark-bg: #0a0a0a;
+            --glitch-red: #ff003c;
+            --glitch-blue: #00d8ff;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            font-family: 'Fira Code', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--hacker-green);
+        }
+
+        /* Matrix Canvas Background */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid var(--hacker-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            max-width: 90%;
+            width: 600px;
+        }
+
+        /* Glitch Effect */
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            position: relative;
+            margin: 0;
+            line-height: 1;
+            text-shadow: 0.05em 0 0 var(--glitch-red), -0.05em -0.025em 0 var(--glitch-blue);
+            animation: glitch 500ms infinite;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 var(--glitch-red), -0.05em -0.025em 0 var(--glitch-blue); }
+            14% { text-shadow: 0.05em 0 0 var(--glitch-red), -0.05em -0.025em 0 var(--glitch-blue); }
+            15% { text-shadow: -0.05em -0.025em 0 var(--glitch-red), 0.025em 0.025em 0 var(--glitch-blue); }
+            49% { text-shadow: -0.05em -0.025em 0 var(--glitch-red), 0.025em 0.025em 0 var(--glitch-blue); }
+            50% { text-shadow: 0.025em 0.05em 0 var(--glitch-red), 0.05em 0 0 var(--glitch-blue); }
+            99% { text-shadow: 0.025em 0.05em 0 var(--glitch-red), 0.05em 0 0 var(--glitch-blue); }
+            100% { text-shadow: -0.025em 0 0 var(--glitch-red), -0.025em -0.025em 0 var(--glitch-blue); }
+        }
+
+        h1 { font-size: 1.5rem; margin: 10px 0; letter-spacing: 2px; }
+
+        /* Terminal Box */
+        .terminal {
+            text-align: left;
+            background: #000;
+            padding: 15px;
+            margin: 20px 0;
+            height: 150px;
+            overflow: hidden;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--hacker-green);
+        }
+
+        .command { color: #fff; }
+        .response { color: var(--hacker-green); opacity: 0.8; }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 25px;
+            border: 1px solid var(--hacker-green);
+            color: var(--hacker-green);
+            text-decoration: none;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: var(--hacker-green);
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px var(--hacker-green);
+        }
+
+        /* Marquee */
+        .marquee {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0, 255, 65, 0.1);
+            padding: 5px 0;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .marquee span {
+            display: inline-block;
+            animation: scroll 20s linear infinite;
+        }
+
+        @keyframes scroll {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix-canvas"></canvas>
+
+<div class="container">
+    <p class="error-code">404</p>
+    <h1>SYSTEM_FAILURE: PAGE_NOT_FOUND</h1>
+    
+    <div class="terminal" id="terminal">
+        <div class="line"><span class="command">></span> status_check --all</div>
+        <div class="line"><span class="response">Searching for requested sector... [FAILED]</span></div>
+        <div class="line"><span class="command">></span> trace_route --origin</div>
+        <div class="line"><span class="response">Trace complete. User origin: Unknown.</span></div>
+        <div class="line"><span class="command">></span> initiate_recovery_protocol</div>
+        <div class="line"><span class="response">Protocol failed. Redirecting to safe zone...</span></div>
+    </div>
+
+    <a href="/" class="btn">Return to Root</a>
+</div>
+
+<div class="marquee">
+    <span>ALERT: UNAUTHORIZED ACCESS DETECTED // FIREWALL BREACH ATTEMPT // IP LOGGED: 192.168.1.104 // SECURITY LEVEL: CRITICAL // SYSTEM_MAINTENANCE_REQUIRED</span>
+</div>
+
+<script>
+    // Matrix Rain Effect
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function draw() {
+        ctx.fillStyle = "rgba(10, 10, 10, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#0F0";
+        ctx.font = fontSize + "px monospace";
+
+        for (let i = 0; i < drops.length; i++) {
+            const text = letters[Math.floor(Math.random() * letters.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+
+    setInterval(draw, 33);
+
+    // Terminal Typewriter Simulation
+    const terminal = document.getElementById('terminal');
+    function addLine() {
+        const lines = [
+            "> decrypting_files...", 
+            "> access_denied", 
+            "> bypass_attempt_01", 
+            "> scanning_ports..."
+        ];
+        const line = document.createElement('div');
+        line.className = 'line';
+        line.innerHTML = `<span class="command">></span> ${lines[Math.floor(Math.random() * lines.length)]}`;
+        terminal.appendChild(line);
+        if (terminal.childNodes.length > 8) terminal.removeChild(terminal.firstChild);
+    }
+    setInterval(addLine, 2000);
+</script>
+
+</body>
+</html>
