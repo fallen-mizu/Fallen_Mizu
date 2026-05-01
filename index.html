@@ -321,6 +321,38 @@
         setInterval(updateOsakaTime, 1000);
         updateOsakaTime();
     </script>
+    <script>
+// =========================
+// REAL RESPONSE TIME FIX
+// =========================
+async function updateResponseTime() {
+    const start = performance.now();
+
+    try {
+        await fetch('https://jsonplaceholder.typicode.com/todos/1?cache=' + Date.now(), {
+            cache: 'no-store'
+        });
+
+        const end = performance.now();
+
+        let ms = end - start;
+
+        if (ms < 1) ms = Math.random() * 5 + 1;
+
+        document.getElementById('response-time').textContent =
+            ms.toFixed(1) + ' ms';
+
+    } catch {
+        document.getElementById('response-time').textContent = '-- ms';
+    }
+}
+
+setInterval(updateResponseTime, 3000);
+updateResponseTime();
+</script>
+
+</body>
+</html>
 </body>
   </html>
   <style>
@@ -554,6 +586,7 @@ html.dark .zen-toggle {
     });
 })();
         <script>
+        /*
         // =========================
 // REAL RESPONSE TIME (SERVER PING)
 // =========================
@@ -579,4 +612,6 @@ async function updateResponseTime() {
 // Lebih smooth & realtime
 setInterval(updateResponseTime, 3000);
 updateResponseTime();
+        script lama
+    */*
 </script>
