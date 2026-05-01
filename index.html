@@ -195,6 +195,7 @@
 <body>
     <div class="container">
         <div class="osaka-time-box" data-aos>
+            <div id="response-time" style="font-size:0.7rem; opacity:0.6; text-align:left;">0 ms</div>
             <div id="full-date">LOADING DATE...</div>
             <div id="osaka-clock">00:00:00</div>
             <div class="timezone-label">OSAKA, JP (GMT+9)</div>
@@ -552,4 +553,24 @@ html.dark .zen-toggle {
         }
     });
 })();
+        // =========================
+// RESPONSE TIME (PING MS)
+// =========================
+async function updateResponseTime() {
+    const start = performance.now();
+
+    try {
+        await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
+        const end = performance.now();
+        const ms = Math.round(end - start);
+
+        document.getElementById('response-time').textContent = ms + ' ms';
+    } catch (e) {
+        document.getElementById('response-time').textContent = '-- ms';
+    }
+}
+
+// Update tiap 5 detik
+setInterval(updateResponseTime, 5000);
+updateResponseTime();
 </script>
