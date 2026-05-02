@@ -329,7 +329,7 @@ async function updateResponseTime() {
     const start = performance.now();
 
     try {
-        await fetch('https://google.com=' + Date.now(), {
+        await fetch('https://jsonplaceholder.typicode.com/todos/1?cache=' + Date.now(), {
             cache: 'no-store'
         });
 
