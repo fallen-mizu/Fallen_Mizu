@@ -6,13 +6,23 @@ async function sendMessage() {
     if (!input || !input.value.trim()) return;
     
     const userMsg = input.value.trim();
-    chatBox.innerHTML += `<div class="msg-user"><strong>You:</strong> ${userMsg}</div>`;
+    
+    // Tampilkan pesan User di sebelah KANAN
+    chatBox.innerHTML += `
+        <div class="chat-container user-container">
+            <div class="msg-user">${userMsg}</div>
+        </div>`;
+    
     input.value = '';
 
-    // Indikator loading
-    const loadingMsg = document.createElement('div');
-    loadingMsg.innerText = "Mizu is thinking...";
-    chatBox.appendChild(loadingMsg);
+    // Indikator loading di sebelah KIRI (Mizu)
+    const loadingId = "loading-" + Date.now();
+    chatBox.innerHTML += `
+        <div id="${loadingId}" class="chat-container mizu-container">
+            <div class="msg-mizu">Mizu is thinking...</div>
+        </div>`;
+    
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
         const response = await fetch('/api/chat', {
@@ -22,15 +32,20 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        loadingMsg.remove();
+        document.getElementById(loadingId).remove();
 
         const mizuReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is silent.";
-        chatBox.innerHTML += `<div class="msg-mizu"><strong>Mizu:</strong> ${mizuReply}</div>`;
+
+        // Tampilkan jawaban Mizu di sebelah KIRI
+        chatBox.innerHTML += `
+            <div class="chat-container mizu-container">
+                <div class="msg-mizu">${mizuReply}</div>
+            </div>`;
         
     } catch (error) {
-        loadingMsg.innerText = "Connection lost.";
+        if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+        chatBox.innerHTML += `<div class="chat-container mizu-container"><div class="msg-mizu" style="color:red;">Connection lost.</div></div>`;
     }
     
     chatBox.scrollTop = chatBox.scrollHeight;
-      }
-        
+}
