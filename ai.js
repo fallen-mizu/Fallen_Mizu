@@ -1,5 +1,5 @@
 // ai.js
-const API_KEY = "MASUKKAN_API_KEY_DISINI"; 
+const API_KEY = "AIzaSyA0PNcX98-VkaAzpHog0PX4RElOcXWw05Y"; 
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 const systemInstruction = `
