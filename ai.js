@@ -1,5 +1,5 @@
 // ai.js - The Soul of Mizu
-const API_KEY = "KODE_API_KEY_GEMINI_ANDA"; // Masukkan API Key Gemini Anda di sini
+const API_KEY = "AIzaSyDNAmiNFqUAfFokwQWBSNpQRzXDByBVh1E"; // Masukkan API Key Gemini Anda di sini
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 const systemInstruction = `
