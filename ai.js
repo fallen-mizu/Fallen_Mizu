@@ -53,3 +53,8 @@ document.getElementById('user-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
   
+// Tambahkan ini di dalam ai.js untuk melihat error aslinya
+const data = await response.json();
+if (data.error) {
+    console.error("Mizu Error:", data.error.message);
+}
