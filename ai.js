@@ -42,6 +42,7 @@ async function sendMessage() {
     }
 })
         const data = await response.json();
+        console.log("Gemini Response:", data);
         
         // Hapus status loading
         document.getElementById(loadingId).remove();
