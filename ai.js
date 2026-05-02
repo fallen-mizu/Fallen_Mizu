@@ -99,7 +99,25 @@ async function sendMessage() {
     } catch (error) {
         document.getElementById(loadingId).innerHTML = `<div class="bubble mizu-bubble" style="color:red;">System Error: Check Console.</div>`;
     }
+        try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            alert("Server Error: " + (errorData.error || response.statusText));
+            return;
+        }
 
+        const data = await response.json();
+        // ... sisa kode tampilkan pesan ...
+    } catch (error) {
+        alert("Network Error: " + error.message);
+        }
+    
     } catch (error) {
         const loadingEl = document.getElementById(loadingId);
         if (loadingEl) loadingEl.innerHTML = '<div class="bubble mizu-bubble" style="color:red;">Connection interrupted.</div>';
