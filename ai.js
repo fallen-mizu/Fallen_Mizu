@@ -31,12 +31,16 @@ async function sendMessage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: systemInstruction + "\n\nUser: " + message }]
-                }]
-            })
-        });
-
+    contents: [{
+        parts: [{
+            text: `${systemInstruction}\n\nUser asked: ${message}`
+        }]
+    }],
+    generationConfig: {
+        maxOutputTokens: 200,
+        temperature: 0.7
+    }
+})
         const data = await response.json();
         
         // Hapus status loading
