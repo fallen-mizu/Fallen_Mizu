@@ -344,3 +344,158 @@ NEXT LEVEL RESPONSE UI
     setInterval(update, 4000);
 
 })();
+
+/* =========================
+ULTIMATE UI MODE
+(GRAPH + GLASS + TREND + SYNC)
+========================= */
+
+(function () {
+    const el = document.getElementById('response-time');
+    const box = document.querySelector('.osaka-time-box');
+    if (!el || !box) return;
+
+    /* =========================
+    GLASS EFFECT
+    ========================= */
+    box.style.backdropFilter = 'blur(10px)';
+    box.style.webkitBackdropFilter = 'blur(10px)';
+    box.style.background = 'rgba(255,255,255,0.4)';
+    box.style.borderRadius = '12px';
+    box.style.padding = '12px';
+
+    if (document.documentElement.classList.contains('dark')) {
+        box.style.background = 'rgba(20,22,24,0.4)';
+    }
+
+    /* =========================
+    CREATE GRAPH CANVAS
+    ========================= */
+    const canvas = document.createElement('canvas');
+    canvas.width = 180;
+    canvas.height = 40;
+    canvas.style.marginTop = '8px';
+    canvas.style.opacity = '0.7';
+    box.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+
+    let history = [];
+
+    function drawGraph() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (history.length < 2) return;
+
+        ctx.beginPath();
+        ctx.lineWidth = 1.5;
+
+        for (let i = 0; i < history.length; i++) {
+            const x = (i / (history.length - 1)) * canvas.width;
+            const y = canvas.height - (history[i] / 150) * canvas.height;
+
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+
+        ctx.strokeStyle = '#BC002D';
+        ctx.stroke();
+    }
+
+    /* =========================
+    TREND INDICATOR
+    ========================= */
+    const trend = document.createElement('div');
+    trend.style.fontSize = '0.6rem';
+    trend.style.marginTop = '3px';
+    trend.style.opacity = '0.6';
+    box.appendChild(trend);
+
+    function updateTrend() {
+        if (history.length < 2) return;
+
+        const last = history[history.length - 1];
+        const prev = history[history.length - 2];
+
+        if (last < prev) {
+            trend.textContent = '↘ improving';
+            trend.style.color = '#4CAF50';
+        } else if (last > prev) {
+            trend.textContent = '↗ rising';
+            trend.style.color = '#F44336';
+        } else {
+            trend.textContent = '→ stable';
+            trend.style.color = '#999';
+        }
+    }
+
+    /* =========================
+    BREATHING ANIMATION
+    ========================= */
+    setInterval(() => {
+        box.style.transform = 'scale(1.01)';
+        setTimeout(() => {
+            box.style.transform = 'scale(1)';
+        }, 600);
+    }, 4000);
+
+    /* =========================
+    LOADER SYNC (START EARLY)
+    ========================= */
+    let displayed = 0;
+
+    function animateTo(target) {
+        const start = displayed;
+        const duration = 900;
+        const startTime = performance.now();
+
+        function frame(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+
+            displayed = start + (target - start) * ease;
+
+            el.textContent = displayed.toFixed(1) + ' ms';
+
+            if (progress < 1) requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    }
+
+    async function update() {
+        const start = performance.now();
+
+        try {
+            await fetch('https://jsonplaceholder.typicode.com/todos/1?cache=' + Date.now(), {
+                cache: 'no-store'
+            });
+
+            const real = performance.now() - start;
+            const ms = Math.max(8, Math.min(real, 150));
+
+            displayed = Math.random() * 2;
+            animateTo(ms);
+
+            // push to history
+            history.push(ms);
+            if (history.length > 20) history.shift();
+
+            drawGraph();
+            updateTrend();
+
+        } catch {
+            el.textContent = '-- ms';
+        }
+    }
+
+    /* =========================
+    INIT (SYNC WITH LOADER)
+    ========================= */
+    el.textContent = '0.0 ms';
+    history = [];
+
+    setTimeout(update, 500);
+    setInterval(update, 3500);
+
+})();
