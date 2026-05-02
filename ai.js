@@ -1,17 +1,18 @@
 /**
- * ai.js - Mizu Client Side (Final Vercel Version)
- * Integrasi Chat: Mizu (Kiri) & User (Kanan)
+ * ai.js - Mizu Client Side (English Version)
+ * Positions: Mizu (Left) & User (Right)
  */
 
-// 1. Gabungkan CSS ke dalam Document
+// 1. Inject English Styles
 const style = document.createElement('style');
 style.innerHTML = `
     #chat-box {
         display: flex;
         flex-direction: column;
-        padding: 15px;
+        padding: 20px;
         overflow-y: auto;
-        gap: 12px;
+        gap: 15px;
+        font-family: 'Inter', sans-serif;
     }
     .chat-row {
         display: flex;
@@ -21,36 +22,37 @@ style.innerHTML = `
     .user-row { justify-content: flex-end; }
 
     .bubble {
-        padding: 10px 16px;
+        padding: 12px 18px;
         max-width: 75%;
         font-size: 14px;
-        line-height: 1.5;
-        position: relative;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        line-height: 1.6;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
     }
 
     .mizu-bubble {
-        background: #ffffff;
-        color: #333;
-        border: 1px solid #eee;
-        border-radius: 18px 18px 18px 4px;
+        background: #f8f9fa;
+        color: #2d3436;
+        border: 1px solid #dfe6e9;
+        border-radius: 20px 20px 20px 5px;
     }
 
     .user-bubble {
-        background: #BC002D; /* Merah Aksen Fallen Mizu */
+        background: #BC002D; /* Fallen Mizu Red */
         color: #ffffff;
-        border-radius: 18px 18px 4px 18px;
+        border-radius: 20px 20px 5px 20px;
     }
 
-    .loading-dot {
-        font-style: italic;
-        color: #888;
+    .status-text {
         font-size: 12px;
+        color: #636e72;
+        margin-top: 5px;
+        font-style: italic;
     }
 `;
 document.head.appendChild(style);
 
-// 2. Logika Pengiriman Pesan
+// 2. Core English Logic
 async function sendMessage() {
     const input = document.getElementById('user-input');
     const chatBox = document.getElementById('chat-box');
@@ -60,17 +62,17 @@ async function sendMessage() {
     const message = input.value.trim();
     input.value = '';
 
-    // Tampilkan Pesan User (Kanan)
+    // User Message (Right)
     chatBox.innerHTML += `
         <div class="chat-row user-row">
             <div class="bubble user-bubble">${message}</div>
         </div>`;
     
-    // Tampilkan Loading Mizu (Kiri)
+    // Loading Indicator (Left)
     const loadingId = "loading-" + Date.now();
     chatBox.innerHTML += `
         <div id="${loadingId}" class="chat-row mizu-row">
-            <div class="bubble mizu-bubble loading-dot">Mizu sedang mengetik...</div>
+            <div class="bubble mizu-bubble status-text">Mizu is typing...</div>
         </div>`;
     
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -84,31 +86,30 @@ async function sendMessage() {
 
         const data = await response.json();
         
-        // Hapus Loading
         const loadingEl = document.getElementById(loadingId);
         if (loadingEl) loadingEl.remove();
 
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu sedang bermeditasi, coba lagi nanti.";
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is currently contemplating. Please try again.";
 
-        // Tampilkan Jawaban Mizu (Kiri)
+        // Mizu Message (Left)
         chatBox.innerHTML += `
             <div class="chat-row mizu-row">
                 <div class="bubble mizu-bubble">${reply}</div>
             </div>`;
 
     } catch (error) {
-        console.error("Mizu Error:", error);
         const loadingEl = document.getElementById(loadingId);
-        if (loadingEl) loadingEl.innerText = "Koneksi terputus.";
+        if (loadingEl) loadingEl.innerHTML = '<div class="bubble mizu-bubble" style="color:red;">Connection interrupted.</div>';
     }
 
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 3. Event Listener Enter Key
+// 3. Auto-send on Enter
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('user-input');
     if (input) {
+        input.placeholder = "Ask Mizu anything...";
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
