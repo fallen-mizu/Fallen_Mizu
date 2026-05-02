@@ -499,3 +499,184 @@ ULTIMATE UI MODE
     setInterval(update, 3500);
 
 })();
+
+/* =========================
+FINAL BOSS UI
+(SAKURA + AMBIENT + PARALLAX + CONTROL HUB)
+========================= */
+
+(function () {
+    const root = document.documentElement;
+
+    /* =========================
+    1. SAKURA PARTICLE SYSTEM
+    ========================= */
+    const sakura = document.createElement('canvas');
+    sakura.id = 'sakura-canvas';
+    sakura.style.position = 'fixed';
+    sakura.style.inset = '0';
+    sakura.style.pointerEvents = 'none';
+    sakura.style.zIndex = '0';
+    document.body.appendChild(sakura);
+
+    const ctx = sakura.getContext('2d');
+
+    function resize() {
+        sakura.width = window.innerWidth;
+        sakura.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const petals = Array.from({ length: 25 }).map(() => ({
+        x: Math.random() * sakura.width,
+        y: Math.random() * sakura.height,
+        r: Math.random() * 3 + 2,
+        s: Math.random() * 1 + 0.5,
+        w: Math.random() * 0.5
+    }));
+
+    function drawSakura() {
+        ctx.clearRect(0, 0, sakura.width, sakura.height);
+
+        ctx.fillStyle = 'rgba(255,182,193,0.7)';
+
+        petals.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            p.y += p.s;
+            p.x += Math.sin(p.y * 0.01) * 0.5;
+
+            if (p.y > sakura.height) {
+                p.y = -10;
+                p.x = Math.random() * sakura.width;
+            }
+        });
+
+        requestAnimationFrame(drawSakura);
+    }
+
+    drawSakura();
+
+    /* =========================
+    2. PARALLAX DEPTH EFFECT
+    ========================= */
+    window.addEventListener('scroll', () => {
+        const y = window.scrollY;
+
+        sakura.style.transform = `translateY(${y * 0.1}px)`;
+    });
+
+    /* =========================
+    3. AMBIENT SOUND (OPTIONAL)
+    ========================= */
+    let audio;
+
+    function initAudio() {
+        audio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_115b9b0f55.mp3?filename=wind-chimes-ambient-11063.mp3');
+        audio.loop = true;
+        audio.volume = 0.2;
+        audio.play().catch(() => {});
+    }
+
+    // start only on first interaction (browser policy safe)
+    window.addEventListener('click', () => {
+        if (!audio) initAudio();
+    }, { once: true });
+
+    /* =========================
+    4. CONTROL HUB (MINI OS UI)
+    ========================= */
+    const hub = document.createElement('div');
+    hub.innerHTML = `
+        <div class="zen-hub">
+            <div class="zen-dot"></div>
+            <div class="zen-panel">
+                <button data-action="toggle-sakura">🌸 Sakura</button>
+                <button data-action="toggle-audio">🎐 Sound</button>
+                <button data-action="toggle-motion">💨 Motion</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(hub);
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+    .zen-hub {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 9999;
+    }
+
+    .zen-dot {
+        width: 10px;
+        height: 10px;
+        background: #BC002D;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .zen-panel {
+        margin-top: 10px;
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 0.6rem;
+    }
+
+    .zen-panel button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        font-size: 0.65rem;
+    }
+
+    html.dark .zen-panel {
+        background: rgba(20,22,24,0.9);
+        color: #E6E6E6;
+    }
+    `;
+    document.head.appendChild(style);
+
+    const dot = document.querySelector('.zen-dot');
+    const panel = document.querySelector('.zen-panel');
+
+    dot.addEventListener('click', () => {
+        panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    /* =========================
+    5. TOGGLE SYSTEM
+    ========================= */
+    let sakuraEnabled = true;
+    let motionEnabled = true;
+    let audioEnabled = true;
+
+    panel.addEventListener('click', (e) => {
+        const action = e.target.dataset.action;
+
+        if (action === 'toggle-sakura') {
+            sakuraEnabled = !sakuraEnabled;
+            sakura.style.display = sakuraEnabled ? 'block' : 'none';
+        }
+
+        if (action === 'toggle-audio') {
+            audioEnabled = !audioEnabled;
+            if (audio) audio.muted = !audioEnabled;
+        }
+
+        if (action === 'toggle-motion') {
+            motionEnabled = !motionEnabled;
+            document.body.style.transition = motionEnabled ? '' : 'none';
+        }
+    });
+
+})();
