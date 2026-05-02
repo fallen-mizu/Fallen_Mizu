@@ -188,18 +188,6 @@
         .journey-text, .japanese-text { font-size: 0.8rem; }  
     }  
 </style>
-<div id="mizu-chat-container" class="aos-visible" style="margin-top: 80px; border-top: 1px solid var(--border-light); padding-top: 50px;">
-    <h2 class="section-title">Consult with Mizu / 水に相談する</h2>
-    <div id="chat-box" style="height: 300px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 12px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light);">
-        <div class="bot-msg" style="color: var(--wasabi-red); margin-bottom: 10px;"><strong>Mizu:</strong> Welcome. I am Mizu, your digital architect. How can I assist you with Japanese culture, Osaka's history, or Zen architecture today?</div>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <input type="text" id="user-input" placeholder="Ask about Osaka or Zen..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); background: white; font-family: 'Inter', sans-serif;">
-        <button onclick="sendMessage()" style="padding: 10px 25px; background: var(--wasabi-red); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">SEND</button>
-    </div>
-</div>
-
-<script src="ai.js"></script>
     
 </head>  
 <body>  
@@ -222,9 +210,36 @@
         </div>  
         <div class="japanese-text">  
             <p>かつては内向的だった私が、故郷を離れ、独りで旅立ちました。大阪で自立した生活を築き、デジタル建築家としての道を開拓。数々の困難を乗り越え、自己成長の力を信じてきました。真の強さは内面から生まれることを、この旅路が教えてくれました。</p>  
+        </div> 
+
+    </section>  
+    <section class="my-journey" data-aos>  
+        <h2 class="section-title">My Journey / 私の旅路</h2>  
+        <div class="journey-text">  
+            <p>From an introverted past, I embarked on a solo journey... (dan seterusnya)</p>  
+        </div>  
+        <div class="japanese-text">  
+            <p>かつては内向적だった私が、故郷を離れ... (dan seterusnya)</p>  
         </div>  
     </section>  
 
+    <section id="mizu-chat-container" data-aos style="margin-top: 60px;">
+        <h2 class="section-title">Consult with Mizu / 水に相談する</h2>
+        <div id="chat-box" style="height: 250px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
+            <div class="bot-msg" style="color: var(--wasabi-red); margin-bottom: 10px;">
+                <strong>Mizu:</strong> Welcome. I am Mizu. Having shared my journey above, how can I assist you today with Osaka's architecture or Zen philosophy?
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="user-input" placeholder="Ask Mizu about Zen or Osaka..." style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.3s;">
+            <button onclick="sendMessage()" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; transition: opacity 0.3s;">SEND</button>
+        </div>
+    </section>
+
+    <section class="gallery-container" data-aos>
+        <h2 class="section-title">My Gallery / 私のギャラリー</h2>
+    </section>
+        
     <section class="gallery-container" data-aos>  
         <h2 class="section-title">My Gallery / 私のギャラリー</h2>  
         <div class="gallery-grid">  
