@@ -42,7 +42,7 @@ async function sendMessage() {
                     }]
                 }],
                 generationConfig: {
-                    maxOutputTokens: 500,
+                    maxOutputTokens: 5000,
                     temperature: 0.7
                 }
             })
