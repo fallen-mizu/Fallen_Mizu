@@ -49,3 +49,46 @@ async function sendMessage() {
     
     chatBox.scrollTop = chatBox.scrollHeight;
 }
+.chat-container {
+    display: flex;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Posisi Mizu (Kiri) */
+.mizu-container {
+    justify-content: flex-start;
+}
+
+/* Posisi User (Kanan) */
+.user-container {
+    justify-content: flex-end;
+}
+
+/* Balon Chat Mizu */
+.msg-mizu {
+    background-color: #f0f0f0; /* Abu-abu muda klasik */
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 15px 15px 15px 0px; /* Sudut kiri bawah lancip */
+    max-width: 70%;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Balon Chat User */
+.msg-user {
+    background-color: #BC002D; /* Merah khas bendera Jepang */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 15px 15px 0px 15px; /* Sudut kanan bawah lancip */
+    max-width: 70%;
+    box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Scroll otomatis lancar */
+#chat-box {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 10px;
+        }
