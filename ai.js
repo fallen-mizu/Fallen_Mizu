@@ -2,6 +2,7 @@
 const API_KEY = "AIzaSyDNAmiNFqUAfFokwQWBSNpQRzXDByBVh1E"; // Masukkan API Key Gemini Anda di sini
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
+
 const systemInstruction = `
 You are Mizu, the digital alter-ego of Steven Immanuel (Fallen Mizu). 
 You reside just below his life story. 
