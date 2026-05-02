@@ -171,3 +171,66 @@ ZEN SYSTEM — ALL IN ONE JS
     });
 
 })();
+
+/* =========================
+FAKE → REAL RESPONSE TIME
+ULTRA SMOOTH ANIMATION
+========================= */
+
+(function () {
+    const el = document.getElementById('response-time');
+    if (!el) return;
+
+    let displayed = 0;
+
+    function animateTo(target) {
+        const start = displayed;
+        const duration = 1200; // smooth duration
+        const startTime = performance.now();
+
+        function frame(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+
+            // ease-out cubic (feels premium)
+            const ease = 1 - Math.pow(1 - progress, 3);
+
+            displayed = start + (target - start) * ease;
+
+            el.textContent = displayed.toFixed(1) + ' ms';
+
+            if (progress < 1) requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    }
+
+    async function updateResponseTimeSmooth() {
+        const start = performance.now();
+
+        try {
+            await fetch('https://jsonplaceholder.typicode.com/todos/1?cache=' + Date.now(), {
+                cache: 'no-store'
+            });
+
+            const real = performance.now() - start;
+
+            // Clamp for realism (avoid weird spikes)
+            const realistic = Math.max(8, Math.min(real, 120));
+
+            // Start from near-zero illusion
+            displayed = Math.random() * 2;
+
+            animateTo(realistic);
+
+        } catch {
+            el.textContent = '-- ms';
+        }
+    }
+
+    // Initial fake fast feel
+    el.textContent = '0.0 ms';
+
+    setTimeout(updateResponseTimeSmooth, 600);
+    setInterval(updateResponseTimeSmooth, 4000);
+
+})();
