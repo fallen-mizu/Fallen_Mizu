@@ -85,17 +85,20 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        
         const loadingEl = document.getElementById(loadingId);
         if (loadingEl) loadingEl.remove();
 
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is currently contemplating. Please try again.";
+        // If server sends an error property
+        if (data.error) {
+            chatBox.innerHTML += `<div class="chat-row mizu-row"><div class="bubble mizu-bubble" style="color:red;">Error: ${data.error}</div></div>`;
+        } else {
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is silent.";
+            chatBox.innerHTML += `<div class="chat-row mizu-row"><div class="bubble mizu-bubble">${reply}</div></div>`;
+        }
 
-        // Mizu Message (Left)
-        chatBox.innerHTML += `
-            <div class="chat-row mizu-row">
-                <div class="bubble mizu-bubble">${reply}</div>
-            </div>`;
+    } catch (error) {
+        document.getElementById(loadingId).innerHTML = `<div class="bubble mizu-bubble" style="color:red;">System Error: Check Console.</div>`;
+    }
 
     } catch (error) {
         const loadingEl = document.getElementById(loadingId);
