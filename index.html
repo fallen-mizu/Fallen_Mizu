@@ -193,6 +193,21 @@
     </style>
 </head>
 <body>
+
+    <!-- =========================
+ZEN LOADING SCREEN (ADD-ONLY)
+========================= -->
+<div id="zen-loader">
+    <div class="zen-inner">
+        <div class="zen-circle"></div>
+        <div class="zen-text">
+            <span>LOADING</span>
+            <span class="jp">読み込み中</span>
+        </div>
+    </div>
+</div>
+
+    
     <div class="container">
         <div class="osaka-time-box" data-aos>
             <div id="response-time" style="font-size:0.7rem; opacity:0.6; text-align:left;">0 ms</div>
@@ -350,7 +365,25 @@ async function updateResponseTime() {
 setInterval(updateResponseTime, 3000);
 updateResponseTime();
 </script>
+<script>
+/* =========================
+ZEN LOADER CONTROL
+========================= */
 
+window.addEventListener('load', () => {
+    const loader = document.getElementById('zen-loader');
+
+    setTimeout(() => {
+        loader.classList.add('hide');
+
+        setTimeout(() => {
+            loader.remove();
+        }, 1000);
+
+    }, 1200); // duration feel (adjust if needed)
+});
+</script>
+    
 </body>
 </html>
 </body>
@@ -615,3 +648,64 @@ updateResponseTime();
         script lama
     */*
 </script>
+        /* =========================
+ZEN LOADING STYLE
+========================= */
+
+#zen-loader {
+    position: fixed;
+    inset: 0;
+    background: var(--paper-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 1s ease, visibility 1s ease;
+}
+
+/* Dark mode support */
+html.dark #zen-loader {
+    background: #0F1113;
+}
+
+.zen-inner {
+    text-align: center;
+}
+
+/* Circle animation (Zen Enso style) */
+.zen-circle {
+    width: 60px;
+    height: 60px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--wasabi-red);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: zenSpin 1.2s linear infinite;
+}
+
+/* Text */
+.zen-text {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--ink-black);
+}
+
+.zen-text .jp {
+    display: block;
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 5px;
+}
+
+/* Spin animation */
+@keyframes zenSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hide loader */
+#zen-loader.hide {
+    opacity: 0;
+    visibility: hidden;
+}
