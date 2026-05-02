@@ -234,3 +234,113 @@ ULTRA SMOOTH ANIMATION
     setInterval(updateResponseTimeSmooth, 4000);
 
 })();
+
+/* =========================
+NEXT LEVEL RESPONSE UI
+(SMOOTH + STATUS + VISUAL FX)
+========================= */
+
+(function () {
+    const el = document.getElementById('response-time');
+    if (!el) return;
+
+    /* =========================
+    CREATE STATUS ELEMENT
+    ========================= */
+    const status = document.createElement('div');
+    status.style.fontSize = '0.6rem';
+    status.style.opacity = '0.6';
+    status.style.marginTop = '4px';
+    status.style.letterSpacing = '1px';
+    status.style.transition = 'all 0.4s ease';
+    el.parentNode.appendChild(status);
+
+    /* =========================
+    INTERNAL STATE
+    ========================= */
+    let displayed = 0;
+
+    function getStatus(ms) {
+        if (ms < 30) return { text: '⚡ ULTRA FAST', color: '#4CAF50' };
+        if (ms < 70) return { text: '✓ STABLE', color: '#2196F3' };
+        if (ms < 120) return { text: '● NORMAL', color: '#FFC107' };
+        return { text: '▲ SLOW', color: '#F44336' };
+    }
+
+    function animateTo(target) {
+        const start = displayed;
+        const duration = 1000;
+        const startTime = performance.now();
+
+        function frame(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+
+            displayed = start + (target - start) * ease;
+
+            el.textContent = displayed.toFixed(1) + ' ms';
+
+            if (progress < 1) requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    }
+
+    function applyVisualFX(ms) {
+        const parent = el.closest('.osaka-time-box');
+
+        // subtle glow effect
+        parent.style.transition = 'all 0.6s ease';
+
+        if (ms < 30) {
+            parent.style.boxShadow = '0 0 20px rgba(76,175,80,0.15)';
+        } else if (ms < 70) {
+            parent.style.boxShadow = '0 0 15px rgba(33,150,243,0.12)';
+        } else if (ms < 120) {
+            parent.style.boxShadow = '0 0 12px rgba(255,193,7,0.10)';
+        } else {
+            parent.style.boxShadow = '0 0 18px rgba(244,67,54,0.15)';
+        }
+    }
+
+    async function update() {
+        const start = performance.now();
+
+        try {
+            await fetch('https://jsonplaceholder.typicode.com/todos/1?cache=' + Date.now(), {
+                cache: 'no-store'
+            });
+
+            const real = performance.now() - start;
+
+            // clamp for realism
+            const ms = Math.max(8, Math.min(real, 150));
+
+            // start illusion
+            displayed = Math.random() * 3;
+
+            animateTo(ms);
+
+            const s = getStatus(ms);
+            status.textContent = s.text;
+            status.style.color = s.color;
+
+            applyVisualFX(ms);
+
+        } catch {
+            el.textContent = '-- ms';
+            status.textContent = 'OFFLINE';
+            status.style.color = '#999';
+        }
+    }
+
+    /* =========================
+    INIT
+    ========================= */
+    el.textContent = '0.0 ms';
+    status.textContent = 'INITIALIZING...';
+
+    setTimeout(update, 800);
+    setInterval(update, 4000);
+
+})();
