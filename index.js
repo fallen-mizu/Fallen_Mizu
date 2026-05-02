@@ -680,3 +680,112 @@ FINAL BOSS UI
     });
 
 })();
+
+/* =========================
+POLISH MODE
+(REFINEMENT LAYER)
+========================= */
+
+(function () {
+
+    /* =========================
+    1. SMART PERFORMANCE MODE
+    (auto-disable heavy effects)
+    ========================= */
+    const isLowEnd =
+        navigator.hardwareConcurrency <= 4 ||
+        navigator.deviceMemory <= 4;
+
+    if (isLowEnd) {
+        const sakura = document.getElementById('sakura-canvas');
+        if (sakura) sakura.style.display = 'none';
+    }
+
+    /* =========================
+    2. VISUAL INTENSITY TUNING
+    ========================= */
+    const box = document.querySelector('.osaka-time-box');
+    if (box) {
+        box.style.transition = 'all 0.6s ease';
+
+        // soften glow
+        box.style.boxShadow = '0 0 12px rgba(0,0,0,0.05)';
+    }
+
+    /* =========================
+    3. GRAPH SMOOTHING
+    ========================= */
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+        canvas.style.opacity = '0.5'; // less aggressive
+    }
+
+    /* =========================
+    4. MOTION BALANCE
+    ========================= */
+    let ticking = false;
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                document.body.style.transform =
+                    `translateY(${window.scrollY * 0.02}px)`;
+
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+
+    /* =========================
+    5. MICRO INTERACTIONS
+    ========================= */
+    document.querySelectorAll('.app-icon').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            el.style.transition = 'all 0.3s ease';
+            el.style.transform = 'translateY(-4px) scale(1.03)';
+        });
+
+        el.addEventListener('mouseleave', () => {
+            el.style.transform = '';
+        });
+    });
+
+    /* =========================
+    6. LOADER TRANSITION IMPROVE
+    ========================= */
+    const loader = document.getElementById('zen-loader');
+    if (loader) {
+        loader.style.backdropFilter = 'blur(6px)';
+    }
+
+    /* =========================
+    7. IDLE CALM MODE
+    (reduces movement when user inactive)
+    ========================= */
+    let idleTimer;
+
+    function resetIdle() {
+        clearTimeout(idleTimer);
+
+        document.body.style.filter = '';
+
+        idleTimer = setTimeout(() => {
+            document.body.style.filter = 'brightness(0.95)';
+        }, 8000);
+    }
+
+    ['mousemove', 'scroll', 'click'].forEach(evt => {
+        window.addEventListener(evt, resetIdle);
+    });
+
+    resetIdle();
+
+    /* =========================
+    8. CONSISTENCY FIX
+    ========================= */
+    document.querySelectorAll('*').forEach(el => {
+        el.style.backfaceVisibility = 'hidden';
+    });
+
+})();
