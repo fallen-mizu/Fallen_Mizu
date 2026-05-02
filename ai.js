@@ -1,138 +1,105 @@
 /**
- * ai.js - Mizu Client Side (English Version)
- * Positions: Mizu (Left) & User (Right)
+ * ai.js - Integrated English UI
+ * Positions: Mizu (Left) | User (Right)
  */
 
-// 1. Inject English Styles
+// 1. Inject UI Styles
 const style = document.createElement('style');
 style.innerHTML = `
     #chat-box {
         display: flex;
         flex-direction: column;
-        padding: 20px;
-        overflow-y: auto;
+        padding: 15px;
         gap: 15px;
-        font-family: 'Inter', sans-serif;
+        overflow-y: auto;
+        height: 400px; /* Adjust as needed */
     }
-    .chat-row {
-        display: flex;
-        width: 100%;
-    }
+    .chat-row { display: flex; width: 100%; }
     .mizu-row { justify-content: flex-start; }
     .user-row { justify-content: flex-end; }
 
     .bubble {
-        padding: 12px 18px;
-        max-width: 75%;
+        padding: 10px 15px;
+        max-width: 80%;
         font-size: 14px;
-        line-height: 1.6;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
+        line-height: 1.5;
+        border-radius: 15px;
     }
 
     .mizu-bubble {
-        background: #f8f9fa;
-        color: #2d3436;
-        border: 1px solid #dfe6e9;
-        border-radius: 20px 20px 20px 5px;
+        background: #f1f1f1;
+        color: #333;
+        border-bottom-left-radius: 2px;
     }
 
     .user-bubble {
-        background: #BC002D; /* Fallen Mizu Red */
-        color: #ffffff;
-        border-radius: 20px 20px 5px 20px;
+        background: #BC002D;
+        color: #fff;
+        border-bottom-right-radius: 2px;
     }
 
-    .status-text {
-        font-size: 12px;
-        color: #636e72;
-        margin-top: 5px;
-        font-style: italic;
-    }
+    .loading { font-style: italic; opacity: 0.7; font-size: 12px; }
 `;
 document.head.appendChild(style);
 
-// 2. Core English Logic
+// 2. Chat Logic
 async function sendMessage() {
     const input = document.getElementById('user-input');
     const chatBox = document.getElementById('chat-box');
     
     if (!input || !input.value.trim()) return;
     
-    const message = input.value.trim();
+    const text = input.value.trim();
     input.value = '';
 
-    // User Message (Right)
+    // Show User Message (Right)
     chatBox.innerHTML += `
         <div class="chat-row user-row">
-            <div class="bubble user-bubble">${message}</div>
+            <div class="bubble user-bubble">${text}</div>
         </div>`;
     
-    // Loading Indicator (Left)
-    const loadingId = "loading-" + Date.now();
+    // Show Loading (Left)
+    const tempId = "load-" + Date.now();
     chatBox.innerHTML += `
-        <div id="${loadingId}" class="chat-row mizu-row">
-            <div class="bubble mizu-bubble status-text">Mizu is typing...</div>
+        <div id="${tempId}" class="chat-row mizu-row">
+            <div class="bubble mizu-bubble loading">Mizu is contemplating...</div>
         </div>`;
     
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
+        // Use relative path for Vercel compatibility
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ message: text })
         });
 
-        const data = await response.json();
-        const loadingEl = document.getElementById(loadingId);
-        if (loadingEl) loadingEl.remove();
+        const result = await response.json();
+        const loader = document.getElementById(tempId);
+        if (loader) loader.remove();
 
-        // If server sends an error property
-        if (data.error) {
-            chatBox.innerHTML += `<div class="chat-row mizu-row"><div class="bubble mizu-bubble" style="color:red;">Error: ${data.error}</div></div>`;
+        if (result.error) {
+            chatBox.innerHTML += `<div class="chat-row mizu-row"><div class="bubble mizu-bubble" style="color:red">Error: ${result.error}</div></div>`;
         } else {
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is silent.";
-            chatBox.innerHTML += `<div class="chat-row mizu-row"><div class="bubble mizu-bubble">${reply}</div></div>`;
+            const mizuText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu remains silent.";
+            chatBox.innerHTML += `
+                <div class="chat-row mizu-row">
+                    <div class="bubble mizu-bubble">${mizuText}</div>
+                </div>`;
         }
-
-    } catch (error) {
-        document.getElementById(loadingId).innerHTML = `<div class="bubble mizu-bubble" style="color:red;">System Error: Check Console.</div>`;
-    }
-        try {
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message })
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            alert("Server Error: " + (errorData.error || response.statusText));
-            return;
-        }
-
-        const data = await response.json();
-        // ... sisa kode tampilkan pesan ...
-    } catch (error) {
-        alert("Network Error: " + error.message);
-        }
-    
-    } catch (error) {
-        const loadingEl = document.getElementById(loadingId);
-        if (loadingEl) loadingEl.innerHTML = '<div class="bubble mizu-bubble" style="color:red;">Connection interrupted.</div>';
+    } catch (e) {
+        const loader = document.getElementById(tempId);
+        if (loader) loader.innerHTML = `<div class="bubble mizu-bubble" style="color:red">Connection failed.</div>`;
     }
 
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 3. Auto-send on Enter
+// Enter Key Support
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('user-input');
-    if (input) {
-        input.placeholder = "Ask Mizu anything...";
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+    if(input) {
+        input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
     }
 });
