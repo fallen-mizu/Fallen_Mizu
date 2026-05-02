@@ -1,6 +1,6 @@
 // ai.js - Mizu Engine
 const API_KEY = "AIzaSyA0PNcX98-VkaAzpHog0PX4RElOcXWw05Y"; 
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 const systemInstruction = "You are Mizu, a digital architect in Osaka. Focus on Zen, architecture, and Japanese culture. Speak English by default.";
 
