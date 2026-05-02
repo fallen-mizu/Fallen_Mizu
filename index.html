@@ -188,7 +188,19 @@
         .journey-text, .japanese-text { font-size: 0.8rem; }  
     }  
 </style>
+<div id="mizu-chat-container" class="aos-visible" style="margin-top: 80px; border-top: 1px solid var(--border-light); padding-top: 50px;">
+    <h2 class="section-title">Consult with Mizu / 水に相談する</h2>
+    <div id="chat-box" style="height: 300px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 12px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light);">
+        <div class="bot-msg" style="color: var(--wasabi-red); margin-bottom: 10px;"><strong>Mizu:</strong> Welcome. I am Mizu, your digital architect. How can I assist you with Japanese culture, Osaka's history, or Zen architecture today?</div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="user-input" placeholder="Ask about Osaka or Zen..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); background: white; font-family: 'Inter', sans-serif;">
+        <button onclick="sendMessage()" style="padding: 10px 25px; background: var(--wasabi-red); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">SEND</button>
+    </div>
+</div>
 
+<script src="ai.js"></script>
+    
 </head>  
 <body>  
     <div class="container">  
