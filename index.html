@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen Mizu | 大阪デジタル建築家</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;600;900&family=Sawarabi+Mincho&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wasabi-red: #BC002D;
+            --ink-black: #1A1A1B;
+            --paper-white: #F9F9F7;
+            --border-light: rgba(0,0,0,0.08);
+            --transition-speed: 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }  
+        body {
+            background-color: var(--paper-white);
+            color: var(--ink-black);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: 1.8;
+            background-image: url("https://www.transparenttextures.com/patterns/handmade-paper.png");
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 80px 30px;
+        }
+
+        /* --- USER NAVIGATION --- */
+        #user-nav {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255,255,255,0.85);
+            padding: 6px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--border-light);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        #user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; }
+        #user-status { font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; color: #555; }
+        #auth-btn { background: none; border: none; color: var(--wasabi-red); font-size: 0.65rem; font-weight: 800; cursor: pointer; padding: 0; }
+
+        /* --- Global AOS --- */
+        [data-aos] { opacity: 0; transform: translateY(30px); transition: var(--transition-speed); }
+        .aos-visible { opacity: 1; transform: translateY(0); }
+
+        .osaka-time-box {
+            text-align: right; margin-bottom: 50px; border-right: 2px solid var(--wasabi-red);
+            padding-right: 15px; font-family: 'Noto Serif JP', serif;
+        }
+        #osaka-clock { font-size: 1.8rem; font-weight: 300; }
+
+        .profile-img { width: 80px; height: 80px; border-radius: 50%; filter: grayscale(100%); margin-bottom: 20px; }
+        h1 { font-family: 'Noto Serif JP', serif; font-size: 3rem; font-weight: 900; margin: 0; letter-spacing: -2px; line-height: 1; overflow: hidden; }
+        h1 span { display: inline-block; transform: translateY(110%); transition: transform 1.2s; }
+        header.aos-visible h1 span { transform: translateY(0); }
+
+        .section-title { font-family: 'Noto Serif JP', serif; font-size: 1.2rem; margin-top: 80px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; position: relative; }
+        .section-title::after { content: ""; position: absolute; bottom: -1px; left: 0; width: 40px; height: 1.5px; background: var(--wasabi-red); }
+
+        /* --- GALLERY & APPS --- */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
+        .gallery-item img { width: 100%; filter: grayscale(80%); transition: 1s; }
+        .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.05); }
+        
+        .app-grid { display: grid; grid-template-columns: repeat(2, 100px); gap: 20px; margin-top: 40px; justify-content: center; }
+        .app-icon { text-decoration: none; background: white; border-radius: 22px; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--border-light); transition: 0.3s; }
+        .app-icon:hover { transform: translateY(-5px); border-color: var(--wasabi-red); }
+
+        @media (max-width: 600px) { h1 { font-size: 2.5rem; } .gallery-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div id="user-nav">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <img id="user-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile">
+            <span id="user-status">GUEST</span>
+        </div>
+        <div style="width: 1px; height: 15px; background: #ddd;"></div>
+        <button id="auth-btn">LOGIN</button>
+    </div>
+
+    <div class="container">
+        <div class="osaka-time-box" data-aos>
+            <div id="response-time" style="font-size:0.7rem; opacity:0.6; text-align:left;">0 ms</div>
+            <div id="full-date">LOADING...</div>
+            <div id="osaka-clock">00:00:00</div>
+            <div class="timezone-label" style="font-size: 0.6rem; opacity: 0.5;">OSAKA, JP (GMT+9)</div>
+        </div>
+
+        <header data-aos>
+            <img src="profile.jpg" alt="Fallen_Mizu" class="profile-img">
+            <h1><span>Fallen</span><br><span> Mizu</span></h1>
+            <div style="color: var(--wasabi-red); font-size: 0.65rem; letter-spacing: 5px; font-weight: 600; margin-top: 10px;">デジタル建築家 // OSAKA ARCHITECT</div>
+        </header>
+
+        <section class="my-journey" data-aos>
+            <h2 class="section-title">My Journey / 私の旅路</h2>
+            <div style="font-size: 0.85rem; color: #444; margin-top: 20px;">
+                <p>From an introverted past, I embarked on a solo journey, finding my voice and purpose far from home. Working in Osaka, I've built a life independently, overcoming challenges to become a digital architect.</p>
+            </div>
+        </section>
+
+        <section id="mizu-chat-container" data-aos style="margin-top: 60px;">
+            <h2 class="section-title">Consult with Mizu / 水に相談する</h2>
+            <div id="chat-box" style="height: 350px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
+                <div style="color: var(--wasabi-red); margin-bottom: 15px;"><strong>Mizu:</strong> Welcome. Please sign in to consult with the Architect AI.</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none;">
+                <button onclick="window.sendMessage()" style="padding: 10px 25px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600;">SEND</button>
+            </div>
+            <p style="color: #BC002D; font-size: 0.65rem; margin-top: 10px; opacity: 0.8;">⚠️ Daily usage is limited to 5 messages for guests.</p>
+        </section>
+
+        <section class="gallery-container" data-aos>
+            <h2 class="section-title">Gallery / 私のギャラリー</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item"><img src="photo1.jpg" alt="1"></div>
+                <div class="gallery-item" style="margin-top:20px;"><img src="photo2.jpg" alt="2"></div>
+            </div>
+        </section>
+
+        <section class="contact-grid" data-aos>
+            <h2 class="section-title">Contact / お問い合わせ</h2>
+            <div class="app-grid">
+                <a href="https://wa.me/+817094251640" target="_blank" class="app-icon">
+                    <svg width="30" viewBox="0 0 24 24" fill="#25D366"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.459 3.419 1.263 4.858L2 22l5.335-1.4c1.4.759 2.993 1.188 4.677 1.188 5.508 0 9.987-4.479 9.987-9.987 0-5.508-4.479-9.987-9.987-9.987z"/></svg>
+                    <span style="font-size:0.55rem; font-weight:700;">WHATSAPP</span>
+                </a>
+                <a href="#" class="app-icon">
+                    <svg width="30" viewBox="0 0 24 24" fill="#3A76F0"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.659 1.432 5.167L2 22l4.833-1.432C8.341 21.476 10.109 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+                    <span style="font-size:0.55rem; font-weight:700;">SIGNAL</span>
+                </a>
+            </div>
+        </section>
+
+        <footer class="legal-section" style="margin-top:100px; font-size:0.7rem; color:#888; border-top:1px solid var(--border-light); padding-top:30px;">
+            <p>© 2025 - 2026 FALLEN_MIZU. Crafted with Zen in Osaka.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="ai.js"></script>
+
+    <script>
+        // AOS Implementation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('aos-visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+
+        // Osaka Time
+        function updateOsakaTime() {
+            const now = new Date();
+            const timeOptions = { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const dateOptions = { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('osaka-clock').textContent = now.toLocaleTimeString('ja-JP', timeOptions);
+            document.getElementById('full-date').textContent = now.toLocaleDateString('en-US', dateOptions).toUpperCase();
+        }
+        setInterval(updateOsakaTime, 1000); updateOsakaTime();
+    </script>
+</body>
+</html>
