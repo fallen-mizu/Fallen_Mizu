@@ -1,9 +1,26 @@
-/**
- * ai.js - Mizu Professional (English Version)
- * Features: Google Auth, Daily Limit (5 Chats), Persistence, Left/Right Chat
- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 1. STYLES & UI
+// 1. CONFIGURATION - Replace with your own data from Firebase Console
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+const DAILY_LIMIT = 5;
+const WHATSAPP_LINK = "https://wa.me/+817094251640";
+
+// 2. UI STYLES
 const style = document.createElement('style');
 style.innerHTML = `
     #chat-box { display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; height: 400px; }
@@ -13,120 +30,93 @@ style.innerHTML = `
     .bubble { padding: 10px 15px; max-width: 80%; font-size: 14px; border-radius: 15px; }
     .mizu-bubble { background: #f1f1f1; color: #333; border-bottom-left-radius: 2px; }
     .user-bubble { background: #BC002D; color: #fff; border-bottom-right-radius: 2px; }
-    
-    /* Auth & Limit UI */
-    #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; }
-    .limit-warning { color: #BC002D; font-weight: bold; text-align: center; padding: 20px; border: 2px dashed #BC002D; border-radius: 10px; display: none; }
-    .google-btn { background: white; border: 1px solid #ddd; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+    #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; font-family: sans-serif; }
+    .google-btn { background: #4285F4; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .limit-banner { background: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 10px; border: 1px solid #f87171; }
 `;
 document.head.appendChild(style);
 
-// 2. CONFIGURATION
-const DAILY_LIMIT = 10; // Batas chat gratis per hari
-const WHATSAPP_LINK = "https://wa.me/+817094251640"; // Link owner
+// 3. AUTHENTICATION HANDLER
+onAuthStateChanged(auth, async (user) => {
+    let overlay = document.getElementById('auth-overlay');
+    if (!overlay) overlay = createAuthUI();
 
-// 3. GOOGLE AUTH SIMULATION (Since we need Firebase/Auth Client for real Google Login)
-// Saya menggunakan skema yang kompatibel dengan Vercel & UI
-function initGoogleAuth() {
-    const user = localStorage.getItem('mizu_user');
-    if (!user) {
-        const overlay = document.createElement('div');
-        overlay.id = 'auth-overlay';
-        overlay.innerHTML = `
-            <h2>Welcome to Mizu AI</h2>
-            <p>Please login to continue</p>
-            <button class="google-btn" onclick="loginSimulation()">
-                <img src="https://www.google.com/favicon.ico" width="20"> Sign in with Google
-            </button>
-        `;
-        document.body.appendChild(overlay);
+    if (user) {
+        overlay.style.display = 'none';
+        await syncUserLimit(user);
+        loadLocalHistory();
     } else {
-        checkDailyLimit();
+        overlay.style.display = 'flex';
     }
-}
+});
 
-window.loginSimulation = () => {
-    // Simulasi Login - Dalam produksi nyata, hubungkan ke Firebase Auth
-    localStorage.setItem('mizu_user', 'Steven_User');
-    location.reload();
-};
-
-// 4. LIMIT LOGIC
-function checkDailyLimit() {
-    const today = new Date().toDateString();
-    let stats = JSON.parse(localStorage.getItem('mizu_stats')) || { date: today, count: 0 };
-    
-    if (stats.date !== today) {
-        stats = { date: today, count: 0 };
-        localStorage.setItem('mizu_stats', JSON.stringify(stats));
-    }
-
-    if (stats.count >= DAILY_LIMIT) {
-        lockChat();
-    }
-    return stats.count;
-}
-
-function lockChat() {
-    const input = document.getElementById('user-input');
-    const warning = document.createElement('div');
-    warning.className = 'limit-warning';
-    warning.style.display = 'block';
-    warning.innerHTML = `
-        DAILY LIMIT REACHED!<br>
-        Please contact the owner for a monthly subscription to get Unlimited Access.<br>
-        <a href="${WHATSAPP_LINK}" target="_blank" style="color:#BC002D; text-decoration:underline;">Subscribe Now</a>
+function createAuthUI() {
+    const div = document.createElement('div');
+    div.id = 'auth-overlay';
+    div.innerHTML = `
+        <h1 style="color:#BC002D">Fallen Mizu</h1>
+        <p>Architectural AI Assistant</p>
+        <button class="google-btn" id="login-trigger">Sign in with Google</button>
     `;
-    document.getElementById('chat-box').prepend(warning);
-    if(input) {
-        input.disabled = true;
-        input.placeholder = "Chat Locked - Subscription Required";
+    document.body.appendChild(div);
+    document.getElementById('login-trigger').onclick = () => signInWithPopup(auth, provider);
+    return div;
+}
+
+// 4. LIMIT & DATABASE LOGIC
+async function syncUserLimit(user) {
+    const today = new Date().toDateString();
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists() || snap.data().lastReset !== today) {
+        await setDoc(userRef, {
+            email: user.email,
+            usageCount: 0,
+            lastReset: today,
+            isPremium: false
+        }, { merge: true });
+    } else if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) {
+        applyLock();
     }
 }
 
-function incrementLimit() {
-    let stats = JSON.parse(localStorage.getItem('mizu_stats'));
-    stats.count += 1;
-    localStorage.setItem('mizu_stats', JSON.stringify(stats));
-}
-
-// 5. STORAGE & HISTORY (Existing Logic)
-function saveChatToLocal(role, text) {
-    let history = JSON.parse(localStorage.getItem('mizu_chat_history')) || [];
-    history.push({ role, text });
-    localStorage.setItem('mizu_chat_history', JSON.stringify(history));
-}
-
-function loadChatHistory() {
+function applyLock() {
+    const input = document.getElementById('user-input');
     const chatBox = document.getElementById('chat-box');
-    const history = JSON.parse(localStorage.getItem('mizu_chat_history')) || [];
-    history.forEach(item => {
-        const rowClass = item.role === 'user' ? 'user-row' : 'mizu-row';
-        const bubbleClass = item.role === 'user' ? 'user-bubble' : 'mizu-bubble';
-        chatBox.innerHTML += `<div class="chat-row ${rowClass}"><div class="bubble ${bubbleClass}">${item.text}</div></div>`;
-    });
-    chatBox.scrollTop = chatBox.scrollHeight;
+    if (!document.getElementById('limit-banner')) {
+        const banner = document.createElement('div');
+        banner.id = 'limit-banner';
+        banner.className = 'limit-banner';
+        banner.innerHTML = `Limit reached! <a href="${WHATSAPP_LINK}" target="_blank" style="color:inherit; text-decoration:underline;">Subscribe for Unlimited</a>`;
+        chatBox.prepend(banner);
+    }
+    if (input) {
+        input.disabled = true;
+        input.placeholder = "Daily limit reached...";
+    }
 }
 
-// 6. SEND MESSAGE (Main Function)
-async function sendMessage() {
-    const count = checkDailyLimit();
-    if (count >= DAILY_LIMIT) return;
+// 5. CHAT FUNCTIONALITY
+window.sendMessage = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+    if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) return applyLock();
 
     const input = document.getElementById('user-input');
     const chatBox = document.getElementById('chat-box');
-    if (!input || !input.value.trim()) return;
-    
     const text = input.value.trim();
-    input.value = '';
+    if (!text) return;
 
-    // Show User Message
-    chatBox.innerHTML += `<div class="chat-row user-row"><div class="bubble user-bubble">${text}</div></div>`;
-    saveChatToLocal('user', text);
-    
-    const tempId = "load-" + Date.now();
-    chatBox.innerHTML += `<div id="${tempId}" class="chat-row mizu-row"><div class="bubble mizu-bubble">Thinking...</div></div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value = '';
+    renderRow('user', text);
+    saveLocal('user', text);
+
+    const loadId = "loading-" + Date.now();
+    renderRow('mizu', 'Mizu is thinking...', loadId);
 
     try {
         const response = await fetch('/api/chat', {
@@ -135,28 +125,45 @@ async function sendMessage() {
             body: JSON.stringify({ message: text })
         });
 
-        const result = await response.json();
-        document.getElementById(tempId).remove();
+        const data = await response.json();
+        document.getElementById(loadId).remove();
 
-        const mizuText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is offline.";
-        chatBox.innerHTML += `<div class="chat-row mizu-row"><div class="bubble mizu-bubble">${mizuText}</div></div>`;
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is offline.";
+        renderRow('mizu', reply);
+        saveLocal('mizu', reply);
+
+        // Update limit in Firebase
+        await updateDoc(userRef, { usageCount: increment(1) });
         
-        saveChatToLocal('mizu', mizuText);
-        incrementLimit(); // Tambah hitungan limit setelah sukses chat
-        checkDailyLimit(); // Cek lagi apakah sudah limit setelah chat ini
-        
-    } catch (e) {
-        document.getElementById(tempId).innerHTML = "Error connecting to AI.";
+    } catch (err) {
+        document.getElementById(loadId).innerText = "Connection error.";
     }
+};
+
+// 6. UTILS
+function renderRow(role, text, id = null) {
+    const chatBox = document.getElementById('chat-box');
+    const row = document.createElement('div');
+    row.className = `chat-row ${role}-row`;
+    if (id) row.id = id;
+    row.innerHTML = `<div class="bubble ${role}-bubble">${text}</div>`;
+    chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 7. INITIALIZE
+function saveLocal(role, text) {
+    let history = JSON.parse(localStorage.getItem('mizu_history')) || [];
+    history.push({ role, text });
+    localStorage.setItem('mizu_history', JSON.stringify(history.slice(-15)));
+}
+
+function loadLocalHistory() {
+    const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
+    history.forEach(item => renderRow(item.role, item.text));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    initGoogleAuth();
-    loadChatHistory();
     const input = document.getElementById('user-input');
-    if(input) {
-        input.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
-    }
+    if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.sendMessage(); });
 });
+    
