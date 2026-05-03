@@ -4,12 +4,12 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https:/
 
 // 1. CONFIGURATION
 const firebaseConfig = {
-    apiKey: "YOUR_ACTUAL_API_KEY",
+    apiKey: "AIzaSyAJDI39JipbKuDJ6YHO",
     authDomain: "snake-c2b54.firebaseapp.com",
-    projectId: "fallen-mizu",
-    storageBucket: "fallen-mizu.appspot.com",
-    messagingSenderId: "YOUR_ACTUAL_ID",
-    appId: "YOUR_ACTUAL_APP_ID"
+    projectId: "snake-c2b54",
+    storageBucket: "snake-c2b54.firebasestorage.app",
+    messagingSenderId: "729896524620",
+    appId: "1:729896524620:web:d1c2bc0f4d7e5dc2c7cde9"
 };
 
 const app = initializeApp(firebaseConfig);
