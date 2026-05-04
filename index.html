@@ -284,7 +284,6 @@ function clearChatAdvanced() {
     const chatBox = document.getElementById("chat-box");
     if (!chatBox) return;
 
-    // fade out
     chatBox.style.transition = "opacity 0.3s ease";
     chatBox.style.opacity = "0";
 
@@ -292,9 +291,9 @@ function clearChatAdvanced() {
         chatBox.innerHTML = "";
         chatBox.style.opacity = "1";
 
-        // 🔥 HAPUS DATA TERSIMPAN
-        localStorage.setItem("chat", chatBox.innerHTML);
-        localStorage.removeItem("chat");
+        // 🔥 INI YANG PENTING
+        localStorage.removeItem("mizu_history");
+
     }, 300);
 
     closeConfirm();
