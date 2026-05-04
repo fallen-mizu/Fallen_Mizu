@@ -45,13 +45,16 @@ onAuthStateChanged(auth, async (user) => {
         overlay.style.display = 'none';
         await syncUserLimit(user);
 
-        // 🔥 HARD BLOCK
-        if (localStorage.getItem("mizu_history") === null) {
+        // ðŸ”¥ CEK APAKAH CHAT SUDAH DI CLEAR
+        if (localStorage.getItem("mizu_cleared") === "true") {
+            localStorage.removeItem("mizu_history");
+            localStorage.removeItem("mizu_cleared");
             document.getElementById("chat-box").innerHTML = "";
-            return;
+            return; // â›” STOP supaya tidak load ulang
         }
 
-        loadLocalHistory();
+        // ðŸ”¥ HAPUS INI TOTAL
+// loadLocalHistory();
 
     } else {
         overlay.style.display = 'flex';
@@ -161,30 +164,15 @@ function renderRow(role, text, id = null) {
 
 function saveLocal(role, text) {
     let history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-
-    history.push({
-        role,
-        text,
-        time: Date.now()
-    });
-
-    // limit 50 chat terakhir biar ringan
-    if (history.length > 50) history = history.slice(-50);
-
-    localStorage.setItem('mizu_history', JSON.stringify(history));
+    history.push({ role, text });
+    localStorage.setItem('mizu_history', JSON.stringify(history.slice(-15)));
 }
 
-let chatLoaded = false;
-
 function loadLocalHistory() {
-    if (chatLoaded) return;
-    chatLoaded = true;
-
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
 
     chatBox.innerHTML = "";
-    console.log("LOAD HISTORY TRIGGERED");
 
     const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
     history.forEach(item => renderRow(item.role, item.text));
