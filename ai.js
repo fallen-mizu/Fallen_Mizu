@@ -180,25 +180,26 @@ function renderRow(role, text, id = null) {
 
     const bubble = document.createElement('div');
     bubble.className = `bubble ${role}-bubble`;
-    bubble.innerText = text;
+    bubble.style.display = "flex";
+    bubble.style.flexDirection = "column";
 
-    // 🕐 TIME (DI BAWAH BUBBLE)
+    // TEXT
+    const message = document.createElement('div');
+    message.innerText = text;
+
+    // 🕐 TIME (DALAM BUBBLE, DI BAWAH)
     const time = document.createElement('div');
     time.innerText = getJapanTime();
     time.style.fontSize = "0.65rem";
     time.style.opacity = "0.6";
-    time.style.marginTop = "5px";
+    time.style.marginTop = "6px";
+    time.style.textAlign = "right";
 
-    // container untuk bubble + time
-    const wrapper = document.createElement('div');
-    wrapper.style.display = "flex";
-    wrapper.style.flexDirection = "column";
-    wrapper.style.maxWidth = "80%";
+    // masukkan ke dalam bubble
+    bubble.appendChild(message);
+    bubble.appendChild(time);
 
-    wrapper.appendChild(bubble);
-    wrapper.appendChild(time);
-
-    row.appendChild(wrapper);
+    row.appendChild(bubble);
     chatBox.appendChild(row);
 
     chatBox.scrollTop = chatBox.scrollHeight;
