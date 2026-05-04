@@ -169,17 +169,19 @@ function saveLocal(role, text) {
     localStorage.setItem('mizu_history', JSON.stringify(history));
 }
 
+let chatLoaded = false;
+
 function loadLocalHistory() {
+    if (chatLoaded) return;
+    chatLoaded = true;
+
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
 
     chatBox.innerHTML = "";
 
     const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-
-    history.forEach(item => {
-        renderRow(item.role, item.text);
-    });
+    history.forEach(item => renderRow(item.role, item.text));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
