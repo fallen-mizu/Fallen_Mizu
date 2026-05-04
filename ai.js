@@ -97,10 +97,8 @@ function createAuthUI() {
 
 
 
-
-
-    <hr style="width: 50px; border: 0.5px solid #eee;"> Not an admin? <hr style="width: 50px; border: 0.5px solid #eee;">
-        </div>
+    </p=style="width: 50px; border: 0.5px solid #eee;"> Not an admin? <hr style="width: 50px; border: 0.5px solid #eee;">
+        
     
     document.body.appendChild(div);
 
