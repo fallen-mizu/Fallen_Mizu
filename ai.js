@@ -8,9 +8,9 @@ function getJapanTime(timestamp = null) {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// PASTIKAN BARIS DI BAWAH INI LENGKAP
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 1. CONFIGURATION
 const firebaseConfig = {
     apiKey: "AIzaSyAJDI39JipbKuDJ6YHO-rzADCdFs6qvf1k",
     authDomain: "snake-c2b54.firebaseapp.com",
@@ -22,8 +22,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getFirestore(app); // <--- INI JANTUNGNYA, HARUS ADA
 const provider = new GoogleAuthProvider();
+
 
 const DAILY_LIMIT = 30;
 const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
@@ -60,23 +61,30 @@ document.head.appendChild(style);
 // 3. REAL-TIME STATUS LISTENER
 function listenToMizuStatus() {
     const statusRef = doc(db, "system", "status");
-    // Gunakan onSnapshot agar indikator berubah tanpa refresh
     onSnapshot(statusRef, (docSnap) => {
         const el = document.getElementById('mizu-status');
         if (!el) return;
         
-        const isOnline = docSnap.exists() ? docSnap.data().isOnline : true;
-        if (isOnline) {
-            el.className = "status-indicator status-online";
-            el.innerHTML = `<span class="status-dot"></span> Mizu Online`;
+        if (docSnap.exists()) {
+            const isOnline = docSnap.data().isOnline;
+            if (isOnline === true) {
+                el.className = "status-indicator status-online";
+                el.innerHTML = `<span class="status-dot"></span> Mizu Online`;
+            } else {
+                el.className = "status-indicator status-offline";
+                el.innerHTML = `<span class="status-dot"></span> Mizu Offline`;
+            }
         } else {
-            el.className = "status-indicator status-offline";
-            el.innerHTML = `<span class="status-dot"></span> Mizu Offline`;
+            console.error("DOKUMEN STATUS TIDAK DITEMUKAN DI FIRESTORE!");
+            el.innerHTML = "Status Error: Doc Missing";
         }
     }, (error) => {
-        console.error("Status Listener Error:", error);
+        // INI AKAN MEMBERITAHU KITA KENAPA DATABASE REJECTED
+        console.error("Penyebab Database Rejected:", error.code, error.message);
+        alert("Firestore Error: " + error.message); 
     });
 }
+
 
 // 4. AUTHENTICATION & INITIALIZATION
 onAuthStateChanged(auth, async (user) => {
@@ -251,11 +259,26 @@ window.sendMessage = async () => {
         await renderTypingEffect('mizu', data.reply || "Mizu is offline.");
         await updateDoc(userRef, { usageCount: increment(1) });
 
-    } catch (err) {
+        } catch (err) {
         const loaders = document.querySelectorAll('[id^="loading-"]');
         loaders.forEach(l => l.remove());
-        renderRow('mizu', "System exhausted. Mizu will be back soon.");
+        
+        console.error("DETEKSI ERROR:", err);
+
+        // Jika ini adalah error API (response tidak ok)
+        if (err.message === "Offline" || err.message === "API_ERROR") {
+            // Coba paksa update Firestore, jika gagal tampilkan di console
+            updateDoc(statusRef, { isOnline: false })
+                .then(() => console.log("Status berhasil diubah ke Offline secara otomatis"))
+                .catch((fErr) => console.error("Gagal mengubah status ke Firestore: ", fErr));
+            
+            renderRow('mizu', "System exhausted. Mizu will be back soon.");
+        } else {
+            // Jika error karena jaringan/firestore sendiri
+            renderRow('mizu', "Connection error or Database rejected. Check console (F12).");
+        }
     }
+    
 };
 
 window.newChat = async () => {
