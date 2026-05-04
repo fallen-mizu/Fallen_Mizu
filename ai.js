@@ -64,8 +64,11 @@ function listenToMizuStatus() {
         const el = document.getElementById('mizu-status');
         if (!el) return;
         
-        const isOnline = docSnap.exists() ? docSnap.data().isOnline : true;
-        if (isOnline) {
+        // Ambil data isOnline, jika dokumen tidak ada default ke true
+        const data = docSnap.data();
+        const isOnline = data ? data.isOnline : true; 
+
+        if (isOnline === true) {
             el.className = "status-indicator status-online";
             el.innerHTML = `<span class="status-dot"></span> Mizu Online`;
         } else {
@@ -74,6 +77,7 @@ function listenToMizuStatus() {
         }
     });
 }
+
 
 // 4. AUTHENTICATION & INITIALIZATION
 onAuthStateChanged(auth, async (user) => {
@@ -194,27 +198,18 @@ function applyLock() {
 
 // 6. CHAT LOGIC (VERSI PERBAIKAN SINKRONISASI)
 window.sendMessage = async () => {
+window.sendMessage = async () => {
     const user = auth.currentUser;
-    if (!user) return alert("Silakan login terlebih dahulu.");
+    if (!user) return;
 
     const statusRef = doc(db, "system", "status");
     
     try {
-        // Cek status global
+        // Cek status sebelum kirim
         const statusSnap = await getDoc(statusRef);
-        
-        // Jika dokumen tidak ditemukan, kita anggap online sebagai default agar tidak error
-        const isMizuOnline = statusSnap.exists() ? statusSnap.data().isOnline : true;
-
-        if (!isMizuOnline) {
-            renderRow('mizu', "I am currently offline for maintenance. Please wait.");
+        if (statusSnap.exists() && statusSnap.data().isOnline === false) {
+            renderRow('mizu', "I am currently offline. Please wait.");
             return;
-        }
-
-        const userRef = doc(db, "users", user.uid);
-        const snap = await getDoc(userRef);
-        if (snap.exists() && snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) {
-            return applyLock();
         }
 
         const input = document.getElementById('user-input');
@@ -231,29 +226,37 @@ window.sendMessage = async () => {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text, history: (snap.data()?.chatHistory || []) })
+            body: JSON.stringify({ message: text })
         });
 
         if (!response.ok) {
-            document.getElementById(loadId)?.remove();
-            // Coba update status jadi offline jika API mati
-            try { await updateDoc(statusRef, { isOnline: false }); } catch(e) {}
-            renderRow('mizu', "System exhausted. Mizu will be back soon.");
-            return;
+            throw new Error("API_LIMIT");
         }
 
         const data = await response.json();
         document.getElementById(loadId)?.remove();
-        await renderTypingEffect('mizu', data.reply || "Mizu is offline.");
-        await updateDoc(userRef, { usageCount: increment(1) });
+        await renderTypingEffect('mizu', data.reply);
 
     } catch (err) {
-        console.error("FIREBASE ERROR:", err); // Lihat pesan merah di F12
+        // HAPUS LOADING
         const loaders = document.querySelectorAll('[id^="loading-"]');
         loaders.forEach(l => l.remove());
-        renderRow('mizu', "Terjadi kesalahan koneksi database. Pastikan Rules Firestore sudah benar.");
+
+        // JIKA ERROR API, PAKSA FIRESTORE JADI FALSE (OFFLINE)
+        if (err.message === "API_LIMIT") {
+            try {
+                await updateDoc(statusRef, { isOnline: false });
+                // Pesan ini akan muncul otomatis karena onSnapshot mendeteksi perubahan
+            } catch (firestoreErr) {
+                console.error("Gagal update Firestore status:", firestoreErr);
+            }
+            renderRow('mizu', "System exhausted. Mizu will be back soon.");
+        } else {
+            renderRow('mizu', "Connection error. Please check your network.");
+        }
     }
 };
+    
 
 window.newChat = async () => {
     if (confirm("Mizu will forget this conversation forever. Reset memory?")) {
