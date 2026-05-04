@@ -89,6 +89,9 @@ function createAuthUI() {
         </div>
 
         <button class="google-btn" id="login-trigger">Sign in with Google</button>
+    <div style="position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 10px; color: #bbb; letter-spacing: 1px;">
+            © 2025 - 2026 FALLEN_MIZU. ALL RIGHTS RESERVED.
+        </div>
     `;
     
     document.body.appendChild(div);
