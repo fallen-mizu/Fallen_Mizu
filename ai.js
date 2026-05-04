@@ -8,9 +8,9 @@ function getJapanTime(timestamp = null) {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// PASTIKAN BARIS DI BAWAH INI LENGKAP
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 1. CONFIGURATION
 const firebaseConfig = {
     apiKey: "AIzaSyAJDI39JipbKuDJ6YHO-rzADCdFs6qvf1k",
     authDomain: "snake-c2b54.firebaseapp.com",
@@ -22,8 +22,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getFirestore(app); // <--- INI JANTUNGNYA, HARUS ADA
 const provider = new GoogleAuthProvider();
+
 
 const DAILY_LIMIT = 30;
 const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
