@@ -291,8 +291,9 @@ function clearChatAdvanced() {
         chatBox.innerHTML = "";
         chatBox.style.opacity = "1";
 
-        // 🔥 INI YANG PENTING
+        // 🔥 HAPUS + TANDAI
         localStorage.removeItem("mizu_history");
+        localStorage.setItem("mizu_cleared", "true");
 
     }, 300);
 
