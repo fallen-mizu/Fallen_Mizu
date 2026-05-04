@@ -165,17 +165,32 @@ window.sendMessage = async () => {
 // 6. UTILS
 function renderRow(role, text, id = null) {
     const chatBox = document.getElementById('chat-box');
+
     const row = document.createElement('div');
     row.className = `chat-row ${role}-row`;
     if (id) row.id = id;
-    row.innerHTML = `<div class="bubble ${role}-bubble">${text}</div>`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role}-bubble`;
+    bubble.innerText = text;
+
+    // 🕐 TIME
+    const time = document.createElement('div');
+    time.innerText = getJapanTime();
+    time.style.fontSize = "0.65rem";
+    time.style.opacity = "0.6";
+    time.style.marginTop = "3px";
+
+    row.appendChild(bubble);
+    row.appendChild(time);
+
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function saveLocal(role, text) {
     let history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-    history.push({ role, text });
+    history.push({ role, text, time: getJapanTime() });
     localStorage.setItem('mizu_history', JSON.stringify(history.slice(-15)));
 }
 
