@@ -299,8 +299,9 @@ function clearChatAdvanced() {
 
     closeConfirm();
 }
-    <script type="module" src="ai.js"></script>
 </script>
+
+<script type="module" src="ai.js"></script>
 </body>
 </html>
         
@@ -431,21 +432,18 @@ function closeConfirm() {
 function clearChatAdvanced() {
     const chatBox = document.getElementById("chat-box");
 
+    // fade out
     chatBox.style.transition = "opacity 0.3s ease";
     chatBox.style.opacity = "0";
 
     setTimeout(() => {
         chatBox.innerHTML = "";
         chatBox.style.opacity = "1";
-        localStorage.removeItem("mizu_history");
     }, 300);
 
     closeConfirm();
 }
-    <script src="mizu.js"></script>
 </script>
-
-
-</body>  
-        </html>
-        
+</body>
+    </html>
+    
