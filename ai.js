@@ -27,11 +27,13 @@ const provider = new GoogleAuthProvider();
 
 
 const DAILY_LIMIT = 30;
+const ADMIN_EMAIL = "FallenMizu@admin.com";
 const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 
 // 2. UI STYLES
 const style = document.createElement('style');
 style.innerHTML = `
+    #force-online-btn:hover { background: #BC002D !important; }
     #chat-box { display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; height: 400px; scroll-behavior: smooth; border-top: 1px solid #eee; }
     .chat-row { display: flex; width: 100%; margin-bottom: 5px; }
     .mizu-row { justify-content: flex-start; }
@@ -94,9 +96,10 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
-        document.body.style.overflow = 'auto';
         
-        // Render Indikator Status jika belum ada
+        // Cek apakah yang login adalah Admin
+        const isAdmin = user.email === ADMIN_EMAIL;
+
         if (chatBox && !document.getElementById('mizu-status')) {
             const statusWrapper = document.createElement('div');
             statusWrapper.className = 'status-container';
@@ -104,14 +107,24 @@ onAuthStateChanged(auth, async (user) => {
                 <div id="mizu-status" class="status-indicator status-online">
                     <span class="status-dot"></span> Mizu Online
                 </div>
-                <div style="font-size: 10px; color: #999;">REAL-TIME SYNC</div>
+                ${isAdmin ? `<button id="force-online-btn" style="font-size: 10px; background: #222; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">FORCE ONLINE</button>` : `<div style="font-size: 10px; color: #999;">REAL-TIME SYNC</div>`}
             `;
             chatBox.parentNode.insertBefore(statusWrapper, chatBox);
+            
+            // Tambahkan event listener jika tombol admin ada
+            if (isAdmin) {
+                document.getElementById('force-online-btn').onclick = async () => {
+                    const statusRef = doc(db, "system", "status");
+                    await updateDoc(statusRef, { isOnline: true });
+                    alert("System forced to ONLINE");
+                };
+            }
+
             listenToMizuStatus(); 
         }
 
         await syncUserLimit(user);
-        await loadUserHistory(); 
+        await loadUserHistory();  
     } else {
         if (!overlay) overlay = createAuthUI();
         overlay.style.display = 'flex';
