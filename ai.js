@@ -26,7 +26,7 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 const DAILY_LIMIT = 30;
-const WHATSAPP_LINK = "https://wa.me/+817094251640";
+const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 
 // 2. UI STYLES
 const style = document.createElement('style');
