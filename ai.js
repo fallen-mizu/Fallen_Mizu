@@ -150,8 +150,14 @@ window.sendMessage = async () => {
         const data = await response.json();
         document.getElementById(loadId).remove();
 
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is offline.";
-        renderRow('mizu', reply);
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+if (!reply) {
+    renderRow('mizu', "⚠️ API error / no response");
+} else {
+    renderRow('mizu', reply);
+}
+    
         saveLocal('mizu', reply);
 
         // Update limit in Firebase
@@ -172,19 +178,26 @@ function renderRow(role, text, id = null) {
 
     const bubble = document.createElement('div');
     bubble.className = `bubble ${role}-bubble`;
-    bubble.innerText = text;
 
-    // 🕐 TIME
+    // 📝 TEXT
+    const msgText = document.createElement('div');
+    msgText.innerText = text;
+
+    // 🕐 TIME (DI DALAM BUBBLE)
     const time = document.createElement('div');
     time.innerText = getJapanTime();
     time.style.fontSize = "0.65rem";
     time.style.opacity = "0.6";
-    time.style.marginTop = "3px";
+    time.style.marginTop = "5px";
+    time.style.textAlign = "right"; // biar rapi
+
+    // MASUKKAN KE BUBBLE
+    bubble.appendChild(msgText);
+    bubble.appendChild(time);
 
     row.appendChild(bubble);
-    row.appendChild(time);
-
     chatBox.appendChild(row);
+
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
