@@ -31,6 +31,11 @@ const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 // 2. UI STYLES
 const style = document.createElement('style');
 style.innerHTML = `
+    #profile-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 10000; display: none; }
+    .profile-input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    .btn-verify { background: #222; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; }
+    .username-warning { color: #BC002D; font-size: 11px; margin-top: -5px; display: none; }
+    
     #chat-box { display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; height: 400px; scroll-behavior: smooth; }
     .chat-row { display: flex; width: 100%; margin-bottom: 5px; }
     .mizu-row { justify-content: flex-start; }
