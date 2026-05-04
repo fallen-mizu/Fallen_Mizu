@@ -6,6 +6,10 @@
     <title>Fallen Mizu | 大阪デジタル建築家</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;600;900&family=Sawarabi+Mincho&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+        }
         :root {
             --wasabi-red: #BC002D; /* Red from Japan flag */
             --ink-black: #1A1A1B;
@@ -190,8 +194,10 @@
     }
 </style>
     
-</head>  
-    <div id="clear-confirm" style="
+</head>
+<body>
+
+<div id="clear-confirm" style="
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
@@ -222,7 +228,7 @@
             </button>
         </div>
     </div>
-    </div>
+</div>
 <body>  
     <div class="container">  
         <div class="osaka-time-box" data-aos>  
@@ -263,19 +269,21 @@
         </div>
     </section>
         
-        <script>
-        function confirmClearChat() {
-    document.getElementById("clear-confirm").style.display = "flex";
+<script>
+function confirmClearChat() {
+    const modal = document.getElementById("clear-confirm");
+    if (modal) modal.style.display = "flex";
 }
 
 function closeConfirm() {
-    document.getElementById("clear-confirm").style.display = "none";
+    const modal = document.getElementById("clear-confirm");
+    if (modal) modal.style.display = "none";
 }
 
 function clearChatAdvanced() {
     const chatBox = document.getElementById("chat-box");
+    if (!chatBox) return;
 
-    // fade out
     chatBox.style.transition = "opacity 0.3s ease";
     chatBox.style.opacity = "0";
 
@@ -285,9 +293,12 @@ function clearChatAdvanced() {
     }, 300);
 
     closeConfirm();
+}
+</script>
 
-
-    <script type="module" src="ai.js"></script>
+<script type="module" src="ai.js"></script>
+</body>
+</html>
         
     <p style="color: #BC002D; font-size: 0.7rem; margin-top: 10px;"> ⚠️Attention⚠️: Due to API limitations, your message may not be responded to or an error may appear, I apologize for that. 🙏</p>
 
@@ -431,10 +442,3 @@ function clearChatAdvanced() {
 </body>
 </body>  
     </html>
-    <style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-</style>
-}
