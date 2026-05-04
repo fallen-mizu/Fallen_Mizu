@@ -217,6 +217,12 @@
 
     <section id="mizu-chat-container" data-aos style="margin-top: 60px;">
         <h2 class="section-title">Consult with Mizu / 水に相談する</h2>
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+    <button onclick="confirmClearChat()" 
+        style="padding: 6px 12px; font-size: 0.75rem; background: transparent; border: 1px solid var(--border-light); border-radius: 20px; cursor: pointer; transition: all 0.3s;">
+        Clear Chat
+    </button>
+        </div>
         <div id="chat-box" style="height: 350px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
             </div>
         <div style="display: flex; gap: 10px;">
@@ -224,6 +230,67 @@
             <button onclick="window.sendMessage()" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; transition: opacity 0.3s;">SEND</button>
         </div>
     </section>
+        <div id="clear-confirm" style="
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    z-index: 999;
+">
+    <div style="
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        width: 260px;
+        animation: fadeIn 0.3s ease;
+    ">
+        <p style="margin-bottom: 15px;">Clear all chat?</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="clearChatAdvanced()" 
+                style="padding: 6px 12px; border: none; background: var(--wasabi-red); color: white; border-radius: 10px; cursor: pointer;">
+                Yes
+            </button>
+            <button onclick="closeConfirm()" 
+                style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 10px; cursor: pointer;">
+                Cancel
+            </button>
+        </div>
+    </div>
+        </div>
+        <script>
+        function confirmClearChat() {
+    document.getElementById("clear-confirm").style.display = "flex";
+}
+
+function closeConfirm() {
+    document.getElementById("clear-confirm").style.display = "none";
+}
+
+function clearChatAdvanced() {
+    const chatBox = document.getElementById("chat-box");
+
+    // fade out
+    chatBox.style.transition = "opacity 0.3s ease";
+    chatBox.style.opacity = "0";
+
+    setTimeout(() => {
+        chatBox.innerHTML = "";
+        chatBox.style.opacity = "1";
+    }, 300);
+
+    closeConfirm();
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+</style>
+}
 
     <script type="module" src="ai.js"></script>
         
