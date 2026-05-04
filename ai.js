@@ -1,12 +1,12 @@
 function getJapanTime() {
     const now = new Date();
 
-    return now.toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Tokyo',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-}
+    return now.toLocaleTimeString('ja', {
+    timeZone: 'Asia/Tokyo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+});
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
