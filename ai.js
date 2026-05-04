@@ -55,24 +55,42 @@ document.head.appendChild(style);
 
 // 3. AUTHENTICATION & INITIALIZATION
 onAuthStateChanged(auth, async (user) => {
-    let overlay = document.getElementById('auth-overlay');
+    const overlay = document.getElementById('auth-overlay');
     const mainContent = document.getElementById('main-content');
-    const headerTitle = document.querySelector('h1 span'); // Target teks nama di header
+    
+    // Target tombol baru
+    const floatingUserImg = document.getElementById('floating-user-img');
+    const floatingUserName = document.getElementById('floating-user-name');
 
     if (user) {
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
         document.body.style.overflow = 'auto';
         
-        // --- BAGIAN YANG DIUPDATE ---
+        // --- BAGIAN UPDATE TAMPILAN PROFIL ---
         const userRef = doc(db, "users", user.uid);
         const snap = await getDoc(userRef);
         
-        // Cek jika user punya username di Firestore, tampilkan di header
-        if (snap.exists() && snap.data().username) {
-            if (headerTitle) headerTitle.innerText = snap.data().username;
+        // 1. Tampilkan Foto Profil Google (jika ada)
+        if (floatingUserImg && user.photoURL) {
+            floatingUserImg.src = user.photoURL;
+        } else if (floatingUserImg) {
+            // Default jika tidak ada foto
+            floatingUserImg.src = "https://www.transparenttextures.com/patterns/handmade-paper.png"; 
         }
-        // ----------------------------
+
+        // 2. Tampilkan Username (Cek Firestore dulu, kalau kosong pakai nama Google)
+        if (snap.exists() && snap.data().username) {
+            if (floatingUserName) floatingUserName.innerText = snap.data().username;
+        } else if (floatingUserName) {
+            if (user.displayName) {
+                // Ambil nama depan saja biar ringkas
+                floatingUserName.innerText = user.displayName.split(' ')[0];
+            } else {
+                floatingUserName.innerText = "Mizu";
+            }
+        }
+        // ------------------------------------
 
         await syncUserLimit(user);
         await loadUserHistory(); 
@@ -83,7 +101,7 @@ onAuthStateChanged(auth, async (user) => {
         document.body.style.overflow = 'hidden';
     }
 });
-
+            
 
 function createAuthUI() {
     const div = document.createElement('div');
@@ -332,6 +350,7 @@ document.getElementById('btn-save-profile').onclick = async () => {
         }
 
         // Jika aman, update di Firestore
+            if (!isTaken) {
         await updateDoc(doc(db, "users", user.uid), {
             username: newUsername
         });
@@ -340,6 +359,11 @@ document.getElementById('btn-save-profile').onclick = async () => {
         document.querySelector('h1 span').innerText = newUsername;
         msgArea.style.display = "none";
         alert("Profile updated successfully!");
+        const floatingUserName = document.getElementById('floating-user-name');
+        if (floatingUserName) floatingUserName.innerText = newUsername;
+
+        msgArea.style.display = "none";
+        alert("Username updated!");
         document.getElementById('profile-panel').style.display = 'none';
 
     } catch (e) {
@@ -349,11 +373,16 @@ document.getElementById('btn-save-profile').onclick = async () => {
 };
 
 // Event Klik Foto Profil untuk Buka Panel
-document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('profile-img')) {
+  document.addEventListener('click', (e) => {
+    // Jika tombol floating profil diklik
+    if (e.target.closest('#floating-profile-btn')) {
         const panel = document.getElementById('profile-panel');
-        panel.style.display = 'block';
-        // Isi input dengan nama yang sekarang
-        document.getElementById('prof-username').value = document.querySelector('h1 span').innerText;
+        const userNameSpan = document.getElementById('floating-user-name');
+        
+        if (panel) panel.style.display = 'block';
+        if (userNameSpan) {
+            // Isi input edit dengan nama yang sekarang
+            document.getElementById('prof-username').value = userNameSpan.innerText;
+        }
     }
 });
