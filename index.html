@@ -289,12 +289,11 @@ function clearChatAdvanced() {
 
     setTimeout(() => {
         chatBox.innerHTML = "";
-        chatBox.style.opacity = "1";
 
-        // 🔥 HAPUS + TANDAI
+        // 🔥 hapus data persistence
         localStorage.removeItem("mizu_history");
-        localStorage.setItem("mizu_cleared", "true");
 
+        chatBox.style.opacity = "1";
     }, 300);
 
     closeConfirm();
