@@ -184,6 +184,7 @@ function loadLocalHistory() {
     if (!chatBox) return;
 
     chatBox.innerHTML = "";
+    console.log("LOAD HISTORY TRIGGERED");
 
     const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
     history.forEach(item => renderRow(item.role, item.text));
