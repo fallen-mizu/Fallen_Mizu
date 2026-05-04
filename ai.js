@@ -1,3 +1,22 @@
+function getJapanTime() {
+    const now = new Date();
+
+    const hours = now.toLocaleString("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        hour: "numeric",
+        hour12: true
+    });
+
+    const minutes = now.toLocaleString("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        minute: "2-digit"
+    });
+
+    // ambil 午前 / 午後 + jam
+    const hourFormatted = hours.replace("時", "");
+
+    return hourFormatted + ":" + minutes;
+}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -154,14 +173,36 @@ window.sendMessage = async () => {
 // 6. UTILS
 function renderRow(role, text, id = null) {
     const chatBox = document.getElementById('chat-box');
+
     const row = document.createElement('div');
     row.className = `chat-row ${role}-row`;
     if (id) row.id = id;
-    row.innerHTML = `<div class="bubble ${role}-bubble">${text}</div>`;
+
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role}-bubble`;
+    bubble.innerText = text;
+
+    // 🕐 TIME (DI BAWAH BUBBLE)
+    const time = document.createElement('div');
+    time.innerText = getJapanTime();
+    time.style.fontSize = "0.65rem";
+    time.style.opacity = "0.6";
+    time.style.marginTop = "5px";
+
+    // container untuk bubble + time
+    const wrapper = document.createElement('div');
+    wrapper.style.display = "flex";
+    wrapper.style.flexDirection = "column";
+    wrapper.style.maxWidth = "80%";
+
+    wrapper.appendChild(bubble);
+    wrapper.appendChild(time);
+
+    row.appendChild(wrapper);
     chatBox.appendChild(row);
+
     chatBox.scrollTop = chatBox.scrollHeight;
 }
-
 function saveLocal(role, text) {
     let history = JSON.parse(localStorage.getItem('mizu_history')) || [];
     history.push({ role, text });
