@@ -1,12 +1,19 @@
 function getJapanTime() {
-    const now = new Date();
+    try {
+        const now = new Date();
 
-    return now.toLocaleTimeString('ja', {
-    timeZone: 'Asia/Tokyo',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-});
+        return now.toLocaleTimeString('en-US', {
+            timeZone: 'Asia/Tokyo',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+    } catch (e) {
+        console.error("Time error:", e);
+        return ""; // fallback biar tidak crash
+    }
+}
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -188,7 +195,7 @@ function renderRow(role, text, id = null) {
 
     // 🕐 TIME (DI DALAM BUBBLE)
     const time = document.createElement('div');
-    time.innerText = getJapanTime();
+    time.innerText = getJapanTime() || "";
     time.style.fontSize = "0.65rem";
     time.style.opacity = "0.6";
     time.style.marginTop = "5px";
