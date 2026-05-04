@@ -192,33 +192,42 @@ function applyLock() {
     if (input) { input.disabled = true; input.placeholder = "Daily limit reached..."; }
 }
 
-// 6. CHAT LOGIC
+// 6. CHAT LOGIC (VERSI PERBAIKAN SINKRONISASI)
 window.sendMessage = async () => {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Cek status global dulu
-    const statusSnap = await getDoc(doc(db, "system", "status"));
-    if (statusSnap.exists() && statusSnap.data().isOnline === false) {
-        return renderRow('mizu', "I am currently offline for maintenance. Please wait.");
-    }
-
-    const userRef = doc(db, "users", user.uid);
-    const snap = await getDoc(userRef);
-    if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) return applyLock();
-
-    const input = document.getElementById('user-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    input.value = '';
-    renderRow('user', text);
-    await saveToFirestore('user', text);
-
-    const loadId = "loading-" + Date.now();
-    renderRow('mizu', 'Mizu is thinking...', loadId);
-
+    const statusRef = doc(db, "system", "status");
+    
     try {
+        // 1. Cek status global sebelum kirim
+        const statusSnap = await getDoc(statusRef);
+        const isMizuOnline = statusSnap.exists() ? statusSnap.data().isOnline : true;
+
+        if (!isMizuOnline) {
+            renderRow('mizu', "I am currently offline for maintenance. Please wait.");
+            return;
+        }
+
+        // 2. Cek limit user
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) {
+            return applyLock();
+        }
+
+        const input = document.getElementById('user-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        input.value = '';
+        renderRow('user', text);
+        await saveToFirestore('user', text);
+
+        const loadId = "loading-" + Date.now();
+        renderRow('mizu', 'Mizu is thinking...', loadId);
+
+        // 3. Panggil API
         const freshSnap = await getDoc(userRef);
         const historyForAI = freshSnap.data().chatHistory || [];
 
@@ -228,10 +237,15 @@ window.sendMessage = async () => {
             body: JSON.stringify({ message: text, history: historyForAI })
         });
 
+        // 4. Jika API Error (Limit API Key Habis)
         if (!response.ok) {
-            // Jika limit API habis, update status global ke Firestore (Offline untuk semua user)
-            await updateDoc(doc(db, "system", "status"), { isOnline: false });
-            throw new Error("Offline");
+            document.getElementById(loadId)?.remove();
+            
+            // PAKSA SEMUA USER OFFLINE lewat Firestore
+            await updateDoc(statusRef, { isOnline: false });
+            
+            renderRow('mizu', "System exhausted. Mizu will be back soon.");
+            return;
         }
 
         const data = await response.json();
@@ -240,11 +254,18 @@ window.sendMessage = async () => {
         const reply = data.reply || "Mizu is offline.";
         await renderTypingEffect('mizu', reply);
         await updateDoc(userRef, { usageCount: increment(1) });
+
     } catch (err) {
-        document.getElementById(loadId)?.remove();
-        renderRow('mizu', "System exhausted. Mizu will be back soon.");
+        console.error("Error:", err);
+        const loaders = document.querySelectorAll('[id^="loading-"]');
+        loaders.forEach(l => l.remove());
+        
+        // Jika error koneksi, beri peringatan tapi jangan paksa offline semua orang 
+        // kecuali jika benar-benar gagal akses Firestore
+        renderRow('mizu', "Connection error. Please check your internet.");
     }
 };
+        
 
 window.newChat = async () => {
     if (confirm("Mizu will forget this conversation forever. Reset memory?")) {
