@@ -27,7 +27,7 @@ const provider = new GoogleAuthProvider();
 
 
 const DAILY_LIMIT = 30;
-const ADMIN_EMAILS = ["FallenMizu@admin.com"];
+const ADMIN_EMAILS = ["fallenmizu@admin.com"]; 
 const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 
 // 2. UI STYLES
@@ -94,14 +94,15 @@ onAuthStateChanged(auth, async (user) => {
     const chatBox = document.getElementById('chat-box');
 
     if (user) {
-        console.log("Logged in as:", user.email); // Cek di F12 apakah email sudah benar
+        console.log("Status Admin:", isAdmin); // Cek di F12, harusnya sekarang muncul 'true'
         
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
         document.body.style.overflow = 'auto';
         
         // Pengecekan Admin
-        const isAdmin = ADMIN_EMAILS.includes(user.email);
+        const userEmailNormalized = user.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(userEmailNormalized);
 
         if (chatBox && !document.getElementById('mizu-status')) {
             const statusWrapper = document.createElement('div');
