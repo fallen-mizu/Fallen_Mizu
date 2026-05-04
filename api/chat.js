@@ -28,16 +28,17 @@ Current User Message: ${message}
 `.trim();
 
     try {
-        // Using gemini-1.5-flash for stability and speed
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ 
-                    parts: [{ text: fullPrompt }] 
-                }]
-            })
-        });
+        const modelName = "gemini-3.1-flash"; // Ganti ke gemini-3.1-pro, gemini-1.5-flash, dsb.
+
+const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        contents: [{ 
+            parts: [{ text: fullPrompt }] 
+        }]
+    })
+});
 
         const data = await response.json();
 
