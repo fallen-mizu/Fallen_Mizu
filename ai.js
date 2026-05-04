@@ -27,7 +27,7 @@ const provider = new GoogleAuthProvider();
 
 
 const DAILY_LIMIT = 30;
-const ADMIN_EMAIL = "FallenMizu@admin.com";
+const ADMIN_EMAILS = ["FallenMizu@admin.com"];
 const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 
 // 2. UI STYLES
@@ -94,34 +94,64 @@ onAuthStateChanged(auth, async (user) => {
     const chatBox = document.getElementById('chat-box');
 
     if (user) {
+        console.log("Logged in as:", user.email); // Cek di F12 apakah email sudah benar
+        
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
+        document.body.style.overflow = 'auto';
         
-        // Cek apakah yang login adalah Admin
-        const isAdmin = user.email === ADMIN_EMAIL;
+        // Pengecekan Admin
+        const isAdmin = ADMIN_EMAILS.includes(user.email);
 
         if (chatBox && !document.getElementById('mizu-status')) {
             const statusWrapper = document.createElement('div');
             statusWrapper.className = 'status-container';
+            
+            // Gabungkan logika render indikator dan tombol admin
             statusWrapper.innerHTML = `
                 <div id="mizu-status" class="status-indicator status-online">
                     <span class="status-dot"></span> Mizu Online
                 </div>
-                ${isAdmin ? `<button id="force-online-btn" style="font-size: 10px; background: #222; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">FORCE ONLINE</button>` : `<div style="font-size: 10px; color: #999;">REAL-TIME SYNC</div>`}
+                ${isAdmin ? `
+                    <button id="force-online-btn" style="
+                        font-size: 10px; 
+                        background: #222; 
+                        color: white; 
+                        border: 1px solid #444; 
+                        padding: 5px 12px; 
+                        border-radius: 20px; 
+                        cursor: pointer;
+                        font-weight: bold;
+                        transition: 0.3s;
+                    ">FORCE ONLINE</button>
+                ` : `<div style="font-size: 10px; color: #999;">REAL-TIME SYNC</div>`}
             `;
+            
             chatBox.parentNode.insertBefore(statusWrapper, chatBox);
             
-            // Tambahkan event listener jika tombol admin ada
+            // Aktifkan fungsi klik tombol jika dia admin
             if (isAdmin) {
-                document.getElementById('force-online-btn').onclick = async () => {
-                    const statusRef = doc(db, "system", "status");
-                    await updateDoc(statusRef, { isOnline: true });
-                    alert("System forced to ONLINE");
+                const btn = document.getElementById('force-online-btn');
+                btn.onclick = async () => {
+                    btn.innerText = "PROCESSING...";
+                    btn.style.opacity = "0.5";
+                    try {
+                        const statusRef = doc(db, "system", "status");
+                        await updateDoc(statusRef, { isOnline: true });
+                        alert("System is now ONLINE");
+                        btn.innerText = "FORCE ONLINE";
+                        btn.style.opacity = "1";
+                    } catch (e) {
+                        alert("Error: " + e.message);
+                        btn.innerText = "RETRY";
+                        btn.style.opacity = "1";
+                    }
                 };
             }
 
             listenToMizuStatus(); 
         }
+        
 
         await syncUserLimit(user);
         await loadUserHistory();  
