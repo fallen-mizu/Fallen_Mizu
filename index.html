@@ -265,7 +265,7 @@
             </div>
         <div style="display: flex; gap: 10px;">
             <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.3s;">
-            <button onclick="window.sendMessage()" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; transition: opacity 0.3s;">SEND</button>
+            <button id="send-btn" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; transition: opacity 0.3s;">SEND</button>
         </div>
     </section>
         
@@ -300,8 +300,6 @@ function clearChatAdvanced() {
     closeConfirm();
 }
 </script>
-
-<script type="module" src="ai.js"></script>
 </body>
 </html>
         
@@ -432,21 +430,21 @@ function closeConfirm() {
 function clearChatAdvanced() {
     const chatBox = document.getElementById("chat-box");
 
-    // fade out
     chatBox.style.transition = "opacity 0.3s ease";
     chatBox.style.opacity = "0";
 
     setTimeout(() => {
         chatBox.innerHTML = "";
         chatBox.style.opacity = "1";
+        localStorage.removeItem("mizu_history");
     }, 300);
 
     closeConfirm();
 }
+</script>
     <script src="mizu.js"></script>
 
 </script>
-</body>
 </body>  
         </html>
         
