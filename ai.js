@@ -125,16 +125,20 @@ window.sendMessage = async () => {
 
     const userRef = doc(db, "users", user.uid);
     const snap = await getDoc(userRef);
-    if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) return applyLock();
+    // SAFE VERSION
+const snap = await getDoc(userRef);
+const data = snap.data();
 
-    const input = document.getElementById('user-input');
-    const chatBox = document.getElementById('chat-box');
-    const text = input.value.trim();
-    if (!text) return;
+if (!data) return;
 
-    input.value = '';
-    renderRow('user', text);
+if (data.usageCount >= DAILY_LIMIT && !data.isPremium) {
+    return applyLock();
+}
+
+// OPTIONAL
+if (typeof saveLocal === "function") {
     saveLocal('user', text);
+}
 
     const loadId = "loading-" + Date.now();
     renderRow('mizu', 'Mizu is thinking...', loadId);
