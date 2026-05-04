@@ -31,6 +31,12 @@ const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 // 2. UI STYLES
 const style = document.createElement('style');
 style.innerHTML = `
+.status-indicator { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: bold; margin-bottom: 10px; padding: 5px 10px; border-radius: 20px; width: fit-content; transition: all 0.3s ease; }
+.status-online { background: #e6fffa; color: #059669; border: 1px solid #34d399; }
+.status-offline { background: #fef2f2; color: #dc2626; border: 1px solid #f87171; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-online .status-dot { background: #10b981; box-shadow: 0 0 8px #10b981; }
+.status-offline .status-dot { background: #ef4444; }
     #chat-box { display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; height: 400px; scroll-behavior: smooth; }
     .chat-row { display: flex; width: 100%; margin-bottom: 5px; }
     .mizu-row { justify-content: flex-start; }
@@ -50,21 +56,27 @@ document.head.appendChild(style);
 
 // 3. AUTHENTICATION & INITIALIZATION
 onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async (user) => {
     let overlay = document.getElementById('auth-overlay');
     const mainContent = document.getElementById('main-content');
+    const chatContainer = document.getElementById('chat-box')?.parentElement;
 
     if (user) {
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
         document.body.style.overflow = 'auto';
         
+        // Tambahkan Indikator jika belum ada
+        if (chatContainer && !document.getElementById('mizu-status')) {
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'mizu-status';
+            statusDiv.className = 'status-indicator status-online';
+            statusDiv.innerHTML = `<span class="status-dot"></span> Mizu is Online`;
+            chatContainer.insertBefore(statusDiv, document.getElementById('chat-box'));
+        }
+
         await syncUserLimit(user);
         await loadUserHistory(); 
-    } else {
-        if (!overlay) overlay = createAuthUI();
-        overlay.style.display = 'flex';
-        if (mainContent) mainContent.style.display = 'none';
-        document.body.style.overflow = 'hidden';
     }
 });
 
@@ -165,11 +177,13 @@ window.sendMessage = async () => {
     if (!text) return;
 
     input.value = '';
-    renderRow('user', text); // Defaultnya akan pakai waktu sekarang
+    renderRow('user', text);
     await saveToFirestore('user', text);
 
     const loadId = "loading-" + Date.now();
     renderRow('mizu', 'Mizu is thinking...', loadId);
+
+    const statusEl = document.getElementById('mizu-status');
 
     try {
         const freshSnap = await getDoc(userRef);
@@ -181,14 +195,34 @@ window.sendMessage = async () => {
             body: JSON.stringify({ message: text, history: historyForAI })
         });
 
+        // Logika pengecekan limit API
+        if (response.status === 429 || response.status === 403) {
+            throw new Error("API_LIMIT_EXHAUSTED");
+        }
+
         const data = await response.json();
         document.getElementById(loadId)?.remove();
-        const reply = data.reply || "Mizu is offline.";
         
+        // Jika berhasil, pastikan status Online
+        if (statusEl) {
+            statusEl.className = 'status-indicator status-online';
+            statusEl.innerHTML = `<span class="status-dot"></span> Mizu is Online`;
+        }
+
+        const reply = data.reply || "Mizu is offline.";
         await renderTypingEffect('mizu', reply);
         await updateDoc(userRef, { usageCount: increment(1) });
+
     } catch (err) {
-        if(document.getElementById(loadId)) document.getElementById(loadId).innerText = "Connection error.";
+        document.getElementById(loadId)?.remove();
+        
+        // Jika Error karena limit atau koneksi, ubah status ke Offline
+        if (statusEl) {
+            statusEl.className = 'status-indicator status-offline';
+            statusEl.innerHTML = `<span class="status-dot"></span> Mizu is Offline (Limit Reached)`;
+        }
+        
+        renderRow('mizu', "I'm sorry, my energy (API limit) is exhausted for now. Please contact admin to recharge.");
     }
 };
 
