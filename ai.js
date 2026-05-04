@@ -152,17 +152,84 @@ onAuthStateChanged(auth, async (user) => {
 
             listenToMizuStatus(); 
         }
+onAuthStateChanged(auth, async (user) => {
+    const overlay = document.getElementById('auth-overlay');
+    const mainContent = document.getElementById('main-content');
+    const chatBox = document.getElementById('chat-box');
+
+    if (user) {
+        // 1. Tampilkan Konten Utama
+        if (overlay) overlay.style.display = 'none';
+        if (mainContent) mainContent.style.display = 'block';
+        document.body.style.overflow = 'auto';
+
+        // 2. Cek Status Admin (Gunakan huruf kecil semua)
+        const ADMIN_EMAILS = ["fallenmizu@admin.com"];
+        const isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
         
+        console.log("Login sukses sebagai:", user.email, "| Admin:", isAdmin);
+
+        // 3. Render Indikator & Tombol (Gunakan interval kecil jika elemen belum ada)
+        const renderStatusUI = () => {
+            const currentChatBox = document.getElementById('chat-box');
+            if (!currentChatBox) return;
+
+            // Hapus pembungkus lama jika ada untuk mencegah duplikasi
+            const oldWrapper = document.getElementById('mizu-status-wrapper');
+            if (oldWrapper) oldWrapper.remove();
+
+            const statusWrapper = document.createElement('div');
+            statusWrapper.id = 'mizu-status-wrapper';
+            statusWrapper.className = 'status-container';
+            statusWrapper.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:10px; background:#fff; border-bottom:1px solid #eee;";
+            
+            statusWrapper.innerHTML = `
+                <div id="mizu-status" class="status-indicator status-online">
+                    <span class="status-dot"></span> Mizu Online
+                </div>
+                ${isAdmin ? `
+                    <button id="force-online-btn" style="
+                        font-size: 10px; 
+                        background: #000; 
+                        color: #fff; 
+                        border: none; 
+                        padding: 6px 12px; 
+                        border-radius: 20px; 
+                        cursor: pointer;
+                        font-weight: bold;
+                    ">FORCE ONLINE</button>
+                ` : `<div style="font-size: 10px; color: #999;">REAL-TIME SYNC</div>`}
+            `;
+            
+            currentChatBox.parentNode.insertBefore(statusWrapper, currentChatBox);
+
+            if (isAdmin) {
+                document.getElementById('force-online-btn').onclick = async (e) => {
+                    e.preventDefault();
+                    try {
+                        const statusRef = doc(db, "system", "status");
+                        await updateDoc(statusRef, { isOnline: true });
+                        alert("Mizu is back ONLINE!");
+                    } catch (err) {
+                        alert("Error: " + err.message);
+                    }
+                };
+            }
+            listenToMizuStatus();
+        };
+
+        // Jalankan render UI
+        setTimeout(renderStatusUI, 100); 
 
         await syncUserLimit(user);
-        await loadUserHistory();  
+        await loadUserHistory(); 
+
     } else {
-        if (!overlay) overlay = createAuthUI();
-        overlay.style.display = 'flex';
         if (mainContent) mainContent.style.display = 'none';
-        document.body.style.overflow = 'hidden';
+        createAuthUI();
     }
 });
+            
 
 function createAuthUI() {
     const existing = document.getElementById('auth-overlay');
