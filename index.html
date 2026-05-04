@@ -284,13 +284,16 @@ function clearChatAdvanced() {
     const chatBox = document.getElementById("chat-box");
     if (!chatBox) return;
 
+    chatBox.style.transition = "opacity 0.3s ease";
     chatBox.style.opacity = "0";
 
     setTimeout(() => {
         chatBox.innerHTML = "";
+        chatBox.style.opacity = "1";
 
-        // 🔥 INI KUNCI UTAMA
+        // 🔥 HAPUS + TANDAI
         localStorage.removeItem("mizu_history");
+        localStorage.setItem("mizu_cleared", "true");
 
     }, 300);
 
@@ -443,4 +446,5 @@ function clearChatAdvanced() {
 </script>
 </body>
 </body>  
-    </html>
+        </html>
+        
