@@ -195,13 +195,15 @@ function applyLock() {
 // 6. CHAT LOGIC (VERSI PERBAIKAN SINKRONISASI)
 window.sendMessage = async () => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) return alert("Silakan login terlebih dahulu.");
 
     const statusRef = doc(db, "system", "status");
     
     try {
-        // 1. Cek status global sebelum kirim
+        // Cek status global
         const statusSnap = await getDoc(statusRef);
+        
+        // Jika dokumen tidak ditemukan, kita anggap online sebagai default agar tidak error
         const isMizuOnline = statusSnap.exists() ? statusSnap.data().isOnline : true;
 
         if (!isMizuOnline) {
@@ -209,10 +211,9 @@ window.sendMessage = async () => {
             return;
         }
 
-        // 2. Cek limit user
         const userRef = doc(db, "users", user.uid);
         const snap = await getDoc(userRef);
-        if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) {
+        if (snap.exists() && snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) {
             return applyLock();
         }
 
@@ -227,45 +228,32 @@ window.sendMessage = async () => {
         const loadId = "loading-" + Date.now();
         renderRow('mizu', 'Mizu is thinking...', loadId);
 
-        // 3. Panggil API
-        const freshSnap = await getDoc(userRef);
-        const historyForAI = freshSnap.data().chatHistory || [];
-
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text, history: historyForAI })
+            body: JSON.stringify({ message: text, history: (snap.data()?.chatHistory || []) })
         });
 
-        // 4. Jika API Error (Limit API Key Habis)
         if (!response.ok) {
             document.getElementById(loadId)?.remove();
-            
-            // PAKSA SEMUA USER OFFLINE lewat Firestore
-            await updateDoc(statusRef, { isOnline: false });
-            
+            // Coba update status jadi offline jika API mati
+            try { await updateDoc(statusRef, { isOnline: false }); } catch(e) {}
             renderRow('mizu', "System exhausted. Mizu will be back soon.");
             return;
         }
 
         const data = await response.json();
         document.getElementById(loadId)?.remove();
-        
-        const reply = data.reply || "Mizu is offline.";
-        await renderTypingEffect('mizu', reply);
+        await renderTypingEffect('mizu', data.reply || "Mizu is offline.");
         await updateDoc(userRef, { usageCount: increment(1) });
 
     } catch (err) {
-        console.error("Error:", err);
+        console.error("FIREBASE ERROR:", err); // Lihat pesan merah di F12
         const loaders = document.querySelectorAll('[id^="loading-"]');
         loaders.forEach(l => l.remove());
-        
-        // Jika error koneksi, beri peringatan tapi jangan paksa offline semua orang 
-        // kecuali jika benar-benar gagal akses Firestore
-        renderRow('mizu', "Connection error. Please check your internet.");
+        renderRow('mizu', "Terjadi kesalahan koneksi database. Pastikan Rules Firestore sudah benar.");
     }
 };
-        
 
 window.newChat = async () => {
     if (confirm("Mizu will forget this conversation forever. Reset memory?")) {
