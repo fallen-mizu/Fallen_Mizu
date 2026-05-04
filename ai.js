@@ -147,7 +147,7 @@ window.sendMessage = async () => {
     saveLocal('user', text);
 
     const loadId = "loading-" + Date.now();
-    renderRow('mizu', 'Mizu sedang mengetik...', loadId);
+    renderRow('mizu', 'Mizu is typing...', loadId);
 
     try {
         const response = await fetch('/api/chat', {
