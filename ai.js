@@ -1,17 +1,14 @@
 function getJapanTime() {
     try {
         const now = new Date();
-
         return now.toLocaleTimeString('en-US', {
             timeZone: 'Asia/Tokyo',
             hour: '2-digit',
             minute: '2-digit',
             hour12: true
         });
-
     } catch (e) {
-        console.error("Time error:", e);
-        return ""; // fallback biar tidak crash
+        return "";
     }
 }
 
@@ -230,6 +227,10 @@ function loadLocalHistory() {
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('user-input');
     if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.sendMessage(); });
-});
+}
+document.querySelector("button").onclick = () => {
+    console.log("CLICK WORK");
+    window.sendMessage();
+};
 
             
