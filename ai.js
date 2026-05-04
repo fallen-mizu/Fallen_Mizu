@@ -56,25 +56,24 @@ document.head.appendChild(style);
 // 3. AUTHENTICATION
 onAuthStateChanged(auth, async (user) => {
     let overlay = document.getElementById('auth-overlay');
-    const mainContent = document.getElementById('main-content'); // Ambil ID main-content
+    const mainContent = document.getElementById('main-content');
 
     if (user) {
-        // JIKA LOGIN BERHASIL
         if (overlay) overlay.style.display = 'none';
-        if (mainContent) mainContent.style.display = 'block'; // Tampilkan halaman utama
-        document.body.style.overflow = 'auto'; // Izinkan scroll kembali
+        if (mainContent) mainContent.style.display = 'block';
+        document.body.style.overflow = 'auto';
         
         await syncUserLimit(user);
-        loadLocalHistory();
+        // GANTI INI: Ambil riwayat dari Firestore
+        await loadUserHistory(); 
     } else {
-        // JIKA BELUM LOGIN / LOGOUT
         if (!overlay) overlay = createAuthUI();
         overlay.style.display = 'flex';
-        if (mainContent) mainContent.style.display = 'none'; // SEMBUNYIKAN halaman utama
-        document.body.style.overflow = 'hidden'; // MATIKAN scroll agar tidak tembus
+        if (mainContent) mainContent.style.display = 'none';
+        document.body.style.overflow = 'hidden';
     }
 });
-            
+
 
 function createAuthUI() {
     const div = document.createElement('div');
