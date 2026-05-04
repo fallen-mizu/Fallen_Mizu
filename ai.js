@@ -90,15 +90,6 @@ function createAuthUI() {
 
         <button class="google-btn" id="login-trigger">Sign in with Google</button>
     `;
-
-
-
-
-
-
-
-    </p=style="width: 50px; border: 0.5px solid #eee;"> Not an admin? <hr style="width: 50px; border: 0.5px solid #eee;">
-        
     
     document.body.appendChild(div);
 
