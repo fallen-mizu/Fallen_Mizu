@@ -106,7 +106,7 @@ function createAuthUI() {
             const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
-            alert("Admin Login Failed, Wrong password!: " + error.message);
+            alert("Admin Login Failed, Wrong email or password!"
         }
     };
 
