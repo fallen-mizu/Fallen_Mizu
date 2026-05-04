@@ -56,16 +56,25 @@ document.head.appendChild(style);
 // 3. AUTHENTICATION
 onAuthStateChanged(auth, async (user) => {
     let overlay = document.getElementById('auth-overlay');
-    if (!overlay) overlay = createAuthUI();
+    const mainContent = document.getElementById('main-content'); // Ambil ID main-content
 
     if (user) {
-        overlay.style.display = 'none';
+        // JIKA LOGIN BERHASIL
+        if (overlay) overlay.style.display = 'none';
+        if (mainContent) mainContent.style.display = 'block'; // Tampilkan halaman utama
+        document.body.style.overflow = 'auto'; // Izinkan scroll kembali
+        
         await syncUserLimit(user);
         loadLocalHistory();
     } else {
+        // JIKA BELUM LOGIN / LOGOUT
+        if (!overlay) overlay = createAuthUI();
         overlay.style.display = 'flex';
+        if (mainContent) mainContent.style.display = 'none'; // SEMBUNYIKAN halaman utama
+        document.body.style.overflow = 'hidden'; // MATIKAN scroll agar tidak tembus
     }
 });
+            
 
 function createAuthUI() {
     const div = document.createElement('div');
