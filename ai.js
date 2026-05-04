@@ -158,6 +158,11 @@ function saveLocal(role, text) {
 }
 
 function loadLocalHistory() {
+    const chatBox = document.getElementById('chat-box');
+    if (!chatBox) return;
+
+    chatBox.innerHTML = ""; // 🔥 reset dulu
+
     const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
     history.forEach(item => renderRow(item.role, item.text));
 }
