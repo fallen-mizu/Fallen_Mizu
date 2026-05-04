@@ -286,3 +286,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('user-input');
     if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.sendMessage(); });
 });
+  // 8. LOGOUT LOGIC
+const logoutBtn = document.getElementById('logout-btn');
+
+if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+        const confirmLogout = confirm("Are you sure you want to logout?");
+        if (confirmLogout) {
+            try {
+                // Import fungsi signOut dari Firebase Auth
+                const { signOut } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+                
+                await signOut(auth);
+                
+                // Opsional: Bersihkan histori lokal saat logout jika ingin privasi maksimal
+                // localStorage.removeItem('mizu_history');
+                
+                console.log("User signed out.");
+            } catch (error) {
+                console.error("Logout Error:", error.message);
+                alert("Error during logout: " + error.message);
+            }
+        }
+    };
+}
