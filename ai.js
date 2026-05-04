@@ -1,8 +1,8 @@
 // 0. UTILS
-function getJapanTime() {
-    const now = new Date();
-    const hours = now.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", hour: "numeric", hour12: true });
-    const minutes = now.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", minute: "2-digit" });
+function getJapanTime(timestamp = null) {
+    const date = timestamp ? new Date(timestamp) : new Date();
+    const hours = date.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", hour: "numeric", hour12: true });
+    const minutes = date.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", minute: "2-digit" });
     return hours.replace("時", "") + ":" + minutes;
 }
 
@@ -133,7 +133,7 @@ async function loadUserHistory() {
     const snap = await getDoc(userRef);
     if (snap.exists() && snap.data().chatHistory) {
         chatBox.innerHTML = "";
-        snap.data().chatHistory.forEach(item => renderRow(item.role, item.text));
+        snap.data().chatHistory.forEach(item => renderRow(item.role, item.text, null, item.timestamp));
     }
 }
 
@@ -214,7 +214,8 @@ function renderRow(role, text, id = null) {
     content.innerHTML = (typeof marked !== 'undefined') ? marked.parse(text) : text;
     const meta = document.createElement('div');
     meta.style.cssText = "display:flex; justify-content:flex-end; font-size:10px; opacity:0.6; margin-top:5px; gap:4px;";
-    meta.innerHTML = `<span>${getJapanTime()}</span>`;
+    const timeString = getJapanTime(timestamp);
+    meta.innerHTML = `<span>${timeString}</span>`;
     if (role === "user") { meta.innerHTML += `<span class="tick">✓✓</span>`; }
     bubble.appendChild(content);
     bubble.appendChild(meta);
