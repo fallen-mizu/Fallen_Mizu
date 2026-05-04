@@ -57,12 +57,23 @@ document.head.appendChild(style);
 onAuthStateChanged(auth, async (user) => {
     let overlay = document.getElementById('auth-overlay');
     const mainContent = document.getElementById('main-content');
+    const headerTitle = document.querySelector('h1 span'); // Target teks nama di header
 
     if (user) {
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
         document.body.style.overflow = 'auto';
         
+        // --- BAGIAN YANG DIUPDATE ---
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        
+        // Cek jika user punya username di Firestore, tampilkan di header
+        if (snap.exists() && snap.data().username) {
+            if (headerTitle) headerTitle.innerText = snap.data().username;
+        }
+        // ----------------------------
+
         await syncUserLimit(user);
         await loadUserHistory(); 
     } else {
@@ -72,6 +83,7 @@ onAuthStateChanged(auth, async (user) => {
         document.body.style.overflow = 'hidden';
     }
 });
+
 
 function createAuthUI() {
     const div = document.createElement('div');
@@ -286,3 +298,62 @@ if (logoutBtn) {
     };
   }
           
+// --- SISTEM PROFIL SIMPEL (USERNAME ONLY) ---
+
+// Fungsi Cek Username & Simpan
+document.getElementById('btn-save-profile').onclick = async () => {
+    const user = auth.currentUser;
+    const newUsername = document.getElementById('prof-username').value.trim();
+    const msgArea = document.getElementById('username-msg');
+
+    if (!newUsername || newUsername.length < 3) {
+        msgArea.innerText = "Username too short (min 3 chars).";
+        msgArea.style.display = "block";
+        return;
+    }
+
+    try {
+        // Cek apakah username sudah dipakai orang lain di Firestore
+        const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const q = query(collection(db, "users"), where("username", "==", newUsername));
+        const querySnapshot = await getDocs(q);
+
+        // Jika ada user lain (bukan kita) yang pakai username tersebut
+        let isTaken = false;
+        querySnapshot.forEach((doc) => {
+            if (doc.id !== user.uid) isTaken = true;
+        });
+
+        if (isTaken) {
+            const suggestion = newUsername + Math.floor(Math.random() * 99);
+            msgArea.innerHTML = `Username already taken.<br>Try: <strong>${suggestion}</strong>`;
+            msgArea.style.display = "block";
+            return;
+        }
+
+        // Jika aman, update di Firestore
+        await updateDoc(doc(db, "users", user.uid), {
+            username: newUsername
+        });
+
+        // Update tampilan secara instan
+        document.querySelector('h1 span').innerText = newUsername;
+        msgArea.style.display = "none";
+        alert("Profile updated successfully!");
+        document.getElementById('profile-panel').style.display = 'none';
+
+    } catch (e) {
+        console.error(e);
+        alert("Error: " + e.message);
+    }
+};
+
+// Event Klik Foto Profil untuk Buka Panel
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('profile-img')) {
+        const panel = document.getElementById('profile-panel');
+        panel.style.display = 'block';
+        // Isi input dengan nama yang sekarang
+        document.getElementById('prof-username').value = document.querySelector('h1 span').innerText;
+    }
+});
