@@ -53,7 +53,8 @@ onAuthStateChanged(auth, async (user) => {
             return; // ⛔ STOP supaya tidak load ulang
         }
 
-        loadLocalHistory();
+        // 🔥 HAPUS INI TOTAL
+// loadLocalHistory();
 
     } else {
         overlay.style.display = 'flex';
@@ -171,7 +172,7 @@ function loadLocalHistory() {
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
 
-    chatBox.innerHTML = ""; // 🔥 reset dulu
+    chatBox.innerHTML = "";
 
     const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
     history.forEach(item => renderRow(item.role, item.text));
