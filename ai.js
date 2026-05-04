@@ -44,7 +44,17 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         overlay.style.display = 'none';
         await syncUserLimit(user);
+
+        // 🔥 CEK APAKAH CHAT SUDAH DI CLEAR
+        if (localStorage.getItem("mizu_cleared") === "true") {
+            localStorage.removeItem("mizu_history");
+            localStorage.removeItem("mizu_cleared");
+            document.getElementById("chat-box").innerHTML = "";
+            return; // ⛔ STOP supaya tidak load ulang
+        }
+
         loadLocalHistory();
+
     } else {
         overlay.style.display = 'flex';
     }
