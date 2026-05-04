@@ -45,7 +45,12 @@ onAuthStateChanged(auth, async (user) => {
         overlay.style.display = 'none';
         await syncUserLimit(user);
 
-        // 🔥 load hanya sekali
+        // 🔥 HARD BLOCK
+        if (localStorage.getItem("mizu_history") === null) {
+            document.getElementById("chat-box").innerHTML = "";
+            return;
+        }
+
         loadLocalHistory();
 
     } else {
