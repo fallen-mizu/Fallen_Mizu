@@ -142,7 +142,7 @@ window.sendMessage = async () => {
     if (!text) return;
 
     input.value = '';
-    renderRow('user', text);
+    const tickEl = renderRow('user', text);
     saveLocal('user', text);
 
     const loadId = "loading-" + Date.now();
@@ -159,8 +159,10 @@ window.sendMessage = async () => {
         document.getElementById(loadId).remove();
 
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mizu is offline.";
-        renderRow('mizu', reply);
-        saveLocal('mizu', reply);
+renderRow('mizu', reply);
+
+// ✅ ubah jadi seen
+if (tickEl) tickEl.innerText = "✓✓";
 
         // Update limit in Firebase
         await updateDoc(userRef, { usageCount: increment(1) });
@@ -183,26 +185,42 @@ function renderRow(role, text, id = null) {
     bubble.style.display = "flex";
     bubble.style.flexDirection = "column";
 
-    // TEXT
     const message = document.createElement('div');
     message.innerText = text;
 
-    // 🕐 TIME (DALAM BUBBLE, DI BAWAH)
-    const time = document.createElement('div');
-    time.innerText = getJapanTime();
-    time.style.fontSize = "0.65rem";
-    time.style.opacity = "0.6";
-    time.style.marginTop = "6px";
-    time.style.textAlign = "right";
+    // 🕐 TIME + TICK CONTAINER
+    const meta = document.createElement('div');
+    meta.style.display = "flex";
+    meta.style.justifyContent = "flex-end";
+    meta.style.alignItems = "center";
+    meta.style.gap = "5px";
+    meta.style.fontSize = "0.65rem";
+    meta.style.opacity = "0.7";
+    meta.style.marginTop = "6px";
 
-    // masukkan ke dalam bubble
+    // TIME
+    const time = document.createElement('span');
+    time.innerText = getJapanTime();
+
+    // ✔✔ TICK (HANYA UNTUK USER)
+    const tick = document.createElement('span');
+    if (role === "user") {
+        tick.innerText = "✓"; // default sent
+        tick.className = "tick";
+    }
+
+    meta.appendChild(time);
+    if (role === "user") meta.appendChild(tick);
+
     bubble.appendChild(message);
-    bubble.appendChild(time);
+    bubble.appendChild(meta);
 
     row.appendChild(bubble);
     chatBox.appendChild(row);
 
     chatBox.scrollTop = chatBox.scrollHeight;
+
+    return tick; // 🔥 penting untuk update ke ✓✓ nanti
 }
 function saveLocal(role, text) {
     let history = JSON.parse(localStorage.getItem('mizu_history')) || [];
