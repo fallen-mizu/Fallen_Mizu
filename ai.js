@@ -150,10 +150,10 @@ window.sendMessage = async () => {
 
 // NEW CHAT FUNCTION
 window.newChat = () => {
-    if (confirm("Delete entire conversation and start new chat?")) {
+    if (confirm("Mizu will forget this conversation. Start a new session?")) {
         localStorage.removeItem('mizu_history');
         document.getElementById('chat-box').innerHTML = "";
-        renderRow('mizu', "Memory cleared. Is there anything Mizu can help with?");
+        renderRow('mizu', "Memory cleared. How can I help you today?");
     }
 };
 
