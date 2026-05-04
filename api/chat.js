@@ -28,7 +28,7 @@ Current User Message: ${message}
 `.trim();
 
     try {
-        const modelName = "gemini-2.5-flash"; // Ganti ke gemini-3.1-pro, gemini-1.5-flash, dsb.
+        const modelName = "gemini-2.5-flash-lite"; // Ganti ke gemini-3.1-pro, gemini-1.5-flash, dsb.
 
 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
     method: 'POST',
