@@ -164,8 +164,17 @@ function renderRow(role, text, id = null) {
 
 function saveLocal(role, text) {
     let history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-    history.push({ role, text });
-    localStorage.setItem('mizu_history', JSON.stringify(history.slice(-15)));
+
+    history.push({
+        role,
+        text,
+        time: Date.now()
+    });
+
+    // limit 50 chat terakhir biar ringan
+    if (history.length > 50) history = history.slice(-50);
+
+    localStorage.setItem('mizu_history', JSON.stringify(history));
 }
 
 function loadLocalHistory() {
@@ -175,7 +184,10 @@ function loadLocalHistory() {
     chatBox.innerHTML = "";
 
     const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-    history.forEach(item => renderRow(item.role, item.text));
+
+    history.forEach(item => {
+        renderRow(item.role, item.text);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
