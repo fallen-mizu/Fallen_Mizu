@@ -6,7 +6,6 @@ function getJapanTime() {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true
-    }) + " GMT+9";
 }
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
