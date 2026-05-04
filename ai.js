@@ -158,12 +158,7 @@ window.sendMessage = async () => {
         const data = await response.json();
         document.getElementById(loadId).remove();
 
-        let reply =
-    data.candidates?.[0]?.content?.parts?.[0]?.text ||
-    data.choices?.[0]?.message?.content ||
-    data.reply ||
-    data.message ||
-    "Mizu is offline.";
+        const reply = data.reply || "Mizu is offline.";
 renderRow('mizu', reply);
 
 // ✅ ubah jadi seen
