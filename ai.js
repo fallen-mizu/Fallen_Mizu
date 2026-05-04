@@ -70,11 +70,49 @@ onAuthStateChanged(auth, async (user) => {
 function createAuthUI() {
     const div = document.createElement('div');
     div.id = 'auth-overlay';
-    div.innerHTML = `<h1 style="color:#BC002D">Fallen Mizu</h1><p>Architectural AI Assistant</p><button class="google-btn" id="login-trigger">Sign in with Google</button>`;
+    div.innerHTML = `
+        <h1 style="color:#BC002D; margin-bottom: 5px;">Fallen Mizu</h1>
+        <p style="margin-bottom: 20px; opacity: 0.8;">Architectural AI Assistant</p>
+        
+        <div id="admin-login-area" style="width: 280px; display: flex; flex-direction: column; gap: 10px;">
+            <input type="email" id="admin-email" placeholder="Admin Email" 
+                style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            <input type="password" id="admin-password" placeholder="Password" 
+                style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            <button id="admin-login-btn" style="background: #222; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                Login as Admin
+            </button>
+        </div>
+
+        <div style="margin: 20px 0; color: #888; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+            <hr style="width: 50px; border: 0.5px solid #eee;"> Not an admin? <hr style="width: 50px; border: 0.5px solid #eee;">
+        </div>
+
+        <button class="google-btn" id="login-trigger">Sign in with Google</button>
+    `;
     document.body.appendChild(div);
+
+    // Event Listener untuk Google Login
     document.getElementById('login-trigger').onclick = () => signInWithPopup(auth, provider);
+
+    // Event Listener untuk Admin Login (Email/Password)
+    document.getElementById('admin-login-btn').onclick = async () => {
+        const email = document.getElementById('admin-email').value;
+        const password = document.getElementById('admin-password').value;
+        
+        if (!email || !password) return alert("Please fill in all fields.");
+
+        try {
+            const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            alert("Admin Login Failed: " + error.message);
+        }
+    };
+
     return div;
 }
+
 
 // 4. DATABASE & LIMIT
 async function syncUserLimit(user) {
