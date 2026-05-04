@@ -221,6 +221,8 @@ window.newChat = async () => {
 // 6. RENDERING ENGINE
 function renderRow(role, text, id = null) {
     const chatBox = document.getElementById('chat-box');
+    if (!chatBox) return; // Keamanan tambahan
+
     const row = document.createElement('div');
     row.className = `chat-row ${role}-row`;
     if (id) row.id = id;
@@ -236,7 +238,11 @@ function renderRow(role, text, id = null) {
     meta.innerHTML = `<span>${getJapanTime()}</span>`;
 
     const tick = document.createElement('span');
-    if (role === "user") { tick.innerText = "✓"; tick.className = "tick"; meta.appendChild(tick); }
+    if (role === "user") { 
+        tick.innerText = "✓"; 
+        tick.className = "tick"; 
+        meta.appendChild(tick); 
+    }
 
     bubble.appendChild(content);
     bubble.appendChild(meta);
@@ -247,6 +253,7 @@ function renderRow(role, text, id = null) {
     chatBox.scrollTop = chatBox.scrollHeight;
     return tick;
 }
+
 
 async function renderTypingEffect(role, fullText) {
     const chatBox = document.getElementById('chat-box');
