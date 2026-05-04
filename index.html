@@ -284,16 +284,14 @@ function clearChatAdvanced() {
     const chatBox = document.getElementById("chat-box");
     if (!chatBox) return;
 
-    chatBox.style.transition = "opacity 0.3s ease";
     chatBox.style.opacity = "0";
 
     setTimeout(() => {
         chatBox.innerHTML = "";
 
-        // 🔥 hapus data persistence
+        // 🔥 INI KUNCI UTAMA
         localStorage.removeItem("mizu_history");
 
-        chatBox.style.opacity = "1";
     }, 300);
 
     closeConfirm();
