@@ -72,7 +72,7 @@ function createAuthUI() {
     div.id = 'auth-overlay';
     div.innerHTML = `
         <h1 style="color:#BC002D; margin-bottom: 5px;">Fallen Mizu</h1>
-        <p style="margin-bottom: 20px; opacity: 0.8;">Architectural AI Assistant</p>
+        <p style="margin-bottom: 20px; opacity: 0.8;">Architectural AI With Zen</p>
         
         <div id="admin-login-area" style="width: 280px; display: flex; flex-direction: column; gap: 10px;">
             <input type="email" id="admin-email" placeholder="Admin Email" 
@@ -90,6 +90,18 @@ function createAuthUI() {
 
         <button class="google-btn" id="login-trigger">Sign in with Google</button>
     `;
+
+
+
+
+
+
+
+
+
+    <hr style="width: 50px; border: 0.5px solid #eee;"> Not an admin? <hr style="width: 50px; border: 0.5px solid #eee;">
+        </div>
+    
     document.body.appendChild(div);
 
     // Event Listener untuk Google Login
