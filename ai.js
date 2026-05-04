@@ -290,7 +290,7 @@ async function renderTypingEffect(role, fullText) {
                 bubble.appendChild(meta);
 
                 if (typeof hljs !== 'undefined') row.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-                saveLocal(role, fullText);
+                await saveToFirestore(role, fullText); 
                 resolve();
             }
         }, 15);
