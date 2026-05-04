@@ -150,14 +150,14 @@ function applyLock() {
     }
     if (input) { input.disabled = true; input.placeholder = "Daily limit reached..."; }
 }
-
-// 5. MEMORY & CHAT LOGIC
+   // 5. KIRIM PESAN
 window.sendMessage = async () => {
     const user = auth.currentUser;
     if (!user) return;
 
     const userRef = doc(db, "users", user.uid);
     const snap = await getDoc(userRef);
+    
     if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) return applyLock();
 
     const input = document.getElementById('user-input');
@@ -165,48 +165,58 @@ window.sendMessage = async () => {
     if (!text) return;
 
     input.value = '';
-    const tickEl = renderRow('user', text);
+    renderRow('user', text);
     
-    // Ambil histori untuk dikirim sebagai memory
-    const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-    saveLocal('user', text); // Simpan input user ke history
+    // Simpan pesan user ke Firestore
+    await saveToFirestore('user', text);
 
     const loadId = "loading-" + Date.now();
     renderRow('mizu', 'Mizu is thinking...', loadId);
 
     try {
+        // Ambil riwayat terbaru untuk dikirim sebagai memory ke AI
+        const freshSnap = await getDoc(userRef);
+        const history = freshSnap.data().chatHistory || [];
+
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 message: text,
-                history: history // Mengirimkan memory ke API
+                history: history // Sekarang memory diambil dari database per akun
             })
         });
 
         const data = await response.json();
-        const loader = document.getElementById(loadId);
-        if (loader) loader.remove();
+        document.getElementById(loadId)?.remove();
 
         const reply = data.reply || "Mizu is offline.";
         await renderTypingEffect('mizu', reply);
 
-        if (tickEl) tickEl.innerText = "✓✓";
+        // Simpan balasan Mizu ke Firestore
+        await saveToFirestore('mizu', reply);
+        
         await updateDoc(userRef, { usageCount: increment(1) });
         
     } catch (err) {
         if(document.getElementById(loadId)) document.getElementById(loadId).innerText = "Connection error.";
     }
 };
+              
 
 // NEW CHAT FUNCTION
-window.newChat = () => {
-    if (confirm("Mizu will forget this conversation. Start a new session?")) {
-        localStorage.removeItem('mizu_history');
+window.newChat = async () => {
+    if (confirm("Mizu will forget this conversation forever. Reset memory?")) {
+        const user = auth.currentUser;
+        if (user) {
+            const userRef = doc(db, "users", user.uid);
+            await updateDoc(userRef, { chatHistory: [] }); // Hapus di database
+        }
         document.getElementById('chat-box').innerHTML = "";
-        renderRow('mizu', "Memory cleared. How can I help you today?");
+        renderRow('mizu', "Memory cleared. Everything is fresh now.");
     }
 };
+
 
 // 6. RENDERING ENGINE
 function renderRow(role, text, id = null) {
