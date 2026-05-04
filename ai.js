@@ -61,21 +61,27 @@ document.head.appendChild(style);
 // 3. REAL-TIME STATUS LISTENER
 function listenToMizuStatus() {
     const statusRef = doc(db, "system", "status");
-    // Gunakan onSnapshot agar indikator berubah tanpa refresh
     onSnapshot(statusRef, (docSnap) => {
         const el = document.getElementById('mizu-status');
         if (!el) return;
         
-        const isOnline = docSnap.exists() ? docSnap.data().isOnline : true;
-        if (isOnline) {
-            el.className = "status-indicator status-online";
-            el.innerHTML = `<span class="status-dot"></span> Mizu Online`;
+        if (docSnap.exists()) {
+            const isOnline = docSnap.data().isOnline;
+            if (isOnline === true) {
+                el.className = "status-indicator status-online";
+                el.innerHTML = `<span class="status-dot"></span> Mizu Online`;
+            } else {
+                el.className = "status-indicator status-offline";
+                el.innerHTML = `<span class="status-dot"></span> Mizu Offline`;
+            }
         } else {
-            el.className = "status-indicator status-offline";
-            el.innerHTML = `<span class="status-dot"></span> Mizu Offline`;
+            console.error("DOKUMEN STATUS TIDAK DITEMUKAN DI FIRESTORE!");
+            el.innerHTML = "Status Error: Doc Missing";
         }
     }, (error) => {
-        console.error("Status Listener Error:", error);
+        // INI AKAN MEMBERITAHU KITA KENAPA DATABASE REJECTED
+        console.error("Penyebab Database Rejected:", error.code, error.message);
+        alert("Firestore Error: " + error.message); 
     });
 }
 
