@@ -281,25 +281,39 @@ async function renderTypingEffect(role, fullText) {
     });
 }
 
-// 7. STORAGE
-function saveLocal(role, text) {
-    let history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-    history.push({ role, text });
-    localStorage.setItem('mizu_history', JSON.stringify(history.slice(-20))); // Simpan 20 chat terakhir
+// 7. FIREBASE STORAGE LOGIC (PER USER)
+async function saveToFirestore(role, text) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+    let history = snap.exists() ? (snap.data().chatHistory || []) : [];
+
+    // Tambahkan pesan baru
+    history.push({ role, text, timestamp: Date.now() });
+
+    // Simpan 30 pesan terakhir agar tidak terlalu berat
+    if (history.length > 30) history.shift();
+
+    await updateDoc(userRef, { chatHistory: history });
 }
 
-function loadLocalHistory() {
+async function loadUserHistory() {
+    const user = auth.currentUser;
     const chatBox = document.getElementById('chat-box');
-    if (!chatBox) return;
-    chatBox.innerHTML = "";
-    const history = JSON.parse(localStorage.getItem('mizu_history')) || [];
-    history.forEach(item => renderRow(item.role, item.text));
-}
+    if (!user || !chatBox) return;
 
-document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('user-input');
-    if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.sendMessage(); });
-});
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+
+    if (snap.exists() && snap.data().chatHistory) {
+        chatBox.innerHTML = ""; // Bersihkan loading
+        snap.data().chatHistory.forEach(item => {
+            renderRow(item.role, item.text);
+        });
+    }
+            
   // 8. LOGOUT LOGIC
 const logoutBtn = document.getElementById('logout-btn');
 
