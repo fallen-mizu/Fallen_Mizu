@@ -251,11 +251,26 @@ window.sendMessage = async () => {
         await renderTypingEffect('mizu', data.reply || "Mizu is offline.");
         await updateDoc(userRef, { usageCount: increment(1) });
 
-    } catch (err) {
+        } catch (err) {
         const loaders = document.querySelectorAll('[id^="loading-"]');
         loaders.forEach(l => l.remove());
-        renderRow('mizu', "System exhausted. Mizu will be back soon.");
+        
+        console.error("DETEKSI ERROR:", err);
+
+        // Jika ini adalah error API (response tidak ok)
+        if (err.message === "Offline" || err.message === "API_ERROR") {
+            // Coba paksa update Firestore, jika gagal tampilkan di console
+            updateDoc(statusRef, { isOnline: false })
+                .then(() => console.log("Status berhasil diubah ke Offline secara otomatis"))
+                .catch((fErr) => console.error("Gagal mengubah status ke Firestore: ", fErr));
+            
+            renderRow('mizu', "System exhausted. Mizu will be back soon.");
+        } else {
+            // Jika error karena jaringan/firestore sendiri
+            renderRow('mizu', "Connection error or Database rejected. Check console (F12).");
+        }
     }
+    
 };
 
 window.newChat = async () => {
