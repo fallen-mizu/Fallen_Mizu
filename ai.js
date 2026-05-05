@@ -39,13 +39,50 @@ style.innerHTML = `
     }
     .copy-btn:hover { opacity: 1; background: #BC002D; border-color: #BC002D; }
     .copy-btn.copied { background: #10b981; border-color: #10b981; }
-    #chat-box { display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; height: 400px; scroll-behavior: smooth; border-top: 1px solid #eee; }
-    .chat-row { display: flex; width: 100%; margin-bottom: 5px; }
+    #chat-box { 
+        display: flex; 
+        flex-direction: column; 
+        padding: 15px; 
+        gap: 10px; 
+        overflow-y: auto; 
+        height: 450px; 
+        scroll-behavior: smooth; 
+        background: #fdfdfd; /* Warna background lebih soft */
+    }
+    
+    .chat-row { 
+        display: flex; 
+        width: 100%; 
+        margin-bottom: 2px; 
+    }
+    
     .mizu-row { justify-content: flex-start; }
     .user-row { justify-content: flex-end; }
-    .bubble { padding: 12px 16px; max-width: 85%; font-size: 14px; border-radius: 18px; line-height: 1.6; position: relative; }
-    .mizu-bubble { background: #f0f0f0; color: #222; border-bottom-left-radius: 4px; }
-    .user-bubble { background: #BC002D; color: #fff; border-bottom-right-radius: 4px; }
+    
+    .bubble { 
+        padding: 8px 12px; 
+        /* Maksimal lebar 75% agar tidak terlalu lebar ke samping */
+        max-width: 75%; 
+        font-size: 14px; 
+        line-height: 1.5; 
+        position: relative; 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Shadow halus ala WA */
+    }
+    
+    .mizu-bubble { 
+        background: #ffffff; 
+        color: #222; 
+        border-radius: 0px 15px 15px 15px; /* Sisi kiri atas tajam */
+        border: 1px solid #f0f0f0;
+    }
+    
+    .user-bubble { 
+    background: #BC002D; 
+    color: #ffffff; 
+    border-radius: 15px 0px 15px 15px; 
+}
+
+    
     .bubble pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid #333; }
     .bubble code { font-family: 'Fira Code', monospace; font-size: 0.85rem; }
     .typing-cursor { display: inline-block; width: 7px; height: 15px; background: #BC002D; margin-left: 5px; animation: blink 0.8s infinite; vertical-align: middle; }
