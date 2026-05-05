@@ -105,16 +105,21 @@ onAuthStateChanged(auth, async (user) => {
         
         // Render Indikator Status jika belum ada
         if (chatBox && !document.getElementById('mizu-status')) {
-            const statusWrapper = document.createElement('div');
-            statusWrapper.className = 'status-container';
-            statusWrapper.innerHTML = `
-                <div id="mizu-status" class="status-indicator status-online">
-                    <span class="status-dot"></span> Mizu Online
-                </div>
-                <div style="font-size: 10px; color: #999;">REAL-TIME SYNC</div>
-            `;
-            chatBox.parentNode.insertBefore(statusWrapper, chatBox);
-            listenToMizuStatus(); 
+    const statusWrapper = document.createElement('div');
+    statusWrapper.className = 'status-container';
+    statusWrapper.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div id="mizu-status" class="status-indicator status-online">
+                <span class="status-dot"></span> Mizu Online
+            </div>
+            <div style="font-size: 9px; color: #aaa; font-weight: 600; margin-left: 5px; letter-spacing: 0.3px;">
+                Powered by <span style="color: #f55036;">Groq AI</span>
+            </div>
+        </div>
+        <div style="font-size: 10px; color: #999; font-weight: bold; opacity: 0.7;">REAL-TIME SYNC</div>
+    `;
+    chatBox.parentNode.insertBefore(statusWrapper, chatBox);
+    listenToMizuStatus(); 
         }
 
         await syncUserLimit(user);
