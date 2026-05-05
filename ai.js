@@ -30,6 +30,15 @@ const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 // 2. UI STYLES (Isi tetap sama seperti kode awal kamu)
 const style = document.createElement('style');
 style.innerHTML = `
+    .code-container { position: relative; }
+    .copy-btn { 
+        position: absolute; top: 8px; right: 8px; 
+        background: #333; color: #fff; border: 1px solid #555; 
+        padding: 4px 8px; font-size: 10px; border-radius: 4px; 
+        cursor: pointer; opacity: 0.7; transition: 0.3s; z-index: 10;
+    }
+    .copy-btn:hover { opacity: 1; background: #BC002D; border-color: #BC002D; }
+    .copy-btn.copied { background: #10b981; border-color: #10b981; }
     #chat-box { display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; height: 400px; scroll-behavior: smooth; border-top: 1px solid #eee; }
     .chat-row { display: flex; width: 100%; margin-bottom: 5px; }
     .mizu-row { justify-content: flex-start; }
@@ -289,7 +298,7 @@ window.newChat = async () => {
     }
 };
 
-// 7. RENDERING ENGINE
+/// 7. RENDERING ENGINE
 function renderRow(role, text, id = null, timestamp = null) {
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
@@ -298,8 +307,36 @@ function renderRow(role, text, id = null, timestamp = null) {
     if (id) row.id = id;
     const bubble = document.createElement('div');
     bubble.className = `bubble ${role}-bubble`;
+    
     const content = document.createElement('div');
     content.innerHTML = (typeof marked !== 'undefined') ? marked.parse(text) : text;
+
+    // --- LOGIKA TOMBOL COPY ---
+    content.querySelectorAll('pre').forEach(pre => {
+        const container = document.createElement('div');
+        container.className = 'code-container';
+        pre.parentNode.insertBefore(container, pre);
+        container.appendChild(pre);
+
+        const button = document.createElement('button');
+        button.className = 'copy-btn';
+        button.innerText = 'Copy';
+        container.appendChild(button);
+
+        button.addEventListener('click', () => {
+            const code = pre.querySelector('code')?.innerText || pre.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                button.innerText = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.innerText = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        });
+    });
+    // ---------------------------
+
     const meta = document.createElement('div');
     meta.style.cssText = "display:flex; justify-content:flex-end; font-size:10px; opacity:0.6; margin-top:5px; gap:4px;";
     meta.innerHTML = `<span>${getJapanTime(timestamp)}</span>`;
@@ -309,9 +346,11 @@ function renderRow(role, text, id = null, timestamp = null) {
     bubble.appendChild(meta);
     row.appendChild(bubble);
     chatBox.appendChild(row);
+    
     if (typeof hljs !== 'undefined') row.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
     chatBox.scrollTop = chatBox.scrollHeight;
-}
+                                }
+    
 
 async function renderTypingEffect(role, fullText) {
     const chatBox = document.getElementById('chat-box');
@@ -340,6 +379,23 @@ async function renderTypingEffect(role, fullText) {
                 chatBox.scrollTop = chatBox.scrollHeight;
             } else {
                 clearInterval(interval);
+                messageDiv.querySelectorAll('pre').forEach(pre => {
+    if (pre.parentElement.className === 'code-container') return;
+    const container = document.createElement('div');
+    container.className = 'code-container';
+    pre.parentNode.insertBefore(container, pre);
+    container.appendChild(pre);
+    const button = document.createElement('button');
+    button.className = 'copy-btn';
+    button.innerText = 'Copy';
+    container.appendChild(button);
+    button.onclick = () => {
+        const code = pre.querySelector('code')?.innerText || pre.innerText;
+        navigator.clipboard.writeText(code);
+        button.innerText = 'Copied!';
+        setTimeout(() => button.innerText = 'Copy', 2000);
+    };
+});
                 cursor.remove();
                 const meta = document.createElement('div');
                 meta.style.cssText = "display:flex; justify-content:flex-end; font-size:10px; opacity:0.6; margin-top:5px;";
