@@ -8,7 +8,6 @@ function getJapanTime(timestamp = null) {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-// PASTIKAN BARIS DI BAWAH INI LENGKAP
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -22,14 +21,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app); // <--- INI JANTUNGNYA, HARUS ADA
+const db = getFirestore(app); 
 const provider = new GoogleAuthProvider();
-
 
 const DAILY_LIMIT = 30;
 const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 
-// 2. UI STYLES
+// 2. UI STYLES (Isi tetap sama seperti kode awal kamu)
 const style = document.createElement('style');
 style.innerHTML = `
     #chat-box { display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; height: 400px; scroll-behavior: smooth; border-top: 1px solid #eee; }
@@ -46,7 +44,6 @@ style.innerHTML = `
     #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; }
     .google-btn { background: #4285F4; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     .limit-banner { background: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; border: 1px solid #f87171; margin-bottom: 10px; }
-    
     .status-container { padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1px solid #f5f5f5; }
     .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 10px; border-radius: 12px; }
     .status-online { color: #10b981; background: #ecfdf5; border: 1px solid #d1fae5; }
