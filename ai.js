@@ -50,6 +50,17 @@ style.innerHTML = `
         background: #fdfdfd; /* Warna background lebih soft */
     }
     
+     #chat-box { 
+        display: flex; 
+        flex-direction: column; 
+        padding: 15px; 
+        gap: 8px; /* Jarak vertikal antar pesan lebih rapat ala WA */
+        overflow-y: auto; 
+        height: 480px; /* Sedikit ditinggikan agar lebih pas */
+        scroll-behavior: smooth; 
+        background: #fdfdfd; /* Background chat lebih clean */
+    }
+
     .chat-row { 
         display: flex; 
         width: 100%; 
@@ -61,27 +72,45 @@ style.innerHTML = `
     
     .bubble { 
         padding: 8px 12px; 
-        /* Maksimal lebar 75% agar tidak terlalu lebar ke samping */
-        max-width: 75%; 
+        /* --- KUNCI: Tidak Melebar --- */
+        max-width: 70%; /* Lebih rapat dari sebelumnya agar mirip contoh */
         font-size: 14px; 
         line-height: 1.5; 
         position: relative; 
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Shadow halus ala WA */
+        word-wrap: break-word; /* Pastikan kata panjang tidak merusak layout */
     }
     
+    /* BUBBLE MIZU (SEBELAH KIRI - PENGIRIM) */
     .mizu-bubble { 
         background: #ffffff; 
         color: #222; 
-        border-radius: 0px 15px 15px 15px; /* Sisi kiri atas tajam */
+        /* --- BENTUK SESUAI GAMBAR CONTOH (KIRI) --- */
+        /* Membulat penuh, kecuali sudut KIRI BAWAH */
+        border-radius: 15px 15px 15px 0px; 
         border: 1px solid #f0f0f0;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.05); /* Shadow super tipis */
     }
     
+    /* BUBBLE USER (SEBELAH KANAN - ANDA) */
     .user-bubble { 
-    background: #BC002D; 
-    color: #ffffff; 
-    border-radius: 15px 0px 15px 15px; 
-}
+        /* --- TETAP PERTAHANKAN WARNA MERAH JEPANG --- */
+        background: #BC002D; 
+        color: #ffffff; /* Teks putih agar kontras */
+        /* --- BENTUK SESUAI GAMBAR CONTOH (KANAN) --- */
+        /* Membulat penuh, kecuali sudut KANAN BAWAH */
+        border-radius: 15px 15px 0px 15px; 
+        box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
 
+    /* Penyesuaian Meta Data (Teks Waktu) */
+    .bubble div[style*="font-size:10px"] {
+        font-size: 9px !important;
+        opacity: 0.8 !important;
+        margin-top: 4px !important;
+    }
+    .user-bubble div[style*="font-size:10px"] {
+        color: #fff !important; /* Teks waktu putih di merah */
+    }
     
     .bubble pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid #333; }
     .bubble code { font-family: 'Fira Code', monospace; font-size: 0.85rem; }
