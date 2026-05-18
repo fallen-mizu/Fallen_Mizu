@@ -119,7 +119,7 @@ async function playAudioTrack(videoId, title, thumbnail) {
 }
 
 // Bind Event Listener Standar
-document.getElementById("yt-search-btn").addEventListener("click", searchSongs);
+/*document.getElementById("yt-search-btn").addEventListener("click", searchSongs);
 document.getElementById("yt-search-input").addEventListener("keypress", (e) => {
     if (e.key === "Enter") searchSongs();
 });
