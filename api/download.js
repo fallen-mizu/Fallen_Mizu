@@ -6,19 +6,28 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ status: false, message: "ID diperlukan" });
 
     try {
-        // Menggunakan server konversi publik berkecepatan tinggi
-        // Browser Anda yang akan mengeksekusi tautan ini secara mandiri
-        const downloadUrl = `https://api.zenkey.my.id/api/download/ytmp3?url=https://www.youtube.com/watch?v=${id}`;
+        // Menggunakan endpoint converter publik alternatif yang responsif
+        const response = await fetch(`https://api.zenkey.my.id/api/download/ytmp3?url=https://www.youtube.com/watch?v=${id}`).catch(() => null);
         
-        // Cadangan mirror server jika cdn di atas sibuk
-        const backupUrl = `https://cdn406.savetube.vip/media/${id}/stream.mp3`;
+        let streamUrl = "";
+        if (response && response.ok) {
+            const data = await response.json();
+            // Sesuaikan dengan struktur output API converter yang digunakan
+            if (data && data.result && data.result.download_url) {
+                streamUrl = data.result.download_url;
+            }
+        }
+
+        // Jika API di atas gagal, gunakan direct cdn stream sebagai fallback utama
+        if (!streamUrl) {
+            streamUrl = `https://cdn406.savetube.vip/media/${id}/stream.mp3`;
+        }
 
         return res.status(200).json({
             status: true,
             result: {
                 id: id,
-                download: downloadUrl,
-                fallback: backupUrl
+                download: streamUrl
             }
         });
     } catch (error) {
