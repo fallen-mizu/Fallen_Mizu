@@ -89,6 +89,7 @@ document.getElementById("yt-search-input").addEventListener("keypress", (e) => {
     if (e.key === "Enter") searchSongs();
 });
 
+// 🔥 TARUH KODE BARU ANDA DI SINI (DI BAWAH EVENT LISTENER) 🔥
 // Fungsi untuk menutup player bar dan menghentikan audio
 function closeAudioPlayer() {
     const playerBar = document.getElementById("spotify-player-bar");
