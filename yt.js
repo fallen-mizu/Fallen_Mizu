@@ -10,8 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
 let currentAudioObjectURL = null;
     
 
-    // Jalur dasar menuju serverless function Vercel milikmu
-    const BASE_API_URL = "/api"; 
+    // Ganti dengan URL Cloudflare Worker Anda yang asli
+const WORKER_URL = "https://mizu-audio-proxy.tohsakarin756.workers.dev"; 
 
     // Fungsi memutar audio menggunakan sistem proxy mpeg ala bot WhatsApp
     async function playAudioTrack(videoId, title, thumbnail) {
