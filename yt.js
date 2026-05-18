@@ -6,15 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const playingTitle = document.getElementById("yt-playing-title");
     const thumbImg = document.getElementById("yt-thumb");
 
-    // Menggunakan path relatif Vercel (Tanpa IP, tanpa Port)
-const BASE_API_URL = "/api"; 
-
-// Di dalam fungsi searchSongs(), fetch akan memanggil:
-`${BASE_API_URL}/search?q=${encodeURIComponent(query)}` 
-
-// Di dalam fungsi playAudioTrack(), fetch akan memanggil:
-`${BASE_API_URL}/download?id=${videoId}`
-    
+    // KUNCI UTAMA VERCEL: Menggunakan path relatif tanpa host/domain
+    const BASE_API_URL = "/api"; 
 
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
@@ -22,12 +15,11 @@ const BASE_API_URL = "/api";
         audioPlayer.src = ""; // Bersihkan trek lama
 
         try {
-            // Mengirimkan ID video asli hasil pencarian secara dinamis ke server backend
-            const response = await fetch(`${BASE_API_URL}/api/download?id=${videoId}`);
+            // Mengarah ke /api/download?id=...
+            const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
             const data = await response.json();
 
             if (data.status && data.result && data.result.download) {
-                // Pasang URL mp3 segar ke dalam player bawaan browser
                 audioPlayer.src = data.result.download;
                 audioPlayer.load();
                 audioPlayer.play()
@@ -43,7 +35,7 @@ const BASE_API_URL = "/api";
                 playingTitle.textContent = "Audio tidak tersedia pada API";
             }
         } catch (error) {
-            console.error(error);
+            console.error("Download Error:", error);
             playingTitle.textContent = "Gagal terhubung ke API Server";
         }
     }
@@ -53,18 +45,23 @@ const BASE_API_URL = "/api";
         const query = searchInput.value.trim();
         if (query === "") return;
 
+        // Beri proteksi agar tombol berubah status saat loading
         searchBtn.textContent = "MENCARI...";
         searchBtn.disabled = true;
         songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; opacity:0.7; padding:10px;">Mencari trek via yt-search...</div>`;
 
         try {
-            const res = await fetch(`${BASE_API_URL}/api/search?q=${encodeURIComponent(query)}`);
+            // Mengarah ke /api/search?q=...
+            const res = await fetch(`${BASE_API_URL}/search?q=${encodeURIComponent(query)}`);
             const data = await res.json();
 
             songListContainer.innerHTML = "";
 
             if (!data.status || !data.results || data.results.length === 0) {
-                songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; color:red; padding:10px;">Lagu tidak ditemukan.</div>`;
+                songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; color:red; padding:10px;">Lagu tidak ditemukan atau API Error.</div>`;
+                // Kembalikan tombol ke kondisi semula jika gagal
+                searchBtn.textContent = "SEARCH";
+                searchBtn.disabled = false;
                 return;
             }
 
@@ -81,7 +78,6 @@ const BASE_API_URL = "/api";
                     </div>
                 `;
 
-                // Efek hover sederhana
                 songRow.addEventListener("mouseover", () => songRow.style.borderColor = "red");
                 songRow.addEventListener("mouseout", () => songRow.style.borderColor = "#ddd");
 
@@ -94,15 +90,19 @@ const BASE_API_URL = "/api";
             });
 
         } catch (error) {
-            console.error(error);
-            songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; color:red; padding:10px;">Gagal terhubung ke Server Panel.</div>`;
+            console.error("Search Fetch Error:", error);
+            songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; color:red; padding:10px;">Gagal terhubung ke Fungsi Vercel.</div>`;
         } finally {
+            // Blok finally memastikan tombol SELALU aktif kembali apa pun hasilnya
             searchBtn.textContent = "SEARCH";
             searchBtn.disabled = false;
         }
     }
 
+    // Pasang event listener ke tombol
     searchBtn.addEventListener("click", searchSongs);
-    searchInput.addEventListener("keypress", (e) => { if (e.key === "Enter") searchSongs(); });
+    searchInput.addEventListener("keypress", (e) => { 
+        if (e.key === "Enter") searchSongs(); 
+    });
 });
-                        
+                                 
