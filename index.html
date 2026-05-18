@@ -304,28 +304,188 @@
     <!-- ======================================================== -->
     <!-- TAMBAHAN BARU: YOUTUBE MUSIC SECTION (HORIZONTAL) -->
     <!-- ======================================================== -->
-    <section id="mizu-yt-music" data-aos style="margin-top: 60px;">
+    <    <section id="mizu-yt-music" data-aos style="margin-top: 60px;">
         <h2 class="section-title">Mizu Music Player / 音楽プレーヤー</h2>
         
-        <div class="yt-horizontal-container" style="display: flex; gap: 20px; align-items: flex-start; margin-top: 20px;">
-            <!-- Sisi Kiri: Kontrol Pencarian -->
+        <div class="yt-horizontal-container" style="display: flex; gap: 25px; align-items: flex-start; margin-top: 20px; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
+            
             <div style="flex: 1; min-width: 200px;">
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <input type="text" id="yt-search-input" placeholder="Search song or artist..." style="flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.8rem;">
-                    <button id="yt-search-btn" style="padding: 8px 15px; background: var(--ink-black); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s;">SEARCH</button>
+                    <button id="yt-search-btn" style="padding: 8px 15px; background: var(--wasabi-red); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s;">SEARCH</button>
                 </div>
-                <div style="font-size: 0.75rem; opacity: 0.7; font-family: 'Noto Serif JP', serif;">
-                    <p>Cari lagu favoritmu secara online. Sistem akan otomatis menyelaraskan dan memutarnya langsung di web ini.</p>
+                
+                <div id="yt-song-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                    <div style="font-size: 0.75rem; opacity: 0.5; font-style: italic; text-align: center; padding: 10px;">Cari lagu untuk menampilkan daftar pilihan...</div>
                 </div>
             </div>
 
-            <!-- Sisi Kanan: Player YouTube -->
-            <div id="yt-player-wrapper" style="width: 320px; height: 180px; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid var(--border-light);">
-                <!-- Default Player (Memuat Playlist Santai Jepang terlebih dahulu sebagai placeholder) -->
-                <iframe id="yt-player" width="100%" height="100%" src="https://www.youtube.com/embed/videoseries?list=PLw-VjHDlEOgs65u7teS7mSBlA4D-7gOQG" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <div style="width: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-light); text-align: center;">
+                
+                <div id="yt-vinyl" style="width: 80px; height: 80px; background: #222; border-radius: 50%; margin-bottom: 12px; border: 5px solid #dddad5; display: flex; align-items: center; justify-content: center; position: relative; transition: transform 0.5s;">
+                    <div style="width: 20px; height: 20px; background: var(--paper-white); border-radius: 50%;"></div>
+                </div>
+                
+                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track Selected</div>
+                <div id="yt-playing-status" style="font-size: 0.65rem; color: var(--wasabi-red); letter-spacing: 1px; font-weight: 600;">IDLE</div>
+
+                <div style="width: 1px; height: 1px; opacity: 0; overflow: hidden; position: absolute;">
+                    <div id="audio-iframe-container"></div>
+                </div>
             </div>
         </div>
     </section>
+    ```
+
+*(Pastikan aturan responsive `@media` di bagian atas `<style>` tetap ada agar pada tampilan mobile letaknya otomatis menyusun ke bawah).*
+
+---
+
+### 2. Pembuatan Script Baru di `yt.js`
+
+Ganti seluruh isi file `yt.js` dengan kode di bawah ini. Kode ini menggunakan sistem *scraping feed* publik tanpa token API untuk mencari lagu secara online, memunculkan 5 daftar judul lagu terbaik secara real-time, dan memutarnya sebagai background audio murni saat diklik.
+
+```javascript
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("yt-search-input");
+    const searchBtn = document.getElementById("yt-search-btn");
+    const songListContainer = document.getElementById("yt-song-list");
+    const iframeContainer = document.getElementById("audio-iframe-container");
+    const playingTitle = document.getElementById("yt-playing-title");
+    const playingStatus = document.getElementById("yt-playing-status");
+    const vinyl = document.getElementById("yt-vinyl");
+
+    // Animasi putaran piringan hitam
+    let rotationInterval;
+    let currentRotation = 0;
+
+    function startVinylAnimation() {
+        clearInterval(rotationInterval);
+        rotationInterval = setInterval(() => {
+            currentRotation += 2;
+            vinyl.style.transform = `rotate(${currentRotation}deg)`;
+        }, 30);
+    }
+
+    function stopVinylAnimation() {
+        clearInterval(rotationInterval);
+    }
+
+    // Fungsi untuk memutar audio berdasarkan ID video YouTube
+    window.playAudioTrack = function(videoId, title) {
+        // Hapus player lama jika ada
+        iframeContainer.innerHTML = "";
+
+        // Buat elemen iframe baru dengan opsi autoplay
+        const iframe = document.createElement("iframe");
+        iframe.setAttribute("width", "100");
+        iframe.setAttribute("height", "100");
+        iframe.setAttribute("src", `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&controls=0&rel=0`);
+        iframe.setAttribute("frameborder", "0");
+        iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+        
+        iframeContainer.appendChild(iframe);
+
+        // Update UI status pemutar audio
+        playingTitle.textContent = title;
+        playingStatus.textContent = "NOW PLAYING";
+        startVinylAnimation();
+    };
+
+    // Fungsi untuk mencari lagu dan mengekstrak 5 video teratas tanpa API resmi
+    async function searchSongs() {
+        const query = searchInput.value.trim();
+        if (query === "") return;
+
+        searchBtn.textContent = "LOADING...";
+        searchBtn.disabled = true;
+        songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; opacity:0.7; padding:10px;">Searching track online...</div>`;
+
+        try {
+            // Memanfaatkan proksi CORS publik dan RSS Feed pencarian YouTube untuk mendapatkan hasil real-time gratis
+            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?search_query=' + encodeURIComponent(query + " audio"))}`);
+            const data = await response.json();
+            
+            // Parsing data XML menjadi objek bacaan
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+            const entries = xmlDoc.getElementsByTagName("entry");
+
+            songListContainer.innerHTML = "";
+
+            if (entries.length === 0) {
+                songListContainer.innerHTML = `<div style="font-size:0.75rem; color:var(--wasabi-red); text-align:center; padding:10px;">Lagu tidak ditemukan. Silakan ganti keyword.</div>`;
+                searchBtn.textContent = "SEARCH";
+                searchBtn.disabled = false;
+                return;
+            }
+
+            // Batasi maksimal mengambil 5 lagu teratas
+            const limit = Math.min(entries.length, 5);
+
+            for (let i = 0; i < limit; i++) {
+                const entry = entries[i];
+                const title = entry.getElementsByTagName("title")[0].textContent;
+                const videoId = entry.getElementsByTagName("yt:videoId")[0].textContent;
+                const author = entry.getElementsByTagName("author")[0].getElementsByTagName("name")[0].textContent;
+
+                // Membuat elemen card tombol baris lagu
+                const songRow = document.createElement("div");
+                songRow.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 12px;
+                    background: white;
+                    border: 1px solid var(--border-light);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: 0.2s ease;
+                    font-size: 0.75rem;
+                `;
+
+                songRow.innerHTML = `
+                    <div style="background: var(--ink-black); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.65rem;">${i + 1}</div>
+                    <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <strong style="color:var(--ink-black);">${title}</strong> <br/>
+                        <span style="opacity: 0.6; font-size: 0.65rem;">${author}</span>
+                    </div>
+                `;
+
+                // Hover effect
+                songRow.addEventListener("mouseover", () => {
+                    songRow.style.borderColor = "var(--wasabi-red)";
+                    songRow.style.background = "rgba(188, 0, 45, 0.02)";
+                });
+                songRow.addEventListener("mouseout", () => {
+                    songRow.style.borderColor = "var(--border-light)";
+                    songRow.style.background = "white";
+                });
+
+                // Klik Event untuk memutar musik
+                songRow.addEventListener("click", () => {
+                    window.playAudioTrack(videoId, title);
+                });
+
+                songListContainer.appendChild(songRow);
+            }
+
+        } catch (error) {
+            console.error(error);
+            songListContainer.innerHTML = `<div style="font-size:0.75rem; color:var(--wasabi-red); text-align:center; padding:10px;">Gagal mengambil data (Masalah Jaringan/CORS). Coba lagi.</div>`;
+        }
+
+        searchBtn.textContent = "SEARCH";
+        searchBtn.disabled = false;
+    }
+
+    // Event Listener Tombol Pencarian
+    searchBtn.addEventListener("click", searchSongs);
+    searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") searchSongs();
+    });
+});
+    
     <!-- ======================================================== -->
 
     <section class="gallery-container" data-aos>  
