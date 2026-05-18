@@ -12,7 +12,7 @@ async function searchSongs() {
         const data = await response.json();
 
         if (!data.status || data.results.length === 0) {
-            songListContainer.innerHTML = `<div style="text-align:center; font-size:0.8rem; opacity:0.5;">Lagu tidak ditemukan.</div>`;
+            songListContainer.innerHTML = `<div style="text-align:center; font-size:0.8rem; opacity:0.5;">Music not found.</div>`;
             return;
         }
 
