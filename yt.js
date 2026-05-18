@@ -56,52 +56,46 @@ async function searchSongs() {
     }
 }
 
-// 2. FUNGSI UNTUK MEMUTAR AUDIO (Letakkan kode yang Anda tanyakan di bawah ini)
-function playAudioTrack(videoId, title, thumbnail) {
+// 2. FUNGSI UNTUK MEMUTAR AUDIO (VERSI FIX BYPASS REDIRECT ANDROID)
+async function playAudioTrack(videoId, title, thumbnail) {
     // Tampilkan bar Spotify melayang yang ada di bagian bawah HTML
     const playerBar = document.getElementById("spotify-player-bar");
     if (playerBar) playerBar.style.display = "flex";
 
     // Set Judul dan Status Lagu
     document.getElementById("yt-playing-title").textContent = title;
-    document.getElementById("yt-playing-status").textContent = "PLAYING";
+    document.getElementById("yt-playing-status").textContent = "LOADING..."; // Ubah ke LOADING dulu
     
-    // Ganti gambar thumbnail kotak Spotify dengan thumbnail asli lagu tersebut
+    // Ganti gambar thumbnail kotak Spotify
     const thumbImg = document.getElementById("yt-thumb");
     if (thumbImg) {
         thumbImg.src = thumbnail;
         thumbImg.style.display = "block";
     }
 
-    // Sambungkan ke Cloudflare Worker Anda untuk streaming mpeg bypass Android 0:00
     const audioPlayer = document.getElementById("audio-player");
     
-    // ⚠️ GANTI URL DI BAWAH INI DENGAN URL WORKER CLOUDFLARE MILIK ANDA SENDIRI
-    audioPlayer.src = `https://mizu-audio-proxy.tohsakarin756.workers.dev/?id=${videoId}`; 
-    audioPlayer.load(); // Paksa browser menghapus cache lagu sebelumnya dari memori HP
-    
-    audioPlayer.play().catch(err => console.log("Autoplay dicegah browser: ", err));
-}
+    try {
+        const workerUrl = `https://mizu-audio-proxy.tohsakarin756.workers.dev/?id=${videoId}`;
+        
+        // 🔥 TRIK UTAMA: Ambil response pembungkus untuk memecah Redirect 302
+        const response = await fetch(workerUrl);
+        
+        // Ambil URL final setelah dialihkan otomatis oleh Cloudflare
+        const finalAudioUrl = response.url; 
 
-// 3. EVENT LISTENER TOMBOL SEARCH HTML
-document.getElementById("yt-search-btn").addEventListener("click", searchSongs);
-document.getElementById("yt-search-input").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") searchSongs();
-});
+        // Set source audio ke URL asli yang sudah matang
+        audioPlayer.src = finalAudioUrl; 
+        audioPlayer.load(); // Kosongkan antrean memori pemutar lama
+        
+        // Ubah status menjadi PLAYING kembali
+        document.getElementById("yt-playing-status").textContent = "PLAYING";
 
-// 🔥 TARUH KODE BARU ANDA DI SINI (DI BAWAH EVENT LISTENER) 🔥
-// Fungsi untuk menutup player bar dan menghentikan audio
-function closeAudioPlayer() {
-    const playerBar = document.getElementById("spotify-player-bar");
-    const audioPlayer = document.getElementById("audio-player");
-    
-    if (audioPlayer) {
-        audioPlayer.pause();       // Hentikan musik yang sedang berputar
-        audioPlayer.src = "";      // Kosongkan source audio agar memori bersih
-    }
-    
-    if (playerBar) {
-        playerBar.style.display = "none"; // Sembunyikan bar dari layar
+        // Mainkan audionya
+        await audioPlayer.play();
+
+    } catch (err) {
+        console.error("Gagal memutar audio:", err);
+        document.getElementById("yt-playing-status").textContent = "ERROR CODE";
     }
 }
-
