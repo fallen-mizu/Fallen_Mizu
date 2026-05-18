@@ -11,57 +11,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
-    playingTitle.textContent = "Menghubungkan ke server audio...";
+    playingTitle.textContent = "Mengonversi audio ke mpeg...";
     
-    // Reset total player agar browser membersihkan memori audio yang macet sebelumnya
+    // Reset pemutar agar tidak menimbun cache lagu sebelumnya
     audioPlayer.pause();
     audioPlayer.removeAttribute('src');
     audioPlayer.load();
 
-    try {
-        const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
-        const data = await response.json();
+    // 1. LANGSUNG ARAHKAN SRC KE ENDPOINT VERCEL PROXY
+    // Karena endpoint ini memuntahkan file audio/mpeg secara langsung, 
+    // browser akan mendeteksinya sebagai file mp3 lokal biasa!
+    const directProxyUrl = `${BASE_API_URL}/download?id=${videoId}`;
+    
+    audioPlayer.src = directProxyUrl;
+    audioPlayer.load(); // Paksa browser membaca ukuran buffer data lagu
 
-        if (data && data.status && data.result && data.result.download) {
-            // Set mode anonim agar browser melewati pemeriksaan CORS Mixed-Content pada file audio
-            audioPlayer.crossOrigin = "anonymous";
-            
-            // Masukkan link stream mp3 baru hasil rombakan backend
-            audioPlayer.src = data.result.download;
-            audioPlayer.load(); // Paksa browser membaca ulang metadata ukuran file & durasi
+    // Update UI Tampilan
+    playingTitle.textContent = "🎵 " + title + " (Klik PLAY)";
+    thumbImg.src = thumbnail;
 
-            playingTitle.textContent = "🎵 Siap! Silakan klik tombol PLAY";
-            thumbImg.src = thumbnail;
-
-            // Coba lakukan trigger play otomatis jika interaksi user diizinkan oleh sistem Android
-            audioPlayer.play()
-                .then(() => {
-                    playingTitle.textContent = title;
-                })
-                .catch(e => {
-                    // Jika diblokir oleh kebijakan autoplay browser:
-                    // Tombol play segitiga dipastikan sudah berwarna HITAM tegas dan durasi terisi asli!
-                    console.log("Menunggu klik manual pada tombol play hitam.");
-                    playingTitle.textContent = "🎵 " + title + " (Klik Play)";
-                });
-        } else {
-            playingTitle.textContent = "Gagal memproses data format audio.";
-        }
-    } catch (error) {
-        console.error(error);
-        playingTitle.textContent = "Koneksi API terputus. Menggunakan cadangan...";
-        
-        // Jalur darurat langsung tanpa API jika vercel sedang mengalami limitasi
-        audioPlayer.src = `https://api.vvext.my.id/api/ytmp3?url=https://www.youtube.com/watch?v=${videoId}`;
-        audioPlayer.load();
-        playingTitle.textContent = title;
-        thumbImg.src = thumbnail;
-    }
+    // 2. Trigger Play
+    audioPlayer.play()
+        .then(() => {
+            playingTitle.textContent = title;
+        })
+        .catch(e => {
+            // Jika autoplay ditahan sistem Android/Chrome, tombol PLAY manual sekarang dijamin AKTIF (HITAM)
+            console.log("Autoplay ditahan, tombol play manual mpeg telah aktif.");
+        });
     }
     
-    
-    
-
     // Fungsi melakukan pencarian 5 lagu teratas ke backend node (yt-search)
     async function searchSongs() {
         const query = searchInput.value.trim();
