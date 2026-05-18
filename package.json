@@ -2,6 +2,7 @@
   "name": "mizu-portfolio",
   "version": "1.0.0",
   "dependencies": {
+    "yt-search": "latest",
     "express": "^4.18.2"
   }
 }
