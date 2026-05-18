@@ -213,12 +213,12 @@
         <p style="color: #000000; font-size: 0.8rem; margin-top: 15px;">Best regards,<br><strong>Fallen</strong></p>
     </section>
         
-    <section id="mizu-yt-music" data-aos style="margin-top: 60px;">
+        <section id="mizu-yt-music" data-aos style="margin-top: 60px;">
         <h2 class="section-title">Mizu Music Player / 音楽プレーヤー</h2>
         
-        <div class="yt-horizontal-container" style="display: flex; gap: 25px; align-items: flex-start; margin-top: 20px; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
+        <div class="yt-main-wrapper" style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
             
-            <div style="flex: 1; min-width: 200px;">
+            <div style="width: 100%;">
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <input type="text" id="yt-search-input" placeholder="Search song or artist..." style="flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.8rem;">
                     <button id="yt-search-btn" style="padding: 8px 15px; background: var(--wasabi-red); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s;">SEARCH</button>
@@ -229,22 +229,23 @@
                 </div>
             </div>
 
-            <div style="width: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-light); text-align: center;">
+            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 12px; padding: 20px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-light); text-align: center; box-sizing: border-box;">
                 
                 <div id="yt-vinyl" style="width: 80px; height: 80px; background: #222; border-radius: 50%; margin-bottom: 12px; border: 5px solid #dddad5; display: flex; align-items: center; justify-content: center; position: relative; transition: transform 0.5s;">
                     <div style="width: 20px; height: 20px; background: var(--paper-white); border-radius: 50%;"></div>
                 </div>
                 
-                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track Selected</div>
-                <div id="yt-playing-status" style="font-size: 0.65rem; color: var(--wasabi-red); letter-spacing: 1px; font-weight: 600;">IDLE</div>
-                <img id="yt-thumb" src="" style="width: 120px; height: 70px; border-radius: 6px; margin-top: 10px; object-fit: cover; display: none; border: 1px solid #eee;">
+                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; width: 100%; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track Selected</div>
+                <div id="yt-playing-status" style="font-size: 0.65rem; color: var(--wasabi-red); letter-spacing: 1px; font-weight: 600; margin-bottom: 10px;">IDLE</div>
+                <img id="yt-thumb" src="" style="width: 120px; height: 70px; border-radius: 6px; margin-bottom: 10px; object-fit: cover; display: none; border: 1px solid #eee;">
 
-                <div style="margin-top: 15px; width: 100%;">
-                    <audio id="audio-player" controls style="width: 100%; height: 30px; outline: none;"></audio>
+                <div style="width: 100%; max-width: 320px; margin-top: 5px;">
+                    <audio id="audio-player" controls style="width: 100%; height: 32px; outline: none;"></audio>
                 </div>
             </div>
+
         </div>
-    </section>
+        </section>
 
     <section class="gallery-container" data-aos>  
         <h2 class="section-title">My Gallery / 私のギャラリー</h2>  
