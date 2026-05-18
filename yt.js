@@ -15,69 +15,51 @@ let currentAudioObjectURL = null;
 
     // Fungsi memutar audio menggunakan sistem proxy mpeg ala bot WhatsApp
     async function playAudioTrack(videoId, title, thumbnail) {
-    playingTitle.textContent = "Mengunduh komponen audio ke browser...";
+    playingTitle.textContent = "Menyiapkan aliran audio...";
     
-    // 1. FITUR PENGHAPUSAN OTOMATIS: Jika ada bekas lagu lama di memori, hancurkan sekarang
-    if (currentAudioObjectURL) {
-        URL.revokeObjectURL(currentAudioObjectURL);
-        currentAudioObjectURL = null;
-        console.log("Sisa memori audio dari lagu sebelumnya berhasil dihapus otomatis.");
-    }
-
-    // Reset total status player HTML5
+    // OMOTATIS MENGHAPUS & MERESET BEKAS LAGU LAMA DARI MEMORI BROWSER
     audioPlayer.pause();
     audioPlayer.removeAttribute('src');
-    audioPlayer.load();
+    audioPlayer.load(); 
+    console.log("Sisa buffer data lagu lama berhasil dibersihkan.");
 
     try {
-        // 2. Ambil link konversi teks dari API Vercel
+        // 1. Ambil URL konversi dari backend Vercel (Proses cepat karena hanya kirim teks URL)
         const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
         const data = await response.json();
 
-        if (data && data.status && data.result) {
-            let fetchUrl = data.result.download;
+        if (data && data.status && data.result && data.result.download) {
             
-            // Coba lakukan pengetukan stream biner langsung dari browser
-            let audioResponse = await fetch(fetchUrl).catch(() => null);
-            
-            // Jika link utama terblokir CORS, gunakan jalur cadangan fallback
-            if (!audioResponse || !audioResponse.ok) {
-                fetchUrl = data.result.fallback || `https://cdn406.savetube.vip/media/${videoId}/stream.mp3`;
-                audioResponse = await fetch(fetchUrl);
-            }
+            // 2. LANGSUNG PASANG KE PLAYER NATIVE
+            // Browser akan menangani streaming audio secara bertahap tanpa memicu CORS biner
+            audioPlayer.src = data.result.download;
+            audioPlayer.load(); // Paksa browser membaca metadata (durasi trek)
 
-            // 3. PROSES UNDUH MANUAL DI LATAR BELAKANG BROWSER
-            const audioBlob = await audioResponse.blob();
-            
-            // Ubah file hasil download menjadi URL objek lokal sementara di HP
-            currentAudioObjectURL = URL.createObjectURL(audioBlob);
-
-            // Pasang ke pemutar musik
-            audioPlayer.src = currentAudioObjectURL;
-            audioPlayer.load(); // Browser membaca total durasi file lokal
-
-            // Update Tampilan Informasi Lagu
-            playingTitle.textContent = title;
+            // Update Antarmuka Informasi Lagu
+            playingTitle.textContent = "🎵 " + title;
             thumbImg.src = thumbnail;
 
-            // 4. Eksekusi Putar
+            // 3. Jalankan perintah putar
             audioPlayer.play()
                 .then(() => {
                     playingTitle.textContent = title;
                 })
                 .catch(e => {
-                    // Jika diblokir oleh sistem autoplay bawaan Chrome/Android
+                    // Terjadi jika kebijakan autoplay browser mobile aktif mencegat suara otomatis
+                    // Di kondisi ini, durasi di HP Anda sudah terisi asli dan tombol PLAY segitiga sudah menyala hitam tegas!
                     playingTitle.textContent = "🎵 " + title + " (Klik Tombol PLAY)";
+                    console.log("Autoplay ditahan sistem, tombol play manual aktif.");
                 });
 
         } else {
-            playingTitle.textContent = "Gagal mengambil data tautan konversi.";
+            playingTitle.textContent = "Gagal memproses tautan audio dari API.";
         }
     } catch (error) {
-        console.error("Client Download Error:", error);
-        playingTitle.textContent = "Gagal mengunduh audio. Coba lagu lain.";
+        console.error("Streaming Error:", error);
+        playingTitle.textContent = "Koneksi terputus. Coba klik ulang lagu.";
     }
     }
+    
 
     // Fungsi melakukan pencarian 5 lagu teratas memanfaatkan yt-search di backend
     async function searchSongs() {
