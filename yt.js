@@ -11,26 +11,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
-    playingTitle.textContent = "Mengambil link audio .mp3...";
-    audioPlayer.src = ""; // Reset player agar tidak macet
+    playingTitle.textContent = "Memuat audio .mp3...";
+    audioPlayer.src = ""; // Reset player
 
     try {
         const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
         const data = await response.json();
 
-        // Memastikan pengecekan properti JSON hasil return dari Vercel valid
         if (data && data.status && data.result && data.result.download) {
+            // 1. Pasang URL MP3 yang baru
             audioPlayer.src = data.result.download;
-            audioPlayer.load(); // Paksa browser memuat ulang url mp3 baru
-            
+            audioPlayer.load(); 
+
+            // 2. Update UI Informasi Lagu Terlebih Dahulu
+            playingTitle.textContent = title;
+            thumbImg.src = thumbnail;
+
+            // 3. Eksekusi Play dengan penanganan catch yang lebih rapi
             audioPlayer.play()
                 .then(() => {
+                    // Jika browser mengizinkan autoplay setelah klik daftar lagu
                     playingTitle.textContent = title;
-                    thumbImg.src = thumbnail;
                 })
                 .catch(e => {
-                    playingTitle.textContent = "Gagal putar otomatis (Klik Play Manual)";
-                    console.error(e);
+                    // Jika browser tetap memblokir, beri instruksi manis ke pengguna
+                    playingTitle.textContent = "🎵 Siap diputar! Silakan klik tombol PLAY";
+                    console.log("Autoplay diblokir browser, menunggu klik manual pengguna.");
                 });
         } else {
             playingTitle.textContent = "Format data API tidak cocok";
@@ -40,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
         playingTitle.textContent = "Gagal terhubung ke API Server";
     }
     }
+    
     
 
     // Fungsi melakukan pencarian 5 lagu teratas ke backend node (yt-search)
