@@ -6,8 +6,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const playingTitle = document.getElementById("yt-playing-title");
     const thumbImg = document.getElementById("yt-thumb");
 
-    // ALAMAT API BACKEND (Sesuaikan dengan IP dan Port Alokasi Pterodactyl Anda)
-    const BASE_API_URL = "api/search.js";
+    // Menggunakan path relatif Vercel (Tanpa IP, tanpa Port)
+const BASE_API_URL = "/api"; 
+
+// Di dalam fungsi searchSongs(), fetch akan memanggil:
+`${BASE_API_URL}/search?q=${encodeURIComponent(query)}` 
+
+// Di dalam fungsi playAudioTrack(), fetch akan memanggil:
+`${BASE_API_URL}/download?id=${videoId}`
+    
 
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
