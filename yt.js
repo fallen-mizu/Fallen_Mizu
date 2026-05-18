@@ -136,4 +136,28 @@ function closeAudioPlayer() {
         playerBar.style.display = "none"; // Sembunyikan bar dari layar
     }
           }
+
+
+// =================================================================
+// 5. FITUR SHORTCUT KEYBOARD UNTUK SKIP DURASI (Maju/Mundur 10 Detik)
+// =================================================================
+document.addEventListener("keydown", (e) => {
+    const audioPlayer = document.getElementById("audio-player");
+    
+    // Pastikan user tidak lagi mengetik di kolom pencarian saat menekan panah
+    if (document.activeElement.id === "yt-search-input") return;
+    
+    if (audioPlayer && audioPlayer.src) {
+        if (e.key === "ArrowRight") {
+            // Panah Kanan: Maju 10 detik
+            e.preventDefault();
+            audioPlayer.currentTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 10);
+        } else if (e.key === "ArrowLeft") {
+            // Panah Kiri: Mundur 10 detik
+            e.preventDefault();
+            audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+        }
+    }
+});
+                
   
