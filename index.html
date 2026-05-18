@@ -228,20 +228,23 @@
         </div>
     </section>
 
-    <div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border-light); box-shadow: 0 -5px 25px rgba(0,0,0,0.06); z-index: 9999; display: none; padding: 10px 15px; box-sizing: border-box; align-items: center; justify-content: space-between; height: 75px;">
+        <div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border-light); box-shadow: 0 -5px 25px rgba(0,0,0,0.06); z-index: 9999; display: none; padding: 15px 15px 10px 15px; box-sizing: border-box; align-items: center; justify-content: space-between; height: 85px;">
         
-        <div style="display: flex; align-items: center; gap: 12px; width: 60%; min-width: 0;">
-            <img id="yt-thumb" src="" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover; background: #eee; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05);">
+        <button id="close-player-btn" onclick="closeAudioPlayer()" style="position: absolute; top: 5px; right: 10px; background: none; border: none; font-size: 1rem; color: #888; cursor: pointer; font-weight: bold; padding: 5px; line-height: 1;">×</button>
+
+        <div style="display: flex; align-items: center; gap: 12px; width: 55%; min-width: 0; margin-top: 5px;">
+            <img id="yt-thumb" src="" style="width: 45px; height: 45px; border-radius: 6px; object-fit: cover; background: #eee; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.05);">
             <div style="min-width: 0; display: flex; flex-direction: column;">
-                <div id="yt-playing-title" style="font-size: 0.8rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track</div>
-                <div id="yt-playing-status" style="font-size: 0.65rem; color: var(--wasabi-red); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px;">IDLE</div>
+                <div id="yt-playing-title" style="font-size: 0.78rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track</div>
+                <div id="yt-playing-status" style="font-size: 0.6rem; color: var(--wasabi-red); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px;">IDLE</div>
             </div>
         </div>
 
-        <div style="width: 40%; display: flex; justify-content: flex-end; align-items: center;">
-            <audio id="audio-player" controls style="width: 100%; max-width: 240px; height: 30px; outline: none;"></audio>
+        <div style="width: 45%; display: flex; justify-content: flex-end; align-items: center; margin-top: 5px;">
+            <audio id="audio-player" controls style="width: 100%; max-width: 200px; height: 30px; outline: none;"></audio>
         </div>
-    </div>
+        </div>
+    
 
     <p style="color: #BC002D; font-size: 0.7rem; margin-top: 15px; font-weight: 600;">Please wait a few minutes if you have clicked on a music, because it is downloading and will be sent to you and you can also download the music via the three-dot button next to the audio player.</p>
     
