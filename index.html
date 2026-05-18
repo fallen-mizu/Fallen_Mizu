@@ -345,7 +345,7 @@ Fallen
 <!-- ======================================================== -->
     <!-- TAMBAHAN BARU: YOUTUBE MUSIC SECTION (HORIZONTAL) -->
     <!-- ======================================================== -->
-          <section id="mizu-yt-music" data-aos style="margin-top: 60px;">
+          <    <section id="mizu-yt-music" data-aos style="margin-top: 60px;">
         <h2 class="section-title">Mizu Music Player / 音楽プレーヤー</h2>
         
         <div class="yt-horizontal-container" style="display: flex; gap: 25px; align-items: flex-start; margin-top: 20px; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
@@ -363,16 +363,22 @@ Fallen
 
             <div style="width: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-light); text-align: center;">
                 
-                <div id="yt-cover-wrapper" style="width: 90px; height: 90px; background: #222; border-radius: 50%; margin-bottom: 12px; border: 4px solid #dddad5; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: transform 0.5s;">
-                    <img id="yt-thumb" src="https://www.transparenttextures.com/patterns/handmade-paper.png" style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%;">
+                <div id="yt-vinyl" style="width: 80px; height: 80px; background: #222; border-radius: 50%; margin-bottom: 12px; border: 5px solid #dddad5; display: flex; align-items: center; justify-content: center; position: relative; transition: transform 0.5s;">
+                    <div style="width: 20px; height: 20px; background: var(--paper-white); border-radius: 50%;"></div>
                 </div>
                 
-                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: bold; margin-bottom: 8px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track Selected</div>
-                
-                <audio id="audio-player" controls style="width: 100%; height: 30px; outline: none; margin-top: 5px;"></audio>
+                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track Selected</div>
+                <div id="yt-playing-status" style="font-size: 0.65rem; color: var(--wasabi-red); letter-spacing: 1px; font-weight: 600;">IDLE</div>
+
+                <div style="width: 1px; height: 1px; opacity: 0; overflow: hidden; position: absolute;">
+                    <div id="audio-iframe-container"></div>
+                </div>
             </div>
         </div>
-          </section>
+    </section>
+ 
+        
+    
     <!-- ======================================================== -->
 
 
