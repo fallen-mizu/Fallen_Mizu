@@ -17,34 +17,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fungsi memutar musik menggunakan Cloudflare Worker Stream
     async function playAudioTrack(videoId, title, thumbnail) {
-        playingTitle.textContent = "Menghubungkan ke Cloudflare Worker Proxy...";
+    playingTitle.textContent = "Mengunduh komponen audio ke memori...";
+    
+    // RESET & BERSIHKAN BEKAS LAGU LAMA DARI BUFFER HP
+    audioPlayer.pause();
+    const oldSrc = audioPlayer.src;
+    if (oldSrc && oldSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(oldSrc); // Hancurkan object URL lama agar hemat RAM
+    }
+    audioPlayer.removeAttribute('src');
+    audioPlayer.load(); 
+    console.log("Memori cache lagu lama berhasil dimusnahkan.");
+
+    try {
+        // 1. Ambil data biner audio dari Cloudflare Worker secara utuh
+        const targetUrl = `${WORKER_DOWNLOAD_URL}?id=${videoId}`;
+        const response = await fetch(targetUrl);
         
-        // FITUR PENGHAPUSAN OTOMATIS: Hapus total sisa cache lagu lama di browser
-        audioPlayer.pause();
-        audioPlayer.removeAttribute('src');
+        if (!response.ok) throw new Error("Gagal mengambil file dari Worker.");
+
+        const audioBlob = await response.blob();
+        
+        // 2. Ubah biner mp3 menjadi URL lokal internal browser Anda
+        const localObjectURL = URL.createObjectURL(audioBlob);
+        
+        // 3. Masukkan ke player. Durasi otomatis terisi penuh dan akurat!
+        audioPlayer.src = localObjectURL;
         audioPlayer.load(); 
-        console.log("Buffer musik sebelumnya berhasil dibersihkan.");
 
-        // Langsung arahkan src ke Cloudflare Worker dengan parameter id video
-        const directWorkerStream = `${WORKER_DOWNLOAD_URL}?id=${videoId}`;
-        
-        audioPlayer.src = directWorkerStream;
-        audioPlayer.load(); // Paksa browser membaca ukuran stream audio
-
-        // Perbarui Tampilan Informasi Lagu
-        playingTitle.textContent = "🎵 " + title;
+        // Perbarui Informasi Tampilan Lagu di Layout
+        playingTitle.textContent = title;
         thumbImg.src = thumbnail;
 
-        // Eksekusi Putar Musik
+        // 4. Perintah Putar Lagu
         audioPlayer.play()
             .then(() => {
                 playingTitle.textContent = title;
             })
             .catch(e => {
-                // Kebijakan Autoplay Browser Mobile (Tombol play manual dijamin sudah AKTIF / hitam tegas)
+                // Dipicu jika dicegat oleh Autoplay Policy Chrome Android
+                // Tombol PLAY segitiga dijamin sudah menyala HITAM tegas dan durasi tidak lagi 0:00!
                 playingTitle.textContent = "🎵 " + title + " (Klik Tombol PLAY)";
-                console.log("Autoplay ditahan sistem, siap diputar manual oleh user.");
+                console.log("Autoplay ditahan, tombol manual aktif.");
             });
+
+    } catch (error) {
+        console.error("Kesalahan Player:", error);
+        playingTitle.textContent = "Gagal memuat lagu. Coba klik ulang baris lagu.";
+    }
     }
 
     // Fungsi melakukan pencarian 5 lagu teratas menembak ke api/search.js Vercel
