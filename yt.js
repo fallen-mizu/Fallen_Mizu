@@ -6,40 +6,77 @@ document.addEventListener("DOMContentLoaded", () => {
     const playingTitle = document.getElementById("yt-playing-title");
     const thumbImg = document.getElementById("yt-thumb");
 
+    // Variabel global di luar fungsi untuk mencatat object URL yang sedang aktif di memori browser
+let currentAudioObjectURL = null;
+    
+
     // Jalur dasar menuju serverless function Vercel milikmu
     const BASE_API_URL = "/api"; 
 
     // Fungsi memutar audio menggunakan sistem proxy mpeg ala bot WhatsApp
     async function playAudioTrack(videoId, title, thumbnail) {
-        playingTitle.textContent = "Mengonversi audio ke mpeg...";
-        
-        // Reset player total agar tidak menimbun cache lagu sebelumnya
-        audioPlayer.pause();
-        audioPlayer.removeAttribute('src');
-        audioPlayer.load();
+    playingTitle.textContent = "Mengunduh komponen audio ke browser...";
+    
+    // 1. FITUR PENGHAPUSAN OTOMATIS: Jika ada bekas lagu lama di memori, hancurkan sekarang
+    if (currentAudioObjectURL) {
+        URL.revokeObjectURL(currentAudioObjectURL);
+        currentAudioObjectURL = null;
+        console.log("Sisa memori audio dari lagu sebelumnya berhasil dihapus otomatis.");
+    }
 
-        // LANGSUNG ARAHKAN SRC KE ENDPOINT VERCEL DOWNLOAD PROXY
-        // Karena endpoint ini langsung memuntahkan stream biner audio/mpeg,
-        // kita tidak perlu fetch JSON lagi di sini. Browser akan mendeteksinya sebagai file mp3 langsung!
-        const directProxyUrl = `${BASE_API_URL}/download?id=${videoId}`;
-        
-        audioPlayer.src = directProxyUrl;
-        audioPlayer.load(); // Paksa browser membaca metadata stream (durasi & format)
+    // Reset total status player HTML5
+    audioPlayer.pause();
+    audioPlayer.removeAttribute('src');
+    audioPlayer.load();
 
-        // Perbarui antarmuka pengguna (UI)
-        playingTitle.textContent = "🎵 " + title + " (Klik PLAY)";
-        thumbImg.src = thumbnail;
+    try {
+        // 2. Ambil link konversi teks dari API Vercel
+        const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
+        const data = await response.json();
 
-        // Eksekusi pemutaran
-        audioPlayer.play()
-            .then(() => {
-                playingTitle.textContent = title;
-            })
-            .catch(e => {
-                // Autoplay diblokir browser Android/Chrome (Kebijakan bawaan)
-                // Di kondisi ini, tombol PLAY (segitiga) dijamin sudah AKTIF (berwarna hitam tegas)
-                console.log("Autoplay ditahan, tombol play manual mpeg aktif.");
-            });
+        if (data && data.status && data.result) {
+            let fetchUrl = data.result.download;
+            
+            // Coba lakukan pengetukan stream biner langsung dari browser
+            let audioResponse = await fetch(fetchUrl).catch(() => null);
+            
+            // Jika link utama terblokir CORS, gunakan jalur cadangan fallback
+            if (!audioResponse || !audioResponse.ok) {
+                fetchUrl = data.result.fallback || `https://cdn406.savetube.vip/media/${videoId}/stream.mp3`;
+                audioResponse = await fetch(fetchUrl);
+            }
+
+            // 3. PROSES UNDUH MANUAL DI LATAR BELAKANG BROWSER
+            const audioBlob = await audioResponse.blob();
+            
+            // Ubah file hasil download menjadi URL objek lokal sementara di HP
+            currentAudioObjectURL = URL.createObjectURL(audioBlob);
+
+            // Pasang ke pemutar musik
+            audioPlayer.src = currentAudioObjectURL;
+            audioPlayer.load(); // Browser membaca total durasi file lokal
+
+            // Update Tampilan Informasi Lagu
+            playingTitle.textContent = title;
+            thumbImg.src = thumbnail;
+
+            // 4. Eksekusi Putar
+            audioPlayer.play()
+                .then(() => {
+                    playingTitle.textContent = title;
+                })
+                .catch(e => {
+                    // Jika diblokir oleh sistem autoplay bawaan Chrome/Android
+                    playingTitle.textContent = "🎵 " + title + " (Klik Tombol PLAY)";
+                });
+
+        } else {
+            playingTitle.textContent = "Gagal mengambil data tautan konversi.";
+        }
+    } catch (error) {
+        console.error("Client Download Error:", error);
+        playingTitle.textContent = "Gagal mengunduh audio. Coba lagu lain.";
+    }
     }
 
     // Fungsi melakukan pencarian 5 lagu teratas memanfaatkan yt-search di backend
