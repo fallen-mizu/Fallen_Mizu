@@ -78,6 +78,7 @@ function playAudioTrack(videoId, title, thumbnail) {
     
     // ⚠️ GANTI URL DI BAWAH INI DENGAN URL WORKER CLOUDFLARE MILIK ANDA SENDIRI
     audioPlayer.src = `https://mizu-audio-proxy.tohsakarin756.workers.dev/?id=${videoId}`; 
+    audioPlayer.load(); // Paksa browser menghapus cache lagu sebelumnya dari memori HP
     
     audioPlayer.play().catch(err => console.log("Autoplay dicegah browser: ", err));
 }
