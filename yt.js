@@ -6,53 +6,52 @@ document.addEventListener("DOMContentLoaded", () => {
     const playingTitle = document.getElementById("yt-playing-title");
     const thumbImg = document.getElementById("yt-thumb");
 
-    // KUNCI UTAMA VERCEL: Menggunakan path relatif tanpa host/domain
+    // Jalur dasar menuju serverless function Vercel milikmu
     const BASE_API_URL = "/api"; 
 
-    // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
+    // Fungsi memutar audio menggunakan sistem proxy mpeg ala bot WhatsApp
     async function playAudioTrack(videoId, title, thumbnail) {
-    playingTitle.textContent = "Mengonversi audio ke mpeg...";
-    
-    // Reset pemutar agar tidak menimbun cache lagu sebelumnya
-    audioPlayer.pause();
-    audioPlayer.removeAttribute('src');
-    audioPlayer.load();
+        playingTitle.textContent = "Mengonversi audio ke mpeg...";
+        
+        // Reset player total agar tidak menimbun cache lagu sebelumnya
+        audioPlayer.pause();
+        audioPlayer.removeAttribute('src');
+        audioPlayer.load();
 
-    // 1. LANGSUNG ARAHKAN SRC KE ENDPOINT VERCEL PROXY
-    // Karena endpoint ini memuntahkan file audio/mpeg secara langsung, 
-    // browser akan mendeteksinya sebagai file mp3 lokal biasa!
-    const directProxyUrl = `${BASE_API_URL}/download?id=${videoId}`;
-    
-    audioPlayer.src = directProxyUrl;
-    audioPlayer.load(); // Paksa browser membaca ukuran buffer data lagu
+        // LANGSUNG ARAHKAN SRC KE ENDPOINT VERCEL DOWNLOAD PROXY
+        // Karena endpoint ini langsung memuntahkan stream biner audio/mpeg,
+        // kita tidak perlu fetch JSON lagi di sini. Browser akan mendeteksinya sebagai file mp3 langsung!
+        const directProxyUrl = `${BASE_API_URL}/download?id=${videoId}`;
+        
+        audioPlayer.src = directProxyUrl;
+        audioPlayer.load(); // Paksa browser membaca metadata stream (durasi & format)
 
-    // Update UI Tampilan
-    playingTitle.textContent = "🎵 " + title + " (Klik PLAY)";
-    thumbImg.src = thumbnail;
+        // Perbarui antarmuka pengguna (UI)
+        playingTitle.textContent = "🎵 " + title + " (Klik PLAY)";
+        thumbImg.src = thumbnail;
 
-    // 2. Trigger Play
-    audioPlayer.play()
-        .then(() => {
-            playingTitle.textContent = title;
-        })
-        .catch(e => {
-            // Jika autoplay ditahan sistem Android/Chrome, tombol PLAY manual sekarang dijamin AKTIF (HITAM)
-            console.log("Autoplay ditahan, tombol play manual mpeg telah aktif.");
-        });
+        // Eksekusi pemutaran
+        audioPlayer.play()
+            .then(() => {
+                playingTitle.textContent = title;
+            })
+            .catch(e => {
+                // Autoplay diblokir browser Android/Chrome (Kebijakan bawaan)
+                // Di kondisi ini, tombol PLAY (segitiga) dijamin sudah AKTIF (berwarna hitam tegas)
+                console.log("Autoplay ditahan, tombol play manual mpeg aktif.");
+            });
     }
-    
-    // Fungsi melakukan pencarian 5 lagu teratas ke backend node (yt-search)
+
+    // Fungsi melakukan pencarian 5 lagu teratas memanfaatkan yt-search di backend
     async function searchSongs() {
         const query = searchInput.value.trim();
         if (query === "") return;
 
-        // Beri proteksi agar tombol berubah status saat loading
         searchBtn.textContent = "MENCARI...";
         searchBtn.disabled = true;
         songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; opacity:0.7; padding:10px;">Mencari trek via yt-search...</div>`;
 
         try {
-            // Mengarah ke /api/search?q=...
             const res = await fetch(`${BASE_API_URL}/search?q=${encodeURIComponent(query)}`);
             const data = await res.json();
 
@@ -60,13 +59,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!data.status || !data.results || data.results.length === 0) {
                 songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; color:red; padding:10px;">Lagu tidak ditemukan atau API Error.</div>`;
-                // Kembalikan tombol ke kondisi semula jika gagal
-                searchBtn.textContent = "SEARCH";
-                searchBtn.disabled = false;
                 return;
             }
 
-            // Tampilkan tepat 5 pilihan lagu secara interaktif
+            // Tampilkan tepat 5 pilihan lagu teratas
             data.results.forEach((song, i) => {
                 const songRow = document.createElement("div");
                 songRow.style.cssText = "display:flex; align-items:center; gap:12px; padding:8px 12px; background:white; border:1px solid #ddd; border-radius:8px; cursor:pointer; margin-bottom:8px; font-size:0.75rem; transition: 0.2s;";
@@ -82,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 songRow.addEventListener("mouseover", () => songRow.style.borderColor = "red");
                 songRow.addEventListener("mouseout", () => songRow.style.borderColor = "#ddd");
 
-                // Saat salah satu dari 5 lagu diklik, putar audionya
+                // Ketika salah satu dari 5 lagu diklik, panggil fungsi play proxy mpeg
                 songRow.addEventListener("click", () => {
                     playAudioTrack(song.id, song.title, song.thumbnail);
                 });
@@ -94,16 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Search Fetch Error:", error);
             songListContainer.innerHTML = `<div style="font-size:0.75rem; text-align:center; color:red; padding:10px;">Gagal terhubung ke Fungsi Vercel.</div>`;
         } finally {
-            // Blok finally memastikan tombol SELALU aktif kembali apa pun hasilnya
             searchBtn.textContent = "SEARCH";
             searchBtn.disabled = false;
         }
     }
 
-    // Pasang event listener ke tombol
     searchBtn.addEventListener("click", searchSongs);
     searchInput.addEventListener("keypress", (e) => { 
         if (e.key === "Enter") searchSongs(); 
     });
 });
-                                 
