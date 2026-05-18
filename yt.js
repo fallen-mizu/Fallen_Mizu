@@ -15,49 +15,37 @@ let currentAudioObjectURL = null;
 
     // Fungsi memutar audio menggunakan sistem proxy mpeg ala bot WhatsApp
     async function playAudioTrack(videoId, title, thumbnail) {
-    playingTitle.textContent = "Menyiapkan aliran audio...";
+    playingTitle.textContent = "Menghubungkan ke Cloudflare Worker Proxy...";
     
-    // OMOTATIS MENGHAPUS & MERESET BEKAS LAGU LAMA DARI MEMORI BROWSER
+    // OTOMATIS MENGHAPUS & MERESET BEKAS LAGU LAMA DARI MEMORI BROWSER
     audioPlayer.pause();
     audioPlayer.removeAttribute('src');
     audioPlayer.load(); 
-    console.log("Sisa buffer data lagu lama berhasil dibersihkan.");
+    console.log("Buffer lagu lama dibersihkan dari memori browser.");
 
-    try {
-        // 1. Ambil URL konversi dari backend Vercel (Proses cepat karena hanya kirim teks URL)
-        const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
-        const data = await response.json();
+    // LANGSUNG ARAHKAN SRC KE WORKER
+    // Karena Worker memuntahkan stream audio/mpeg secara realtime,
+    // elemen <audio> HTML5 akan langsung membaca durasi aslinya secara instan!
+    const directWorkerStream = `${WORKER_URL}?id=${videoId}`;
+    
+    audioPlayer.src = directWorkerStream;
+    audioPlayer.load(); // Paksa browser membaca ukuran stream audio
 
-        if (data && data.status && data.result && data.result.download) {
-            
-            // 2. LANGSUNG PASANG KE PLAYER NATIVE
-            // Browser akan menangani streaming audio secara bertahap tanpa memicu CORS biner
-            audioPlayer.src = data.result.download;
-            audioPlayer.load(); // Paksa browser membaca metadata (durasi trek)
+    // Update UI Tampilan Informasi Lagu
+    playingTitle.textContent = "🎵 " + title;
+    thumbImg.src = thumbnail;
 
-            // Update Antarmuka Informasi Lagu
-            playingTitle.textContent = "🎵 " + title;
-            thumbImg.src = thumbnail;
-
-            // 3. Jalankan perintah putar
-            audioPlayer.play()
-                .then(() => {
-                    playingTitle.textContent = title;
-                })
-                .catch(e => {
-                    // Terjadi jika kebijakan autoplay browser mobile aktif mencegat suara otomatis
-                    // Di kondisi ini, durasi di HP Anda sudah terisi asli dan tombol PLAY segitiga sudah menyala hitam tegas!
-                    playingTitle.textContent = "🎵 " + title + " (Klik Tombol PLAY)";
-                    console.log("Autoplay ditahan sistem, tombol play manual aktif.");
-                });
-
-        } else {
-            playingTitle.textContent = "Gagal memproses tautan audio dari API.";
-        }
-    } catch (error) {
-        console.error("Streaming Error:", error);
-        playingTitle.textContent = "Koneksi terputus. Coba klik ulang lagu.";
-    }
+    // Jalankan perintah putar
+    audioPlayer.play()
+        .then(() => {
+            playingTitle.textContent = title;
+        })
+        .catch(e => {
+            // Jika autoplay diblokir oleh Android/Chrome (Kebijakan sistem)
+            // Di sini tombol PLAY (segitiga) dipastikan sudah AKTIF (berwarna hitam pekat)
+            playingTitle.textContent = "🎵 " + title + " (Klik Tombol PLAY)";
+            console.log("Autoplay ditahan, tombol play manual mpeg aktif.");
+        });
     }
     
 
