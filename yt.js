@@ -19,6 +19,14 @@ async function searchSongs() {
 
         songListContainer.innerHTML = "";
 
+        songRow.addEventListener("click", () => {
+        currentTrackIndex = i; // <--- WAJIB TAMBAHKAN BARIS INI agar sistem tahu lagu nomor berapa yang berputar
+            document.querySelectorAll(".song-row").forEach(el => el.classList.remove("active-track"));
+        songRow.classList.add("active-track");
+        playAudioTrack(song.id, song.title, song.thumbnail);
+    });
+});
+
         data.results.forEach((song, i) => {
             const songRow = document.createElement("div");
             // Menambahkan class untuk animasi CSS klik
@@ -57,6 +65,8 @@ async function searchSongs() {
 
     } catch (error) {
         songListContainer.innerHTML = `<div style="text-align:center; font-size:0.8rem; color:red;">Error: ${error.message}</div>`;
+        currentTracksList = data.results; // <--- WAJIB TAMBAHKAN BARIS INI
+        data.results.forEach((song, i) => {
     }
 }
 
