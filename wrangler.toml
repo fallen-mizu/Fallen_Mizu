@@ -1,0 +1,4 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "Fallen-Mizu"
+
+# Kosongkan bagian [vars] dari API Key sensitif
