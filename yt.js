@@ -12,37 +12,53 @@ document.addEventListener("DOMContentLoaded", () => {
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
     playingTitle.textContent = "Menghubungkan ke server audio...";
-    audioPlayer.src = ""; // Reset player lama
+    
+    // Reset total player agar browser membersihkan memori audio yang macet sebelumnya
+    audioPlayer.pause();
+    audioPlayer.removeAttribute('src');
+    audioPlayer.load();
 
     try {
         const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
         const data = await response.json();
 
         if (data && data.status && data.result && data.result.download) {
-            // Pasang URL mp3 ke player
+            // Set mode anonim agar browser melewati pemeriksaan CORS Mixed-Content pada file audio
+            audioPlayer.crossOrigin = "anonymous";
+            
+            // Masukkan link stream mp3 baru hasil rombakan backend
             audioPlayer.src = data.result.download;
-            audioPlayer.load(); // Paksa browser membaca ulang metadata file
+            audioPlayer.load(); // Paksa browser membaca ulang metadata ukuran file & durasi
 
             playingTitle.textContent = "🎵 Siap! Silakan klik tombol PLAY";
             thumbImg.src = thumbnail;
 
-            // Jalankan penanganan play
+            // Coba lakukan trigger play otomatis jika interaksi user diizinkan oleh sistem Android
             audioPlayer.play()
                 .then(() => {
                     playingTitle.textContent = title;
                 })
                 .catch(e => {
-                    // Jika diblokir kebijakan autoplay, tombol play dipastikan sudah aktif dan bisa diklik manual!
-                    console.log("Autoplay ditahan browser, tombol play manual aktif.");
+                    // Jika diblokir oleh kebijakan autoplay browser:
+                    // Tombol play segitiga dipastikan sudah berwarna HITAM tegas dan durasi terisi asli!
+                    console.log("Menunggu klik manual pada tombol play hitam.");
+                    playingTitle.textContent = "🎵 " + title + " (Klik Play)";
                 });
         } else {
             playingTitle.textContent = "Gagal memproses data format audio.";
         }
     } catch (error) {
         console.error(error);
-        playingTitle.textContent = "Koneksi API terputus. Coba lagi.";
+        playingTitle.textContent = "Koneksi API terputus. Menggunakan cadangan...";
+        
+        // Jalur darurat langsung tanpa API jika vercel sedang mengalami limitasi
+        audioPlayer.src = `https://api.vvext.my.id/api/ytmp3?url=https://www.youtube.com/watch?v=${videoId}`;
+        audioPlayer.load();
+        playingTitle.textContent = title;
+        thumbImg.src = thumbnail;
     }
     }
+    
     
     
 
