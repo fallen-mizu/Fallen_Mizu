@@ -11,34 +11,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
-        playingTitle.textContent = "Mengambil link audio .mp3...";
-        audioPlayer.src = ""; // Bersihkan trek lama
+    playingTitle.textContent = "Mengambil link audio .mp3...";
+    audioPlayer.src = ""; // Reset player agar tidak macet
 
-        try {
-            // Mengarah ke /api/download?id=...
-            const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
-            const data = await response.json();
+    try {
+        const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
+        const data = await response.json();
 
-            if (data.status && data.result && data.result.download) {
-                audioPlayer.src = data.result.download;
-                audioPlayer.load();
-                audioPlayer.play()
-                    .then(() => {
-                        playingTitle.textContent = title;
-                        thumbImg.src = thumbnail;
-                    })
-                    .catch(e => {
-                        playingTitle.textContent = "Gagal memutar otomatis (Klik tombol Play)";
-                        console.error(e);
-                    });
-            } else {
-                playingTitle.textContent = "Audio tidak tersedia pada API";
-            }
-        } catch (error) {
-            console.error("Download Error:", error);
-            playingTitle.textContent = "Gagal terhubung ke API Server";
+        // Memastikan pengecekan properti JSON hasil return dari Vercel valid
+        if (data && data.status && data.result && data.result.download) {
+            audioPlayer.src = data.result.download;
+            audioPlayer.load(); // Paksa browser memuat ulang url mp3 baru
+            
+            audioPlayer.play()
+                .then(() => {
+                    playingTitle.textContent = title;
+                    thumbImg.src = thumbnail;
+                })
+                .catch(e => {
+                    playingTitle.textContent = "Gagal putar otomatis (Klik Play Manual)";
+                    console.error(e);
+                });
+        } else {
+            playingTitle.textContent = "Format data API tidak cocok";
         }
+    } catch (error) {
+        console.error("Download Error:", error);
+        playingTitle.textContent = "Gagal terhubung ke API Server";
     }
+    }
+    
 
     // Fungsi melakukan pencarian 5 lagu teratas ke backend node (yt-search)
     async function searchSongs() {
