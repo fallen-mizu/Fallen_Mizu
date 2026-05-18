@@ -88,3 +88,19 @@ document.getElementById("yt-search-btn").addEventListener("click", searchSongs);
 document.getElementById("yt-search-input").addEventListener("keypress", (e) => {
     if (e.key === "Enter") searchSongs();
 });
+
+// Fungsi untuk menutup player bar dan menghentikan audio
+function closeAudioPlayer() {
+    const playerBar = document.getElementById("spotify-player-bar");
+    const audioPlayer = document.getElementById("audio-player");
+    
+    if (audioPlayer) {
+        audioPlayer.pause();       // Hentikan musik yang sedang berputar
+        audioPlayer.src = "";      // Kosongkan source audio agar memori bersih
+    }
+    
+    if (playerBar) {
+        playerBar.style.display = "none"; // Sembunyikan bar dari layar
+    }
+}
+
