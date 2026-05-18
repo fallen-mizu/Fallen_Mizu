@@ -56,15 +56,15 @@ async function searchSongs() {
     }
 }
 
-// 2. FUNGSI UNTUK MEMUTAR AUDIO (VERSI FIX BYPASS REDIRECT ANDROID)
+// 2. FUNGSI UNTUK MEMUTAR AUDIO (REBUILD VERSION)
 async function playAudioTrack(videoId, title, thumbnail) {
-    // Tampilkan bar Spotify melayang yang ada di bagian bawah HTML
+    // Tampilkan bar Spotify melayang di bawah
     const playerBar = document.getElementById("spotify-player-bar");
     if (playerBar) playerBar.style.display = "flex";
 
-    // Set Judul dan Status Lagu
+    // Set Judul dan ubah status sementara ke LOADING
     document.getElementById("yt-playing-title").textContent = title;
-    document.getElementById("yt-playing-status").textContent = "LOADING..."; // Ubah ke LOADING dulu
+    document.getElementById("yt-playing-status").textContent = "LOADING...";
     
     // Ganti gambar thumbnail kotak Spotify
     const thumbImg = document.getElementById("yt-thumb");
@@ -76,26 +76,33 @@ async function playAudioTrack(videoId, title, thumbnail) {
     const audioPlayer = document.getElementById("audio-player");
     
     try {
+        // Tembak Cloudflare Worker untuk meminta Link JSON nya
         const workerUrl = `https://mizu-audio-proxy.tohsakarin756.workers.dev/?id=${videoId}`;
-        
-        // 🔥 TRIK UTAMA: Ambil response pembungkus untuk memecah Redirect 302
         const response = await fetch(workerUrl);
-        
-        // Ambil URL final setelah dialihkan otomatis oleh Cloudflare
-        const finalAudioUrl = response.url; 
+        const data = await response.json();
 
-        // Set source audio ke URL asli yang sudah matang
-        audioPlayer.src = finalAudioUrl; 
-        audioPlayer.load(); // Kosongkan antrean memori pemutar lama
+        if (!data.status || !data.url) {
+            throw new Error(data.error || "Link download tidak ditemukan.");
+        }
+
+        // Ambil link MP3 murni hasil ekstraksi
+        const finalMp3Url = data.url;
+
+        // Berikan link langsung tersebut ke elemen audio bawaan HTML5
+        audioPlayer.src = finalMp3Url;
+        audioPlayer.load(); // Bersihkan sisa buffer lagu sebelumnya
         
-        // Ubah status menjadi PLAYING kembali
+        // Kembalikan status menjadi PLAYING
         document.getElementById("yt-playing-status").textContent = "PLAYING";
 
-        // Mainkan audionya
+        // Eksekusi putar musik
         await audioPlayer.play();
 
     } catch (err) {
-        console.error("Gagal memutar audio:", err);
-        document.getElementById("yt-playing-status").textContent = "ERROR CODE";
+        console.error("Mizu Player Error:", err);
+        document.getElementById("yt-playing-status").textContent = "SERVER BUSY";
+        
+        // Opsional: Jika error, tampilkan pemberitahuan ke user
+        alert("Duh, server pengekstraksinya lagi sibuk, coba lagu yang lain dulu ya! 😤");
     }
 }
