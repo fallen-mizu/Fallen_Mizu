@@ -10,8 +10,13 @@ document.addEventListener("DOMContentLoaded", () => {
 let currentAudioObjectURL = null;
     
 
-    // Ganti dengan URL Cloudflare Worker Anda yang asli
-const WORKER_URL = "https://mizu-audio-proxy.tohsakarin756.workers.dev"; 
+      // ================= CONFIG URL SERVER =================
+    // 1. URL PENCARIAN (Kembali menembak ke API Search Vercel Anda yang lama)
+    const SEARCH_API_URL = "/api/search.js"; 
+
+    // 2. URL PROXY AUDIO (Murni menembak ke Cloudflare Worker Anda)
+    // PENTING: Ganti tulisan di bawah ini dengan URL Worker Anda yang asli!
+    const WORKER_DOWNLOAD_URL = "https://mizu-audio-proxy.tohsakarin756.workers.dev"; 
 
     // Fungsi memutar audio menggunakan sistem proxy mpeg ala bot WhatsApp
     async function playAudioTrack(videoId, title, thumbnail) {
