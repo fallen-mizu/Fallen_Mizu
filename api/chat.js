@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
     // 2. Extract message and history from request body
     const { message, history } = req.body;
-    const apiKey = process.env.GROQ_API_KEY; // Diubah ke GROQ_API_KEY
+    const apiKey = process.env.API_HOST; // Diubah ke GROQ_API_KEY
 
     if (!apiKey) {
         return res.status(500).json({ error: 'Missing API Key in environment variables.' });
