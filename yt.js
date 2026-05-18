@@ -59,10 +59,10 @@ async function searchSongs() {
 }
 
 // =================================================================
-// 2. FUNGSI UNTUK MEMUTAR AUDIO (Versi Rebuild Menggunakan JSON Link)
+// 2. FUNGSI UNTUK MEMUTAR AUDIO (BYPASS CLOUDFLARE - LANGSUNG KE API)
 // =================================================================
 async function playAudioTrack(videoId, title, thumbnail) {
-    // Tampilkan bar Spotify melayang di bawah layar
+    // Tampilkan bar Spotify melayang di bawah
     const playerBar = document.getElementById("spotify-player-bar");
     if (playerBar) playerBar.style.display = "flex";
 
@@ -70,7 +70,6 @@ async function playAudioTrack(videoId, title, thumbnail) {
     document.getElementById("yt-playing-title").textContent = title;
     document.getElementById("yt-playing-status").textContent = "LOADING...";
     
-    // Pasang gambar thumbnail lagu ke kotak pemutar
     const thumbImg = document.getElementById("yt-thumb");
     if (thumbImg) {
         thumbImg.src = thumbnail;
@@ -80,18 +79,25 @@ async function playAudioTrack(videoId, title, thumbnail) {
     const audioPlayer = document.getElementById("audio-player");
     
     try {
-        // Tembak Cloudflare Worker Anda untuk mendapatkan Link JSON MP3 murni
-        const workerUrl = `https://mizu-audio-proxy.tohsakarin756.workers.dev/?id=${videoId}`;
-        const response = await fetch(workerUrl);
+        // 🔥 KUNCI UTAMA: Rekonstruksi URL YouTube langsung menggunakan standard template literal
+        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        
+        // 🔥 BYPASS CLOUDFLARE: Langsung tembak API Zenzxz dari Frontend Vercel kamu
+        const apiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(videoUrl)}&format=mp3`;
+        
+        const response = await fetch(apiUrl);
         const data = await response.json();
 
-        if (!data.status || !data.url) {
-            throw new Error(data.error || "Link download tidak ditemukan.");
+        // Ambil data sesuai dengan struktur JSON asli Zenzxz (data.result.download)
+        if (!data.status || !data.result || !data.result.download) {
+            throw new Error("Gagal mengambil link download dari Zenzxz.");
         }
 
-        // Suapi elemen audio dengan link direct MP3 hasil ekstrak Cloudflare
-        audioPlayer.src = data.url;
-        audioPlayer.load(); // Bersihkan sisa antrean/buffer musik sebelumnya
+        const finalMp3Url = data.result.download;
+
+        // Suapi elemen audio dengan link direct MP3 dari Savetube
+        audioPlayer.src = finalMp3Url;
+        audioPlayer.load(); // Bersihkan sisa buffer lagu sebelumnya
         
         // Kembalikan status teks ke PLAYING
         document.getElementById("yt-playing-status").textContent = "PLAYING";
