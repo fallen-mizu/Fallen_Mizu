@@ -200,10 +200,13 @@
 
         <div id="chat-box" style="height: 350px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);"></div>
         
+        
         <div style="display: flex; gap: 10px;">
-            <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.85rem;">
-            <button id="send-chat-btn" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">SEND</button>
+    <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.85rem;">
+    
+    <button id="send-chat-btn" onclick="window.sendMessage()" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">SEND</button>
         </div>
+        
 
         <p style="color: #BC002D; font-size: 0.7rem; margin-top: 15px; font-weight: 600;">⚠️ Attention ⚠️: Due to API limitations, your message may not be responded to or an error may appear, I apologize for that. 🙏</p>
         <p style="color: #BC002D; font-size: 0.7rem; margin-top: 5px;">The daily message limit is 30 per day, do not spam, because your account is visible in the database.</p>
