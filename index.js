@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen Mizu | 新潟デジタル建築家</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;600;900&family=Sawarabi+Mincho&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --wasabi-red: #BC002D; /* Red from Japan flag */
+            --ink-black: #1A1A1B;
+            --paper-white: #F9F9F7;
+            --border-light: rgba(0,0,0,0.08);
+            --transition-speed: 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        body {
+            background-color: var(--paper-white);
+            color: var(--ink-black);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            line-height: 1.8;
+            background-image: url("https://www.transparenttextures.com/patterns/handmade-paper.png");
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 80px 30px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes rotateVinyl {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(36deg); }
+        }
+
+        /* --- Global AOS Style --- */
+        [data-aos] { opacity: 0; transform: translateY(30px); transition: var(--transition-speed); }
+        .aos-visible { opacity: 1; transform: translateY(0); }
+
+        /* --- CLOCK SECTION --- */
+        .osaka-time-box {
+            text-align: right;
+            margin-bottom: 50px;
+            border-right: 2px solid var(--wasabi-red);
+            padding-right: 15px;
+            font-family: 'Noto Serif JP', serif;
+        }
+        #full-date { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.6; }
+        #osaka-clock { font-size: 1.8rem; font-weight: 300; color: var(--ink-black); }
+        .timezone-label { font-size: 0.6rem; opacity: 0.5; margin-top: 5px; }
+
+        /* --- PROFILE & HEADER --- */
+        .profile-img {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            filter: grayscale(100%);
+            border: 1px solid var(--border-light);
+            margin-bottom: 20px;
+            object-fit: cover;
+            display: block;
+        }
+
+        h1 { 
+            font-family: 'Noto Serif JP', serif; 
+            font-size: 3rem; 
+            font-weight: 900; 
+            margin: 0; 
+            letter-spacing: -2px; 
+            line-height: 1; 
+            overflow: hidden;
+        }
+        h1 span { display: inline-block; transform: translateY(110%); transition: transform 1.2s var(--transition-speed); }
+        header.aos-visible h1 span { transform: translateY(0); }
+
+        .subtitle { 
+            color: var(--wasabi-red); 
+            font-size: 0.65rem; 
+            letter-spacing: 5px; 
+            font-weight: 600; 
+            margin-top: 10px;
+            margin-bottom: 40px; 
+        }
+
+        /* --- SECTIONS --- */
+        .section-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 80px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px;
+            position: relative;
+        }
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -1px; left: 0;
+            width: 40px; height: 1.5px;
+            background: var(--wasabi-red);
+        }
+        .journey-text { font-size: 0.85rem; margin-bottom: 25px; color: #444; }
+        .japanese-text { font-family: 'Sawarabi Mincho', serif; font-size: 0.9rem; line-height: 2; color: #333; }
+
+        /* --- BUTTONS --- */
+        #new-chat-btn:hover {
+            background: var(--wasabi-red) !important;
+            color: white !important;
+            border-color: var(--wasabi-red) !important;
+        }
+
+        /* --- GALLERY GRID --- */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 60px; }
+        .gallery-item { position: relative; overflow: hidden; background: white; border: 1px solid var(--border-light); box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .gallery-item img { width: 100%; height: auto; display: block; filter: grayscale(80%); transition: 1.2s var(--transition-speed); }
+        .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.08); }
+        .caption { margin-top: 15px; font-size: 0.75rem; border-left: 2px solid var(--wasabi-red); padding-left: 15px; opacity: 0.8; padding-bottom: 15px; }
+        .caption strong { display: block; margin-bottom: 5px; }
+        .caption .japanese { font-family: 'Sawarabi Mincho', serif; font-size: 0.8rem; opacity: 0.6; }
+
+        /* --- CONTACT GRID --- */
+        .app-grid { display: grid; grid-template-columns: repeat(2, 100px); gap: 20px; margin-top: 80px; justify-content: center; }
+        .app-icon { text-decoration: none; color: inherit; width: 100px; height: 100px; background: white; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: 0.4s; border: 1px solid var(--border-light); }
+        .app-icon:hover { transform: translateY(-5px); border-color: var(--wasabi-red); }
+        .app-icon svg { width: 30px; height: 30px; margin-bottom: 8px; }
+        .app-icon span { font-size: 0.6rem; font-weight: 600; letter-spacing: 1px; }
+
+        /* --- LEGAL OVERLAY --- */
+        .legal-section { margin-top: 100px; font-size: 0.7rem; color: #888; border-top: 1px solid var(--border-light); padding-top: 30px; }
+        .legal-section p { margin-bottom: 0.8em; }
+        .legal-section strong { color: var(--ink-black); }
+
+        @media (max-width: 600px) {
+            .container { padding: 60px 20px; }
+            h1 { font-size: 2.5rem; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 30px; }
+            .app-grid { grid-template-columns: repeat(2, 90px); gap: 15px; }
+            .app-icon { width: 90px; height: 90px; border-radius: 18px; }
+            .app-icon svg { width: 26px; height: 26px; }
+            .app-icon span { font-size: 0.55rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="clear-confirm" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 999;">
+    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; width: 260px; animation: fadeIn 0.3s ease;">
+        <p style="margin-bottom: 15px; font-size: 0.85rem;">Clear all chat?</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="clearChatAdvanced()" style="padding: 6px 12px; border: none; background: var(--wasabi-red); color: white; border-radius: 10px; cursor: pointer; font-size: 0.8rem;">Yes</button>
+            <button onclick="closeConfirm()" style="padding: 6px 12px; border: 1px solid #ccc; background: white; border-radius: 10px; cursor: pointer; font-size: 0.8rem;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">  
+    <div class="osaka-time-box" data-aos>  
+        <div id="response-time" style="font-size:0.7rem; opacity:0.6; text-align:left;">0 ms</div>  
+        <div id="full-date">LOADING DATE...</div>  
+        <div id="osaka-clock">00:00:00</div>  
+        <div class="timezone-label">NIIGATA, JP (UTC+9)</div>  
+    </div>  
+
+    <header data-aos>  
+        <img src="profile.jpg" alt="Fallen_Mizu" class="profile-img">
+        <h1><span>Fallen</span><br><span>Mizu</span></h1>  
+        <div class="subtitle">デジタル建築家 // NIIGATA ARCHITECT</div>  
+    </header>  
+
+    <section class="my-journey" data-aos>  
+        <h2 class="section-title">My Journey / 私の旅路</h2>  
+        <div class="journey-text">  
+            <p>From an introverted past, I embarked on a solo journey, finding my voice and purpose far from home. Working in Niigata, I've built a life independently, overcoming challenges to become a digital architect. This path has taught me resilience and the power of self-reliance, proving that true strength comes from within.</p>  
+        </div>  
+        <div class="japanese-text">  
+            <p>かつては内向的だった私が、故郷を離れ、独りで旅立ちました。新潟で自立した生活を築き、デジタル建築家としての道を開拓。数々の困難を乗り越え、自己成長の力を信じてきました。真の強さは内面から生まれることを、この旅路が教えてくれました。</p>  
+        </div> 
+    </section>  
+
+    <section id="mizu-chat-container" data-aos style="margin-top: 60px;">
+        <h2 class="section-title">Consult with Mizu / 水に相談する</h2>
+        
+        <div style="display: flex; justify-content: flex-start; margin-bottom: 10px;">
+            <button id="new-chat-btn" onclick="confirmClearChat()" style="padding: 6px 15px; font-size: 0.75rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; color: var(--ink-black);">
+                New Chat
+            </button>
+        </div>
+
+        <div id="chat-box" style="height: 350px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.85rem;">
+            <button id="send-chat-btn" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">SEND</button>
+        </div>
+
+        <p style="color: #BC002D; font-size: 0.7rem; margin-top: 15px; font-weight: 600;">⚠️ Attention ⚠️: Due to API limitations, your message may not be responded to or an error may appear, I apologize for that. 🙏</p>
+        <p style="color: #BC002D; font-size: 0.7rem; margin-top: 5px;">The daily message limit is 30 per day, do not spam, because your account is visible in the database.</p>
+        <p style="color: #000000; font-size: 0.8rem; margin-top: 15px;">Best regards,<br><strong>Fallen</strong></p>
+    </section>
+        
+    <section id="mizu-yt-music" data-aos style="margin-top: 60px;">
+        <h2 class="section-title">Mizu Music Player / 音楽プレーヤー</h2>
+        
+        <div class="yt-horizontal-container" style="display: flex; gap: 25px; align-items: flex-start; margin-top: 20px; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
+            
+            <div style="flex: 1; min-width: 200px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="yt-search-input" placeholder="Search song or artist..." style="flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.8rem;">
+                    <button id="yt-search-btn" style="padding: 8px 15px; background: var(--wasabi-red); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s;">SEARCH</button>
+                </div>
+                
+                <div id="yt-song-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                    <div style="font-size: 0.75rem; opacity: 0.5; font-style: italic; text-align: center; padding: 10px;">Cari lagu untuk menampilkan daftar pilihan...</div>
+                </div>
+            </div>
+
+            <div style="width: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-light); text-align: center;">
+                
+                <div id="yt-vinyl" style="width: 80px; height: 80px; background: #222; border-radius: 50%; margin-bottom: 12px; border: 5px solid #dddad5; display: flex; align-items: center; justify-content: center; position: relative; transition: transform 0.5s;">
+                    <div style="width: 20px; height: 20px; background: var(--paper-white); border-radius: 50%;"></div>
+                </div>
+                
+                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-black);">No Track Selected</div>
+                <div id="yt-playing-status" style="font-size: 0.65rem; color: var(--wasabi-red); letter-spacing: 1px; font-weight: 600;">IDLE</div>
+                <img id="yt-thumb" src="" style="width: 120px; height: 70px; border-radius: 6px; margin-top: 10px; object-fit: cover; display: none; border: 1px solid #eee;">
+
+                <div style="margin-top: 15px; width: 100%;">
+                    <audio id="audio-player" controls style="width: 100%; height: 30px; outline: none;"></audio>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery-container" data-aos>  
+        <h2 class="section-title">My Gallery / 私のギャラリー</h2>  
+        <div class="gallery-grid">  
+            <div class="gallery-item">  
+                <img src="photo1.jpg" alt="Work 1">  
+                <div class="caption">  
+                    <strong>Just looking at your beautiful face</strong>  
+                    <span class="japanese">あなたの美しい顔を見ているだけで</span>  
+                </div>  
+            </div>  
+            <div class="gallery-item" style="margin-top: 20px;">  
+                <img src="photo2.jpg" alt="Work 2">  
+                <div class="caption">  
+                    <strong>Nanase Yuzuki</strong>  
+                    <span class="japanese">七瀬ゆづき</span>  
+                </div>  
+            </div>  
+        </div>  
+    </section>  
+
+    <section class="contact-grid" data-aos>  
+        <h2 class="section-title">Contact / お問い合わせ</h2>  
+        <div class="app-grid">  
+            <a href="https://wa.me/+817094849655" target="_blank" class="app-icon">  
+                <svg viewBox="0 0 24 24" fill="#25D366"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.459 3.419 1.263 4.858L2 22l5.335-1.4c1.4.759 2.993 1.188 4.677 1.188 5.508 0 9.987-4.479 9.987-9.987 0-5.508-4.479-9.987-9.987-9.987zm0 1.745c4.553 0 8.242 3.689 8.242 8.242 0 4.553-3.689 8.242-8.242 8.242-1.505 0-2.911-.403-4.126-1.106l-.297-.173-3.076.808.822-3.003-.191-.304c-.759-1.208-1.161-2.612-1.161-4.137 0-4.553 3.689-8.242 8.242-8.242z"/></svg>  
+                <span>WHATSAPP</span>  
+            </a>  
+            <a href="https://signal.me/#eu/5v6uZK3GEphH3uALQAK9V47K2FuLvOlpCgLaVWu9CMnoyyIU4uFPFaEoayfR8MHX" target="_blank" class="app-icon">  
+                <svg viewBox="0 0 24 24" fill="#3A76F0"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.659 1.432 5.167L2 22l4.833-1.432C8.341 21.476 10.109 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>  
+                <span>SIGNAL</span>  
+            </a>  
+        </div>  
+    </section>  
+
+    <footer class="legal-section" data-aos>  
+        <p><strong>LEGAL COMPLIANCE (法的順守):</strong> This portfolio operates under the Constitution of Japan and is governed by the Japanese Copyright Law (Act No. 48 of 1970). All moral and economic rights are legally protected in the Niigata region.</p>  
+        <p>このポートフォリオは日本国憲法に準拠し、日本の著作権法（昭和45年法律第48号）に基づき運営されています。すべての著作者人格権および著作財産権は、新潟地域において法的に保護されています。</p>  
+        <p>© 2025 - 2026 FALLEN_MIZU. Crafted with Zen in Niigata.</p>  
+        <p>This website was created on December 23, 2025</p>  
+        <p style="color: #BC002D;">Please do not attempt to copy this website, as it is copyrighted. Any harmful actions will be reported to the authorities. Thank you.</p>  
+        <a href="https://www.japan.go.jp" target="_blank">For more details</a>  
+    </footer>  
+</div>  
+
+<button id="logout-btn" style="position: fixed; bottom: 20px; right: 20px; background: var(--wasabi-red); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Logout">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+    </svg>
+</button>
+
+<script>  
+    // AOS (Animate On Scroll) Observer  
+    const observer = new IntersectionObserver((entries) => {  
+        entries.forEach(entry => {  
+            if (entry.isIntersecting) {  
+                entry.target.classList.add('aos-visible');  
+            }  
+        });  
+    }, { threshold: 0.1 });  
+
+    document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));  
+      
+    // Niigata/Tokyo Time Display  
+    function updateOsakaTime() {  
+        const now = new Date();  
+        const dateOptions = { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };  
+        const timeOptions = { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };  
+
+        const fullDateEN = now.toLocaleDateString('en-US', dateOptions);  
+        const fullDateJP = now.toLocaleDateString('ja-JP', dateOptions);  
+        const timeJP = now.toLocaleTimeString('ja-JP', timeOptions);  
+
+        document.getElementById('full-date').textContent = `${fullDateEN} (${fullDateJP})`;  
+        document.getElementById('osaka-clock').textContent = timeJP;  
+    }  
+    setInterval(updateOsakaTime, 1000);  
+    updateOsakaTime();  
+
+    // Network Ping Response Time Logic
+    async function updateResponseTime() {
+        const start = performance.now();
+        try {  
+            await fetch('https://jsonplaceholder.typicode.com/todos/1?cache=' + Date.now(), { cache: 'no-store' });  
+            const end = performance.now();  
+            let ms = end - start;  
+            if (ms < 1) ms = Math.random() * 5 + 1;  
+            document.getElementById('response-time').textContent = ms.toFixed(1) + ' ms';  
+        } catch {  
+            document.getElementById('response-time').textContent = '-- ms';  
+        }
+    }
+    setInterval(updateResponseTime, 3000);
+    updateResponseTime();
+
+    // Modal Confirmation Controllers
+    function confirmClearChat() {
+        document.getElementById("clear-confirm").style.display = "flex";
+    }
+
+    function closeConfirm() {
+        document.getElementById("clear-confirm").style.display = "none";
+    }
+
+    function clearChatAdvanced() {
+        const chatBox = document.getElementById("chat-box");
+        if (!chatBox) return;
+        chatBox.style.transition = "opacity 0.3s ease";
+        chatBox.style.opacity = "0";
+
+        setTimeout(() => {
+            chatBox.innerHTML = "";
+            chatBox.style.opacity = "1";
+            localStorage.removeItem("mizu_history");
+            localStorage.setItem("mizu_cleared", "true");
+        }, 300);
+
+        closeConfirm();
+    }
+</script>
+
+<script type="module" src="ai.js"></script>
+<script src="yt.js"></script>
+</body>  
+</html>
