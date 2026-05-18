@@ -11,39 +11,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
-    playingTitle.textContent = "Memuat audio .mp3...";
-    audioPlayer.src = ""; // Reset player
+    playingTitle.textContent = "Menghubungkan ke server audio...";
+    audioPlayer.src = ""; // Reset player lama
 
     try {
         const response = await fetch(`${BASE_API_URL}/download?id=${videoId}`);
         const data = await response.json();
 
         if (data && data.status && data.result && data.result.download) {
-            // 1. Pasang URL MP3 yang baru
+            // Pasang URL mp3 ke player
             audioPlayer.src = data.result.download;
-            audioPlayer.load(); 
+            audioPlayer.load(); // Paksa browser membaca ulang metadata file
 
-            // 2. Update UI Informasi Lagu Terlebih Dahulu
-            playingTitle.textContent = title;
+            playingTitle.textContent = "🎵 Siap! Silakan klik tombol PLAY";
             thumbImg.src = thumbnail;
 
-            // 3. Eksekusi Play dengan penanganan catch yang lebih rapi
+            // Jalankan penanganan play
             audioPlayer.play()
                 .then(() => {
-                    // Jika browser mengizinkan autoplay setelah klik daftar lagu
                     playingTitle.textContent = title;
                 })
                 .catch(e => {
-                    // Jika browser tetap memblokir, beri instruksi manis ke pengguna
-                    playingTitle.textContent = "🎵 Siap diputar! Silakan klik tombol PLAY";
-                    console.log("Autoplay diblokir browser, menunggu klik manual pengguna.");
+                    // Jika diblokir kebijakan autoplay, tombol play dipastikan sudah aktif dan bisa diklik manual!
+                    console.log("Autoplay ditahan browser, tombol play manual aktif.");
                 });
         } else {
-            playingTitle.textContent = "Format data API tidak cocok";
+            playingTitle.textContent = "Gagal memproses data format audio.";
         }
     } catch (error) {
-        console.error("Download Error:", error);
-        playingTitle.textContent = "Gagal terhubung ke API Server";
+        console.error(error);
+        playingTitle.textContent = "Koneksi API terputus. Coba lagi.";
     }
     }
     
