@@ -1,16 +1,11 @@
-// api/search.js
 import ytSearch from 'yt-search';
 
 export default async function handler(req, res) {
-    // Jalur CORS otomatis aman di Vercel jika satu domain
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
 
     const { q } = req.query;
-
-    if (!q) {
-        return res.status(400).json({ status: false, message: "Query diperlukan" });
-    }
+    if (!q) return res.status(400).json({ status: false, message: "Query q diperlukan" });
 
     try {
         const results = await ytSearch(q);
@@ -26,4 +21,5 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ status: false, message: error.message });
     }
-              }
+}
+    
