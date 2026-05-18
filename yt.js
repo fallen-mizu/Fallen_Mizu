@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const thumbImg = document.getElementById("yt-thumb");
 
     // ALAMAT API BACKEND (Sesuaikan dengan IP dan Port Alokasi Pterodactyl Anda)
-    const BASE_API_URL = "http://IP_SERVER_PTERODACTYL_ANDA:PORT";
+    const BASE_API_URL = "http://fi1.bot-hosting.net:5735";
 
     // Fungsi memanggil API download MP3 dinamis berdasarkan lagu yang diklik
     async function playAudioTrack(videoId, title, thumbnail) {
