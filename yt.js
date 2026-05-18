@@ -133,4 +133,78 @@ function closeAudioPlayer() {
     }
     if (playerBar) playerBar.style.display = "none";
               }
-      
+
+
+
+// =================================================================
+// 6. FITUR LOOPING TERUS ATAU LANJUT LIST SELANJUTNYA (AUTOMATION)
+// =================================================================
+
+let currentTracksList = []; // Menyimpan daftar lagu hasil pencarian aktif
+let currentTrackIndex = -1; // Menyimpan index lagu yang sedang diputar
+let isLoopSingle = false;   // false = Autoplay Next, true = Looping 1 lagu saja
+
+// Fungsi saat tombol mode pemutaran diklik
+function togglePlayMode() {
+    const loopBtn = document.getElementById("yt-loop-btn");
+    const loopText = document.getElementById("yt-loop-text");
+    
+    isLoopSingle = !isLoopSingle;
+    
+    if (isLoopSingle) {
+        // Mode Looping 1 Lagu Terus Menerus
+        loopBtn.style.opacity = "1";
+        loopText.textContent = "LOOP";
+        loopBtn.title = "Mode: Repeat Single Track";
+    } else {
+        // Mode Otomatis Lanjut List Selanjutnya
+        loopBtn.style.opacity = "0.7";
+        loopText.textContent = "NEXT";
+        loopBtn.title = "Mode: Autoplay Next";
+    }
+}
+
+// Modifikasi fungsi searchSongs agar bisa merekam daftar antrean lagu
+// Silakan pastikan di dalam fungsi searchSongs kamu terdahulu, baris ini disesuaikan:
+// Sebelum data.results.forEach, tambahkan baris berikut:
+// currentTracksList = data.results; 
+
+// Modifikasi fungsi ketika baris lagu diklik untuk merekam index-nya:
+// Di dalam searchSongs kamu, pas bagian songRow.addEventListener("click", ...), sesuaikan jadi:
+// currentTrackIndex = i;
+
+// DETEKSI OTOMATIS SAAT LAGU SELESAI
+const audioPlayer = document.getElementById("audio-player");
+if (audioPlayer) {
+    audioPlayer.addEventListener("ended", async () => {
+        if (isLoopSingle) {
+            // JIKA MODE LOOP SINGLE: Putar kembali dari detik 0
+            audioPlayer.currentTime = 0;
+            await audioPlayer.play();
+        } else {
+            // JIKA MODE NEXT: Cek apakah ada lagu selanjutnya di daftar list
+            if (currentTracksList.length > 0 && currentTrackIndex < currentTracksList.length - 1) {
+                currentTrackIndex++; // Naikkan ke index lagu berikutnya
+                const nextTrack = currentTracksList[currentTrackIndex];
+                
+                // Berikan tanda visual aktif ke baris lagu yang baru di list
+                document.querySelectorAll(".song-row").forEach((el, idx) => {
+                    if (idx === currentTrackIndex) {
+                        el.classList.add("active-track");
+                        el.scrollIntoView({ behavior: "smooth", block: "nearest" }); // Auto scroll list ke lagu baru
+                    } else {
+                        el.classList.remove("active-track");
+                    }
+                });
+
+                // Putar lagu berikutnya secara otomatis
+                playAudioTrack(nextTrack.id, nextTrack.title, nextTrack.thumbnail);
+            } else {
+                // Jika sudah mencapai lagu terakhir di list pencarian
+                document.getElementById("yt-playing-status").textContent = "FINISHED";
+                console.log("Antrean musik sudah habis.");
+            }
+        }
+    });
+}
+
