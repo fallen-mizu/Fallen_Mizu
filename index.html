@@ -430,5 +430,77 @@
             document.getElementById('response-time').textContent = '-- ms';  
         }
     }
-    setInterval(upd
+    setInterval(updateOsakaTime, 1000);  
+    updateOsakaTime();  
+
+    // Response Time Logic
+    async function updateResponseTime() {
+        const start = performance.now();
+        try {  
+            await fetch('https://jsonplaceholder.typicode.com/todos/1?cache=' + Date.now(), { cache: 'no-store' });  
+            const end = performance.now();  
+            let ms = end - start;  
+            if (ms < 1) ms = Math.random() * 5 + 1;  
+            document.getElementById('response-time').textContent = ms.toFixed(1) + ' ms';  
+        } catch {  
+            document.getElementById('response-time').textContent = '-- ms';  
+        }
+    }
+    setInterval(updateResponseTime, 3000);
+    updateResponseTime();
+</script>  
+<script>
+function confirmClearChat() {
+    document.getElementById("clear-confirm").style.display = "flex";
+}
+
+function closeConfirm() {
+    document.getElementById("clear-confirm").style.display = "none";
+}
+
+function clearChatAdvanced() {
+    const chatBox = document.getElementById("chat-box");
+
+    // fade out
+    chatBox.style.transition = "opacity 0.3s ease";
+    chatBox.style.opacity = "0";
+
+    setTimeout(() => {
+        chatBox.innerHTML = "";
+        chatBox.style.opacity = "1";
+    }, 300);
+
+    closeConfirm();
+}
+</script>
+<button id="logout-btn" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--wasabi-red);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Logout">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+    </svg>
+</button>
+
+<!-- HUBUNGKAN SCRIPT YT.JS DI SINI -->
+<script src="yt.js"></script>
+
+</body>  
+</html>
                 
