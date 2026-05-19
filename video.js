@@ -1,45 +1,49 @@
 // =================================================================
-// MIZU PLAYER - VIDEO INTEGRATION (video.js) - REBUILD 2026
+// MIZU PLAYER - INLINE VIDEO INTEGRATION (video.js)
 // =================================================================
 
-// Fungsi utama untuk memunculkan modal dan memutar video
+// Fungsi utama untuk memutar Video secara menetap di bawah list lagu
 async function playVideoTrack(videoId, title) {
-    // 1. Buat kontainer modal jika belum ada di DOM
-    let videoModal = document.getElementById("mizu-video-modal");
-    if (!videoModal) {
-        videoModal = document.createElement("div");
-        videoModal.id = "mizu-video-modal";
-        videoModal.style = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; font-family: inherit; backdrop-filter: blur(10px);";
-        document.body.appendChild(videoModal);
-    }
-    videoModal.style.display = "flex";
+    // Cari kontainer utama lagu
+    const songListContainer = document.getElementById("yt-song-list");
+    if (!songListContainer) return;
 
-    // Tampilkan animasi loading mizu awal
-    videoModal.innerHTML = `
-        <div id="video-loader" style="color: white; font-size: 0.9rem; text-align: center;">
-            <div style="font-weight: bold; margin-bottom: 10px; color: #BC002D; letter-spacing: 1px;">🎬 MIZU MULTIMEDIA PLAYER</div>
-            <div style="font-size: 0.8rem; opacity: 0.6; font-style: italic;">Requesting stream ticket from Zenzxz...</div>
+    // Cek apakah kontainer khusus video sudah ada di bawah list, jika belum kita buat baru
+    let inlineVideoContainer = document.getElementById("mizu-inline-video-container");
+    if (!inlineVideoContainer) {
+        inlineVideoContainer = document.createElement("div");
+        inlineVideoContainer.id = "mizu-inline-video-container";
+        // Beri margin atas agar ada jarak manis dari daftar lagu di atasnya
+        inlineVideoContainer.style = "margin-top: 25px; width: 100%; display: flex; flex-direction: column; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 20px;";
+        songListContainer.after(inlineVideoContainer);
+    }
+    
+    // Tampilkan animasi loading mizu di tempat lokasi video akan muncul
+    inlineVideoContainer.innerHTML = `
+        <div id="video-loader" style="text-align: center; padding: 15px 0;">
+            <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px;">🎬 MIZU VIDEO ENGINE</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Preparing inline stream ticket...</div>
         </div>
     `;
 
-    // Kita sediakan videoId ke cakupan global modal agar fungsi ganti resolusi bisa memanggilnya ulang
-    videoModal.setAttribute("data-active-id", videoId);
-    videoModal.setAttribute("data-active-title", title);
+    // Simpan id dan judul ke elemen kontainer agar fungsi ganti resolusi bisa membaca data terupdate
+    inlineVideoContainer.setAttribute("data-active-id", videoId);
+    inlineVideoContainer.setAttribute("data-active-title", title);
 
-    // Langsung memuat video dengan resolusi standar (Default: 360p agar cepat dimuat di awal)
-    loadVideoResolution("360");
+    // Muat default awal ke kualitas jernih cepat (360p)
+    loadInlineResolution("360");
 }
 
-// Fungsi internal khusus untuk merequest stream video berdasarkan tingkat resolusi
-async function loadVideoResolution(resolution) {
-    const videoModal = document.getElementById("mizu-video-modal");
-    if (!videoModal) return;
+// Fungsi penarik stream data biner video dari server Zenzxz ke player menetap
+async function loadInlineResolution(resolution) {
+    const inlineContainer = document.getElementById("mizu-inline-video-container");
+    if (!inlineContainer) return;
 
-    const videoId = videoModal.getAttribute("data-active-id");
-    const title = videoModal.getAttribute("data-active-title");
+    const videoId = inlineContainer.getAttribute("data-active-id");
+    const title = inlineContainer.getAttribute("data-active-title");
 
     try {
-        // 🔥 PENYESUAIAN API: Menggunakan format resolusi angka murni seperti logika Bot WhatsApp kamu!
+        // Ambil data resolusi biner angka murni sesuai parameter Bot WA kamu
         const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
         const apiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(videoUrl)}&format=${resolution}`;
         
@@ -48,7 +52,7 @@ async function loadVideoResolution(resolution) {
         
         const data = await response.json();
 
-        // Peta pengecekan struktur JSON bertingkat (Fallback Checker dari Bot WhatsApp kamu)
+        // Skema pengecekan parameter link video multi-key dari respons server
         let finalVideoUrl = 
             data?.result?.download || 
             data?.result?.url || 
@@ -56,12 +60,10 @@ async function loadVideoResolution(resolution) {
             data?.url || 
             data?.result?.video;
 
-        if (!finalVideoUrl) {
-            throw new Error("Link stream biner video tidak ditemukan dalam payload API.");
-        }
+        if (!finalVideoUrl) throw new Error("Link stream has not found.");
 
-        // Simpan posisi detik berjalan jika video element sudah pernah ada sebelumnya (seamless switching)
-        const oldVideo = document.getElementById("mizu-video-element");
+        // Catat timestamp durasi terakhir agar saat ganti resolusi tidak kembali ke detik 0
+        const oldVideo = document.getElementById("mizu-inline-video-element");
         let lastTimestamp = 0;
         let isPlaying = true;
         if (oldVideo) {
@@ -69,88 +71,90 @@ async function loadVideoResolution(resolution) {
             isPlaying = !oldVideo.paused;
         }
 
-        // Bangun interface player premium mizu
-        videoModal.innerHTML = `
-            <div onclick="closeVideoPlayer()" style="position: absolute; top: 20px; right: 25px; color: white; font-size: 2.2rem; cursor: pointer; user-select: none; font-weight: 300; -webkit-tap-highlight-color: transparent;">&times;</div>
-            
-            <div style="color: white; font-size: 0.85rem; font-weight: 600; text-align: center; margin-bottom: 15px; width: 100%; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 15px;">
-                ${title}
+        // Cetak struktur Video Player Menetap Premium
+        inlineContainer.innerHTML = `
+            <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
+                 Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
             </div>
 
-            <video id="mizu-video-element" controls preload="auto" style="width: 100%; max-width: 500px; border-radius: 12px; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.7); outline: none;"></video>
+            <div style="position: relative; width: 100%; max-width: 450px;">
+                <video id="mizu-inline-video-element" controls preload="auto" style="width: 100%; border-radius: 12px; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.08); outline: none; display: block;"></video>
+                <div onclick="closeInlineVideoPlayer()" style="position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; background: #333; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.2); user-select: none; -webkit-tap-highlight-color: transparent;">×</div>
+            </div>
             
-            <div style="margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;">
-                <label style="color: rgba(255,255,255,0.4); font-size: 0.65rem; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">Mizu Resolution Engine</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 400px;">
-                    <button class="res-btn" data-res="144" onclick="loadVideoResolution('144')">144p</button>
-                    <button class="res-btn" data-res="240" onclick="loadVideoResolution('240')">240p</button>
-                    <button class="res-btn" data-res="360" onclick="loadVideoResolution('360')">360p</button>
-                    <button class="res-btn" data-res="480" onclick="loadVideoResolution('480')">480p</button>
-                    <button class="res-btn" data-res="720" onclick="loadVideoResolution('720')">720p</button>
-                    <button class="res-btn" data-res="1080" onclick="loadVideoResolution('1080')">1080p</button>
+            <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
+                <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector</label>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                    <button class="inline-res-btn" data-res="144" onclick="loadInlineResolution('144')">144p</button>
+                    <button class="inline-res-btn" data-res="240" onclick="loadInlineResolution('240')">240p</button>
+                    <button class="inline-res-btn" data-res="360" onclick="loadInlineResolution('360')">360p</button>
+                    <button class="inline-res-btn" data-res="480" onclick="loadInlineResolution('480')">480p</button>
+                    <button class="inline-res-btn" data-res="720" onclick="loadInlineResolution('720')">720p</button>
+                    <button class="inline-res-btn" data-res="1080" onclick="loadInlineResolution('1080')">1080p</button>
                 </div>
             </div>
 
             <style>
-                .res-btn {
-                    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.15);
-                    padding: 8px 16px; border-radius: 30px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+                .inline-res-btn {
+                    background: #ffffff; color: #555; border: 1px solid rgba(0,0,0,0.08);
+                    padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
                 }
-                .res-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
-                .res-btn.active-res {
-                    background: #BC002D !important; color: white !important; border-color: #BC002D !important; box-shadow: 0 4px 12px rgba(188, 0, 45, 0.4);
+                .inline-res-btn:hover { background: #f9f9f9; }
+                .inline-res-btn.active-inline-res {
+                    background: #BC002D !important; color: white !important; border-color: #BC002D !important; box-shadow: 0 2px 6px rgba(188, 0, 45, 0.25);
                 }
             </style>
         `;
 
-        // Ambil element baru dan suntikkan direct video stream
-        const videoElement = document.getElementById("mizu-video-element");
+        // Suntikkan URL stream langsung ke element video
+        const videoElement = document.getElementById("mizu-inline-video-element");
         videoElement.src = finalVideoUrl;
         
-        // 🔥 BYPASS CLOUDFLARE FOR STREAMING: Paksa browser melakukan penarikan byte-range stream parsial murni frontend
+        // Perintahkan web memproses pemuatan range byte stream parsial murni frontend
         videoElement.load();
         
-        // Kembalikan timeline detik pemutaran agar tidak mengulang dari awal saat berganti resolusi
+        // Kembalikan posisi track durasi agar tidak mengulang dari 0 saat ganti resolusi
         videoElement.currentTime = lastTimestamp;
 
-        // Tandai tombol resolusi yang sedang aktif saat ini
-        document.querySelectorAll(".res-btn").forEach(btn => {
+        // Tandai warna tombol resolusi aktif yang dipilih
+        document.querySelectorAll(".inline-res-btn").forEach(btn => {
             if (btn.getAttribute("data-res") === resolution) {
-                btn.classList.add("active-res");
+                btn.classList.add("active-inline-res");
             }
         });
 
+        // Gulirkan layar user secara halus agar langsung fokus tertuju ke area video yang baru muncul
+        inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
         if (isPlaying) {
-            await videoElement.play().catch(e => console.log("Autoplay blocked by client rule:", e));
+            await videoElement.play().catch(e => console.log("Autoplay blocked:", e));
         }
 
     } catch (err) {
-        console.error("Mizu Video Engine Error:", err);
-        videoModal.innerHTML = `
-            <div style="color: white; text-align: center; font-size: 0.85rem; padding: 30px; max-width: 350px; background: #111; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div style="color: #BC002D; font-weight: bold; font-size: 1rem; margin-bottom: 8px;">SERVER OVERLOAD</div>
-                <div style="opacity: 0.6; margin-bottom: 20px; font-size: 0.75rem; line-height: 1.5;">Resolusi ${resolution}p saat ini sedang tidak tersedia atau server API Zenzxz mengalami limitasi internal.</div>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button onclick="loadVideoResolution('360')" style="background: #333; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">Coba 360p</button>
-                    <button onclick="closeVideoPlayer()" style="background: white; color: black; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">Tutup</button>
+        console.error("Mizu Inline Video Error:", err);
+        inlineContainer.innerHTML = `
+            <div style="text-align: center; padding: 15px; background: #fff; border-radius: 12px; border: 1px dashed rgba(188,0,45,0.2); max-width: 350px;">
+                <div style="color: #BC002D; font-weight: bold; font-size: 0.8rem; margin-bottom: 4px;">QUALITY UNAVAILABLE</div>
+                <div style="opacity: 0.6; font-size: 0.7rem; line-height: 1.4; margin-bottom: 12px;">Resolusi ${resolution}p gagal dimuat karena limitasi server API. Coba resolusi standar.</div>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button onclick="loadInlineResolution('360')" style="background: #333; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">Gunakan 360p</button>
+                    <button onclick="closeInlineVideoPlayer()" style="background: #f1f1f1; color: #333; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">Tutup</button>
                 </div>
             </div>
         `;
     }
 }
 
-// Fungsi global penutup modal video player
-function closeVideoPlayer() {
-    const videoModal = document.getElementById("mizu-video-modal");
-    const videoElement = document.getElementById("mizu-video-element");
+// Fungsi pembongkar player video jika user menekan tombol silang bulat kecil
+function closeInlineVideoPlayer() {
+    const inlineContainer = document.getElementById("mizu-inline-video-container");
+    const videoElement = document.getElementById("mizu-inline-video-element");
     if (videoElement) {
         videoElement.pause();
         videoElement.src = "";
     }
-    if (videoModal) {
-        videoModal.style.display = "none";
-        // Bersihkan sisa state penanda id
-        videoModal.removeAttribute("data-active-id");
-        videoModal.removeAttribute("data-active-title");
+    if (inlineContainer) {
+        inlineContainer.remove(); // Bersihkan element secara total dari DOM pohon HTML
     }
-}
+            }
+        
