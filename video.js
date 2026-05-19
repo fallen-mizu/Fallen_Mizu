@@ -2,7 +2,7 @@
 // MIZU PLAYER - INLINE VIDEO INTEGRATION (video.js) VIA CF WORKER
 // =================================================================
 
-// KUNCI UTAMA: Ubah ini menjadi URL murni Cloudflare Worker milikmu!
+// KUNCI UTAMA: URL murni Cloudflare Worker milikmu
 const CLOUDFLARE_WORKER_VIDEO_URL = "https://mizu-api-video.tohsakarin756.workers.dev";
 
 // Fungsi utama untuk memutar Video secara menetap di bawah list lagu
@@ -22,14 +22,17 @@ async function playVideoTrack(videoId, title) {
     inlineVideoContainer.innerHTML = `
         <div id="video-loader" style="text-align: center; padding: 15px 0;">
             <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px;">🎬 MIZU MULTIMEDIA ENGINE</div>
-            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Processing via /api/search gateway...</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Searching video streams via /api/search...</div>
         </div>
     `;
 
     try {
-        // 🔥 LANGKAH TEROBOSAN: Tembak ke endpoint search internal untuk memproses ID dan judul video
-        // Menggunakan title/videoId sebagai query parameter agar diolah oleh search.js Vercel
-        const searchGatewayUrl = `/api/search?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
+        // 1. Amankan pembersihan ID awal jika mengandung prefix bawaan playlist audio
+        const cleanQueryId = videoId.replace("youtube_", "").trim();
+
+        // 2. 🔥 MENEMBAK KE /api/search AGAR DIKELOLA OLEH BACKEND VERCEL
+        // Kita kirimkan query id dan title agar search.js bisa mencarikan data video yang valid
+        const searchGatewayUrl = `/api/search?id=${encodeURIComponent(cleanQueryId)}&title=${encodeURIComponent(title)}&type=video`;
         const gatewayResponse = await fetch(searchGatewayUrl);
         
         if (!gatewayResponse.ok) {
@@ -37,32 +40,30 @@ async function playVideoTrack(videoId, title) {
         }
 
         const gatewayData = await gatewayResponse.json();
-        console.log("Gateway Search Resolved Data:", gatewayData);
+        console.log("🎬 Mizu Engine - Search Backend Resolved:", gatewayData);
 
-        // Ambil ID murni hasil ekstraksi search.js (pastikan fallback menggunakan videoId lama jika key berbeda)
-        const verifiedVideoId = gatewayData?.id || gatewayData?.videoId || videoId;
-        const verifiedTitle = gatewayData?.title || title;
+        // 3. AMANKAN EKSTRAKSI ID VIDEO MURNI
+        // Kita saring respons dari search.js. Pastikan mengambil id video murni (11 karakter teks)
+        let finalVerifiedId = cleanQueryId;
+        
+        if (gatewayData) {
+            finalVerifiedId = gatewayData.id || gatewayData.videoId || (gatewayData.result && gatewayData.result.id) || cleanQueryId;
+        }
 
-        // Set atribut data pada kontainer HTML menggunakan data hasil kelola /api/search
-        inlineVideoContainer.setAttribute("data-active-id", verifiedVideoId);
-        inlineVideoContainer.setAttribute("data-active-title", verifiedTitle);
+        // Simpan metadata tervalidasi ke dalam atribut DOM kontainer player
+        inlineVideoContainer.setAttribute("data-active-id", finalVerifiedId);
+        inlineVideoContainer.setAttribute("data-active-title", title);
 
-        // Langsung muat resolusi default 360p melalui jembatan worker menggunakan ID tervalidasi
+        // Langsung muat resolusi default 360p melalui jembatan worker menggunakan ID murni
         loadInlineResolution("360");
 
     } catch (gatewayError) {
         console.error("Mizu Multimedia Gateway Error:", gatewayError);
-        inlineVideoContainer.innerHTML = `
-            <div style="text-align: center; padding: 10px; color: #BC002D; font-size: 0.75rem; font-weight: bold;">
-                ❌ Gagal memproses video melalui /api/search. Mencoba fallback langsung...
-            </div>
-        `;
-        // Fallback langsung menggunakan data awal jika route api/search down
-        setTimeout(() => {
-            inlineVideoContainer.setAttribute("data-active-id", videoId);
-            inlineVideoContainer.setAttribute("data-active-title", title);
-            loadInlineResolution("360");
-        }, 1500);
+        
+        // Fallback langsung menggunakan ID awal jika endpoint /api/search mengalami kendala struktur data
+        inlineVideoContainer.setAttribute("data-active-id", videoId.replace("youtube_", "").trim());
+        inlineVideoContainer.setAttribute("data-active-title", title);
+        loadInlineResolution("360");
     }
 }
 
@@ -83,7 +84,7 @@ function loadInlineResolution(resolution) {
         isPlaying = !oldVideo.paused;
     }
 
-    // FORMULA BYPASS: Mengarahkan data id bersih ke Cloudflare Worker
+    // 🔥 PENGIRIMAN DATA KE WORKER: Mengirimkan ID tervalidasi dan parameter resolusi murni
     const finalWorkerStreamUrl = `${CLOUDFLARE_WORKER_VIDEO_URL}?id=${encodeURIComponent(videoId)}&res=${resolution}`;
 
     // Bangun UI Player menetap di bawah daftar 5 lagu
@@ -140,11 +141,10 @@ function loadInlineResolution(resolution) {
     // Geser scroll browser dengan lembut agar terfokus ke area video player
     inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-    // Penanganan error stream dengan pelacakan log yang akurat
+    // Penanganan error stream dengan inspeksi log yang aman
     videoElement.onerror = () => {
-        console.error("Mizu Player - Stream Load Failed for URL:", finalWorkerStreamUrl);
-        alert("Aduh, link stream untuk resolusi ini gagal direspon oleh Cloudflare Worker. Silakan coba resolusi lainnya!");
-        closeInlineVideoPlayer();
+        console.error("Mizu Player - Stream Loading Failed for URL:", finalWorkerStreamUrl);
+        alert("Aduh, link stream untuk resolusi " + resolution + "p gagal direspon oleh Cloudflare Worker. Silakan cek Inspect Console atau coba resolusi lainnya!");
     };
 
     if (isPlaying) {
