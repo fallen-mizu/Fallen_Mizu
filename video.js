@@ -109,7 +109,7 @@ function loadInlineResolution(targetQuality) {
 
     videoElement.onerror = () => {
         console.error("Mizu Player - Stream Loading Failed for Proxy URL:", finalVercelProxyUrl);
-        alert("Aduh, jembatan video proxy gagal memproses resolusi " + targetQuality + "p. Silakan coba resolusi lainnya!");
+        alert("Proxy is failed to responded" + targetQuality + "p. Please Contact Support Admin or try again later.");
     };
 
     if (isPlaying) {
