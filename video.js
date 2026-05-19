@@ -1,9 +1,6 @@
 // =================================================================
-// MIZU PLAYER - INLINE VIDEO INTEGRATION (video.js) VIA CF WORKER
+// MIZU PLAYER - INLINE VIDEO INTEGRATION (video.js) VIA VERCEL PROXY
 // =================================================================
-
-// KUNCI UTAMA: Ubah ke URL murni Cloudflare Worker milikmu!
-const CLOUDFLARE_WORKER_VIDEO_URL = "https://mizu-api-video.tohsakarin756.workers.dev";
 
 // Fungsi utama untuk memutar Video secara menetap di bawah list lagu
 async function playVideoTrack(videoId, title) {
@@ -21,7 +18,7 @@ async function playVideoTrack(videoId, title) {
     inlineVideoContainer.innerHTML = `
         <div id="video-loader" style="text-align: center; padding: 15px 0;">
             <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px;">🎬 MIZU MULTIMEDIA ENGINE</div>
-            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Connecting to Cloudflare Worker edge system...</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Connecting via internal Vercel proxy...</div>
         </div>
     `;
 
@@ -31,11 +28,11 @@ async function playVideoTrack(videoId, title) {
     inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
     inlineVideoContainer.setAttribute("data-active-title", title);
 
-    // Langsung muat resolusi default 360p melalui jembatan worker
+    // Langsung muat resolusi default 360p melalui route backend Vercel
     loadInlineResolution("360");
 }
 
-// Fungsi penyuplai stream video dari Worker ke Tag HTML5 Video secara menetap
+// Fungsi penyuplai stream video dari Backend Vercel ke Tag HTML5 Video
 function loadInlineResolution(targetQuality) {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     if (!inlineContainer) return;
@@ -52,13 +49,10 @@ function loadInlineResolution(targetQuality) {
         isPlaying = !oldVideo.paused;
     }
 
-    // 🔥 FORMULA RAKITAN SEJAJAR: Menggunakan URLSearchParams agar parameter terformat bersih (?id=...&format=...)
-    const queryBuilder = new URLSearchParams();
-    queryBuilder.append("id", videoId.toString().trim());
-    queryBuilder.append("format", targetQuality.toString().trim());
-
-    const finalWorkerStreamUrl = CLOUDFLARE_WORKER_VIDEO_URL + "?" + queryBuilder.toString();
-    console.log("🎬 Mizu Video Engine - Requesting stream from URL:", finalWorkerStreamUrl);
+    // 🔥 FORMULA PROXY BARU: Menembak langsung ke search.js backend Vercel kamu!
+    // Format URL akhir: /api/search?id=VIDEO_ID&format=360&stream=true
+    const finalVercelProxyUrl = `/api/search?id=${encodeURIComponent(videoId)}&format=${targetQuality}&stream=true`;
+    console.log("🎬 Mizu Video Engine - Fetching from Vercel Proxy:", finalVercelProxyUrl);
 
     // Bangun UI Player menetap di bawah daftar 5 lagu
     inlineContainer.innerHTML = `
@@ -72,7 +66,7 @@ function loadInlineResolution(targetQuality) {
         </div>
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (Bypassed)</label>
+            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (Vercel Proxy)</label>
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
                 <button class="inline-res-btn" data-res="144" onclick="loadInlineResolution('144')">144p</button>
                 <button class="inline-res-btn" data-res="240" onclick="loadInlineResolution('240')">240p</button>
@@ -97,14 +91,14 @@ function loadInlineResolution(targetQuality) {
 
     const videoElement = document.getElementById("mizu-inline-video-element");
     
-    // Suntikkan link stream murni dari Cloudflare Worker
-    videoElement.src = finalWorkerStreamUrl;
+    // Suntikkan URL stream langsung dari backend Vercel kamu
+    videoElement.src = finalVercelProxyUrl;
     videoElement.load();
     
-    // Kembalikan posisi durasi terakhir menonton agar mulus tanpa reset dari awal
+    // Kembalikan timeline durasi menonton agar mulus tanpa terputus
     videoElement.currentTime = lastTimestamp;
 
-    // Berikan warna pembeda merah (#BC002D) pada tombol kualitas yang sedang aktif
+    // Tandai tombol resolusi aktif
     document.querySelectorAll(".inline-res-btn").forEach(btn => {
         if (btn.getAttribute("data-res") === targetQuality) {
             btn.classList.add("active-inline-res");
@@ -113,18 +107,16 @@ function loadInlineResolution(targetQuality) {
 
     inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-    // Penanganan pemutusan koneksi atau penolakan stream biner video
     videoElement.onerror = () => {
-        console.error("Mizu Player Core - Streaming Interrupted for URL Source:", finalWorkerStreamUrl);
-        alert("Aduh, link stream untuk resolusi " + targetQuality + "p gagal direspon oleh Cloudflare Worker. Silakan coba resolusi lainnya!");
+        console.error("Mizu Player - Stream Loading Failed for Proxy URL:", finalVercelProxyUrl);
+        alert("Aduh, jembatan video proxy gagal memproses resolusi " + targetQuality + "p. Silakan coba resolusi lainnya!");
     };
 
     if (isPlaying) {
-        videoElement.play().catch(e => console.log("Autoplay policy blocked browser event:", e));
+        videoElement.play().catch(e => console.log("Autoplay context blocked:", e));
     }
 }
 
-// Fungsi penghancur element player menetap jika ditekan tombol close bulat silang
 function closeInlineVideoPlayer() {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     const videoElement = document.getElementById("mizu-inline-video-element");
@@ -135,4 +127,4 @@ function closeInlineVideoPlayer() {
     if (inlineContainer) {
         inlineContainer.remove();
     }
-    }
+}
