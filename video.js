@@ -66,7 +66,7 @@ function loadInlineResolution(targetQuality) {
         </div>
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (Vercel Proxy)</label>
+            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (This may consume a lot of mobile data, make sure your internet is fast to watch high resolution.)</label>
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
                 <button class="inline-res-btn" data-res="144" onclick="loadInlineResolution('144')">144p</button>
                 <button class="inline-res-btn" data-res="240" onclick="loadInlineResolution('240')">240p</button>
