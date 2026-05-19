@@ -2,42 +2,13 @@
 // MIZU PLAYER - INLINE VIDEO INTEGRATION (video.js) VIA CF WORKER
 // =================================================================
 
+// KUNCI UTAMA: Ubah ini menjadi URL murni Cloudflare Worker milikmu!
 const CLOUDFLARE_WORKER_VIDEO_URL = "https://mizu-api-video.tohsakarin756.workers.dev";
-
-// Fungsi Helper untuk membersihkan dan mengekstrak YouTube Video ID murni
-function extractMizuVideoId(sourceId) {
-    if (!sourceId) return "";
-    
-    // Jika sourceId ternyata adalah URL penuh YouTube
-    if (sourceId.includes("youtube.com") || sourceId.includes("youtu.be")) {
-        try {
-            const urlObj = new URL(sourceId);
-            if (sourceId.includes("youtu.be")) {
-                return urlObj.pathname.substring(1);
-            }
-            return urlObj.searchParams.get("v") || urlObj.pathname.split("/").pop();
-        } catch (e) {
-            console.error("Gagal parse URL di extractor:", e);
-        }
-    }
-    
-    // Jika sourceId mengandung karakter bawaan list lagu yang aneh, bersihkan
-    return sourceId.replace("youtube_", "").trim();
-}
 
 // Fungsi utama untuk memutar Video secara menetap di bawah list lagu
 async function playVideoTrack(videoId, title) {
     const songListContainer = document.getElementById("yt-song-list");
     if (!songListContainer) return;
-
-    // Bersihkan Video ID terlebih dahulu menggunakan helper extractor
-    const cleanVideoId = extractMizuVideoId(videoId);
-    console.log("🎬 Mizu Video Engine - Cleaned ID:", cleanVideoId);
-
-    if (!cleanVideoId) {
-        alert("Waduh, ID Video YouTube tidak valid atau tidak dapat diekstrak.");
-        return;
-    }
 
     let inlineVideoContainer = document.getElementById("mizu-inline-video-container");
     if (!inlineVideoContainer) {
@@ -47,19 +18,52 @@ async function playVideoTrack(videoId, title) {
         songListContainer.after(inlineVideoContainer);
     }
     
+    // Tampilkan loader status interkoneksi mesin multimedia
     inlineVideoContainer.innerHTML = `
         <div id="video-loader" style="text-align: center; padding: 15px 0;">
             <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px;">🎬 MIZU MULTIMEDIA ENGINE</div>
-            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Connecting to Cloudflare Worker edge system...</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Processing via /api/search gateway...</div>
         </div>
     `;
 
-    // Pasang ID yang sudah bersih ke dalam atribut DOM kontainer
-    inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
-    inlineVideoContainer.setAttribute("data-active-title", title);
+    try {
+        // 🔥 LANGKAH TEROBOSAN: Tembak ke endpoint search internal untuk memproses ID dan judul video
+        // Menggunakan title/videoId sebagai query parameter agar diolah oleh search.js Vercel
+        const searchGatewayUrl = `/api/search?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
+        const gatewayResponse = await fetch(searchGatewayUrl);
+        
+        if (!gatewayResponse.ok) {
+            throw new Error(`Gateway search error dengan status: ${gatewayResponse.status}`);
+        }
 
-    // Langsung muat resolusi default 360p melalui jembatan worker
-    loadInlineResolution("360");
+        const gatewayData = await gatewayResponse.json();
+        console.log("Gateway Search Resolved Data:", gatewayData);
+
+        // Ambil ID murni hasil ekstraksi search.js (pastikan fallback menggunakan videoId lama jika key berbeda)
+        const verifiedVideoId = gatewayData?.id || gatewayData?.videoId || videoId;
+        const verifiedTitle = gatewayData?.title || title;
+
+        // Set atribut data pada kontainer HTML menggunakan data hasil kelola /api/search
+        inlineVideoContainer.setAttribute("data-active-id", verifiedVideoId);
+        inlineVideoContainer.setAttribute("data-active-title", verifiedTitle);
+
+        // Langsung muat resolusi default 360p melalui jembatan worker menggunakan ID tervalidasi
+        loadInlineResolution("360");
+
+    } catch (gatewayError) {
+        console.error("Mizu Multimedia Gateway Error:", gatewayError);
+        inlineVideoContainer.innerHTML = `
+            <div style="text-align: center; padding: 10px; color: #BC002D; font-size: 0.75rem; font-weight: bold;">
+                ❌ Gagal memproses video melalui /api/search. Mencoba fallback langsung...
+            </div>
+        `;
+        // Fallback langsung menggunakan data awal jika route api/search down
+        setTimeout(() => {
+            inlineVideoContainer.setAttribute("data-active-id", videoId);
+            inlineVideoContainer.setAttribute("data-active-title", title);
+            loadInlineResolution("360");
+        }, 1500);
+    }
 }
 
 // Fungsi penyuplai stream video dari Worker ke Tag HTML5 Video secara menetap
@@ -79,7 +83,7 @@ function loadInlineResolution(resolution) {
         isPlaying = !oldVideo.paused;
     }
 
-    // FORMULA BYPASS: Mengirimkan ID bersih ke Cloudflare Worker milikmu
+    // FORMULA BYPASS: Mengarahkan data id bersih ke Cloudflare Worker
     const finalWorkerStreamUrl = `${CLOUDFLARE_WORKER_VIDEO_URL}?id=${encodeURIComponent(videoId)}&res=${resolution}`;
 
     // Bangun UI Player menetap di bawah daftar 5 lagu
@@ -136,10 +140,11 @@ function loadInlineResolution(resolution) {
     // Geser scroll browser dengan lembut agar terfokus ke area video player
     inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-    // Penanganan error stream dengan inspeksi log yang lebih aman
+    // Penanganan error stream dengan pelacakan log yang akurat
     videoElement.onerror = () => {
-        console.error("Mizu Player - Stream Loading Failed for URL:", finalWorkerStreamUrl);
-        alert("Aduh, link stream untuk resolusi " + resolution + "p gagal direspon oleh Cloudflare Worker. Silakan cek Inspect Console atau coba resolusi lainnya!");
+        console.error("Mizu Player - Stream Load Failed for URL:", finalWorkerStreamUrl);
+        alert("Aduh, link stream untuk resolusi ini gagal direspon oleh Cloudflare Worker. Silakan coba resolusi lainnya!");
+        closeInlineVideoPlayer();
     };
 
     if (isPlaying) {
