@@ -1,5 +1,44 @@
+// =================================================================
+// MIZU PLAYER - INLINE VIDEO INTEGRATION (video.js) VIA CF WORKER
+// =================================================================
+
+// KUNCI UTAMA: URL murni Cloudflare Worker milikmu
+const CLOUDFLARE_WORKER_VIDEO_URL = "https://mizu-api-video.tohsakarin756.workers.dev";
+
+// Fungsi utama untuk memutar Video secara menetap di bawah list lagu
+async function playVideoTrack(videoId, title) {
+    const songListContainer = document.getElementById("yt-song-list");
+    if (!songListContainer) return;
+
+    let inlineVideoContainer = document.getElementById("mizu-inline-video-container");
+    if (!inlineVideoContainer) {
+        inlineVideoContainer = document.createElement("div");
+        inlineVideoContainer.id = "mizu-inline-video-container";
+        inlineVideoContainer.style = "margin-top: 25px; width: 100%; display: flex; flex-direction: column; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 20px;";
+        songListContainer.after(inlineVideoContainer);
+    }
+    
+    // Tampilkan loader multimedia
+    inlineVideoContainer.innerHTML = `
+        <div id="video-loader" style="text-align: center; padding: 15px 0;">
+            <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px;">🎬 MIZU MULTIMEDIA ENGINE</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Initializing video stream interface...</div>
+        </div>
+    `;
+
+    // Amankan pembersihan ID awal jika mengandung prefix bawaan playlist audio
+    const cleanVideoId = videoId.replace("youtube_", "").trim();
+
+    // Simpan metadata tervalidasi ke dalam atribut DOM kontainer player
+    inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
+    inlineVideoContainer.setAttribute("data-active-title", title);
+
+    // Langsung muat resolusi default 360p melalui jembatan worker
+    loadInlineResolution("360");
+}
+
 // Fungsi penyuplai stream video dari Worker ke Tag HTML5 Video secara menetap
-function loadInlineResolution(resolution) {
+function loadInlineResolution(targetQuality) {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     if (!inlineContainer) return;
 
@@ -15,8 +54,14 @@ function loadInlineResolution(resolution) {
         isPlaying = !oldVideo.paused;
     }
 
-    // 🔥 FORMULA BARU: Mengubah &res= menjadi &format= sesuai permintaanmu
-    const finalWorkerStreamUrl = `${CLOUDFLARE_WORKER_VIDEO_URL}?id=${encodeURIComponent(videoId)}&format=${resolution}`;
+    // 🔥 REBUILD PARSING PARAMETER: Memaksa query dikonstruksi keras menggunakan format= resolusi
+    const workerParams = new URLSearchParams();
+    workerParams.append("id", videoId.toString().trim());
+    workerParams.append("format", targetQuality.toString().trim()); // Berubah penuh menjadi format=
+
+    // Hasil rakitan final URL stream murni
+    const finalWorkerStreamUrl = CLOUDFLARE_WORKER_VIDEO_URL + "?" + workerParams.toString();
+    console.log("🎬 Mizu Engine - Dispatching Stream URL:", finalWorkerStreamUrl);
 
     // Bangun UI Player menetap di bawah daftar 5 lagu
     inlineContainer.innerHTML = `
@@ -55,25 +100,43 @@ function loadInlineResolution(resolution) {
 
     const videoElement = document.getElementById("mizu-inline-video-element");
     
+    // Suntikkan URL stream baru ke tag video HTML5
     videoElement.src = finalWorkerStreamUrl;
     videoElement.load();
     
+    // Kembalikan timeline durasi video agar tidak reset saat pindah kualitas
     videoElement.currentTime = lastTimestamp;
 
+    // Tandai tombol resolusi aktif yang sedang diputar
     document.querySelectorAll(".inline-res-btn").forEach(btn => {
-        if (btn.getAttribute("data-res") === resolution) {
+        if (btn.getAttribute("data-res") === targetQuality) {
             btn.classList.add("active-inline-res");
         }
     });
 
     inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
+    // Error handler terproteksi log browser
     videoElement.onerror = () => {
-        console.error("Mizu Player - Stream Loading Failed for URL:", finalWorkerStreamUrl);
-        alert("Aduh, link stream untuk resolusi " + resolution + "p gagal direspon oleh Cloudflare Worker. Silakan coba resolusi lainnya!");
+        console.error("Mizu Player - Stream Load Error for URL Source:", finalWorkerStreamUrl);
+        alert("Aduh, link stream untuk kualitas " + targetQuality + "p gagal direspon oleh Cloudflare Worker. Silakan coba resolusi lainnya!");
     };
 
     if (isPlaying) {
-        videoElement.play().catch(e => console.log("Autoplay blocked by browser rule:", e));
+        videoElement.play().catch(e => console.log("Autoplay blocked by browser policy:", e));
     }
 }
+
+// Fungsi penghancur element player menetap jika ditekan tombol close bulat silang
+function closeInlineVideoPlayer() {
+    const inlineContainer = document.getElementById("mizu-inline-video-container");
+    const videoElement = document.getElementById("mizu-inline-video-element");
+    if (videoElement) {
+        videoElement.pause();
+        videoElement.src = "";
+    }
+    if (inlineContainer) {
+        inlineContainer.remove();
+    }
+        }
+    
