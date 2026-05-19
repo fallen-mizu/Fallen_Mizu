@@ -57,7 +57,7 @@ function loadInlineResolution(targetQuality) {
     // Bangun UI Player menetap di bawah daftar 5 lagu
     inlineContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
-            📺 Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
+            Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
         </div>
 
         <div style="position: relative; width: 100%; max-width: 450px;">
@@ -117,14 +117,23 @@ function loadInlineResolution(targetQuality) {
     }
 }
 
+// Fungsi penghancur element player menetap jika ditekan tombol close bulat silang
 function closeInlineVideoPlayer() {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     const videoElement = document.getElementById("mizu-inline-video-element");
+    
     if (videoElement) {
+        // 🔥 FIX UTAMA: Matikan listener error terlebih dahulu agar tidak memicu alert palsu saat ditutup
+        videoElement.onerror = null; 
+        
+        // Hentikan pemutaran video secara bersih
         videoElement.pause();
         videoElement.src = "";
+        videoElement.load(); // Paksa browser melepaskan buffer stream video
     }
+    
     if (inlineContainer) {
+        // Hapus kontainer dari tampilan halaman
         inlineContainer.remove();
     }
 }
