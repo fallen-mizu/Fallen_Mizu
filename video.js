@@ -1,72 +1,3 @@
-// =================================================================
-// MIZU PLAYER - INLINE VIDEO INTEGRATION (video.js) VIA CF WORKER
-// =================================================================
-
-// KUNCI UTAMA: URL murni Cloudflare Worker milikmu
-const CLOUDFLARE_WORKER_VIDEO_URL = "https://mizu-api-video.tohsakarin756.workers.dev";
-
-// Fungsi utama untuk memutar Video secara menetap di bawah list lagu
-async function playVideoTrack(videoId, title) {
-    const songListContainer = document.getElementById("yt-song-list");
-    if (!songListContainer) return;
-
-    let inlineVideoContainer = document.getElementById("mizu-inline-video-container");
-    if (!inlineVideoContainer) {
-        inlineVideoContainer = document.createElement("div");
-        inlineVideoContainer.id = "mizu-inline-video-container";
-        inlineVideoContainer.style = "margin-top: 25px; width: 100%; display: flex; flex-direction: column; align-items: center; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 20px;";
-        songListContainer.after(inlineVideoContainer);
-    }
-    
-    // Tampilkan loader status interkoneksi mesin multimedia
-    inlineVideoContainer.innerHTML = `
-        <div id="video-loader" style="text-align: center; padding: 15px 0;">
-            <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px;">🎬 MIZU MULTIMEDIA ENGINE</div>
-            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Searching video streams via /api/search...</div>
-        </div>
-    `;
-
-    try {
-        // 1. Amankan pembersihan ID awal jika mengandung prefix bawaan playlist audio
-        const cleanQueryId = videoId.replace("youtube_", "").trim();
-
-        // 2. 🔥 MENEMBAK KE /api/search AGAR DIKELOLA OLEH BACKEND VERCEL
-        // Kita kirimkan query id dan title agar search.js bisa mencarikan data video yang valid
-        const searchGatewayUrl = `/api/search?id=${encodeURIComponent(cleanQueryId)}&title=${encodeURIComponent(title)}&type=video`;
-        const gatewayResponse = await fetch(searchGatewayUrl);
-        
-        if (!gatewayResponse.ok) {
-            throw new Error(`Gateway search error dengan status: ${gatewayResponse.status}`);
-        }
-
-        const gatewayData = await gatewayResponse.json();
-        console.log("🎬 Mizu Engine - Search Backend Resolved:", gatewayData);
-
-        // 3. AMANKAN EKSTRAKSI ID VIDEO MURNI
-        // Kita saring respons dari search.js. Pastikan mengambil id video murni (11 karakter teks)
-        let finalVerifiedId = cleanQueryId;
-        
-        if (gatewayData) {
-            finalVerifiedId = gatewayData.id || gatewayData.videoId || (gatewayData.result && gatewayData.result.id) || cleanQueryId;
-        }
-
-        // Simpan metadata tervalidasi ke dalam atribut DOM kontainer player
-        inlineVideoContainer.setAttribute("data-active-id", finalVerifiedId);
-        inlineVideoContainer.setAttribute("data-active-title", title);
-
-        // Langsung muat resolusi default 360p melalui jembatan worker menggunakan ID murni
-        loadInlineResolution("360");
-
-    } catch (gatewayError) {
-        console.error("Mizu Multimedia Gateway Error:", gatewayError);
-        
-        // Fallback langsung menggunakan ID awal jika endpoint /api/search mengalami kendala struktur data
-        inlineVideoContainer.setAttribute("data-active-id", videoId.replace("youtube_", "").trim());
-        inlineVideoContainer.setAttribute("data-active-title", title);
-        loadInlineResolution("360");
-    }
-}
-
 // Fungsi penyuplai stream video dari Worker ke Tag HTML5 Video secara menetap
 function loadInlineResolution(resolution) {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
@@ -84,8 +15,8 @@ function loadInlineResolution(resolution) {
         isPlaying = !oldVideo.paused;
     }
 
-    // 🔥 PENGIRIMAN DATA KE WORKER: Mengirimkan ID tervalidasi dan parameter resolusi murni
-    const finalWorkerStreamUrl = `${CLOUDFLARE_WORKER_VIDEO_URL}?id=${encodeURIComponent(videoId)}&res=${resolution}`;
+    // 🔥 FORMULA BARU: Mengubah &res= menjadi &format= sesuai permintaanmu
+    const finalWorkerStreamUrl = `${CLOUDFLARE_WORKER_VIDEO_URL}?id=${encodeURIComponent(videoId)}&format=${resolution}`;
 
     // Bangun UI Player menetap di bawah daftar 5 lagu
     inlineContainer.innerHTML = `
@@ -124,43 +55,25 @@ function loadInlineResolution(resolution) {
 
     const videoElement = document.getElementById("mizu-inline-video-element");
     
-    // Suntikkan link stream worker biner murni
     videoElement.src = finalWorkerStreamUrl;
     videoElement.load();
     
-    // Kembalikan posisi durasi menonton agar tidak tersendat saat ganti kualitas
     videoElement.currentTime = lastTimestamp;
 
-    // Beri warna pembeda pada tombol resolusi aktif yang sedang berjalan
     document.querySelectorAll(".inline-res-btn").forEach(btn => {
         if (btn.getAttribute("data-res") === resolution) {
             btn.classList.add("active-inline-res");
         }
     });
 
-    // Geser scroll browser dengan lembut agar terfokus ke area video player
     inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-    // Penanganan error stream dengan inspeksi log yang aman
     videoElement.onerror = () => {
         console.error("Mizu Player - Stream Loading Failed for URL:", finalWorkerStreamUrl);
-        alert("Aduh, link stream untuk resolusi " + resolution + "p gagal direspon oleh Cloudflare Worker. Silakan cek Inspect Console atau coba resolusi lainnya!");
+        alert("Aduh, link stream untuk resolusi " + resolution + "p gagal direspon oleh Cloudflare Worker. Silakan coba resolusi lainnya!");
     };
 
     if (isPlaying) {
         videoElement.play().catch(e => console.log("Autoplay blocked by browser rule:", e));
-    }
-}
-
-// Fungsi penghancur element player menetap jika ditekan tombol close bulat silang
-function closeInlineVideoPlayer() {
-    const inlineContainer = document.getElementById("mizu-inline-video-container");
-    const videoElement = document.getElementById("mizu-inline-video-element");
-    if (videoElement) {
-        videoElement.pause();
-        videoElement.src = "";
-    }
-    if (inlineContainer) {
-        inlineContainer.remove();
     }
 }
