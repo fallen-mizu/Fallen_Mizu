@@ -64,17 +64,17 @@ async function searchSongs() {
                 optionModal.innerHTML = `
                     <div style="background: white; padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
                         <div style="font-size: 0.85rem; font-weight: bold; color: #333; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${song.title}</div>
-                        <div style="font-size: 0.7rem; color: #666; margin-bottom: 20px;">Pilih format pemutaran media:</div>
+                        <div style="font-size: 0.7rem; color: #666; margin-bottom: 20px;">Select format resolution:</div>
                         
                         <div style="display: flex; gap: 10px; justify-content: center;">
                             <button id="opt-audio-btn" style="flex: 1; background: #333; color: white; border: none; padding: 12px; border-radius: 25px; font-size: 0.75rem; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent;">
-                                🎵 AUDIO
+                                 AUDIO
                             </button>
                             <button id="opt-video-btn" style="flex: 1; background: #BC002D; color: white; border: none; padding: 12px; border-radius: 25px; font-size: 0.75rem; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent;">
-                                🎬 VIDEO
+                                 VIDEO
                             </button>
                         </div>
-                        <div id="opt-cancel" style="margin-top: 15px; font-size: 0.7rem; color: #999; cursor: pointer; text-decoration: underline;">Batal</div>
+                        <div id="opt-cancel" style="margin-top: 15px; font-size: 0.7rem; color: #999; cursor: pointer; text-decoration: underline;">Cancel</div>
                     </div>
                 `;
 
