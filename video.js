@@ -55,7 +55,7 @@ function loadInlineResolution(targetQuality) {
     // Konstruksi HTML Player Menggunakan Standar Wrapper Plyr
     inlineContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
-            📺 Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
+            Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
         </div>
 
         <div style="position: relative; width: 100%; max-width: 450px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
@@ -66,7 +66,7 @@ function loadInlineResolution(targetQuality) {
         </div>
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (Vercel Proxy)</label>
+            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (This may consume a lot of mobile data, make sure your internet is fast to watch high resolution.)</label>
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
                 <button class="inline-res-btn" data-res="144" onclick="loadInlineResolution('144')">144p</button>
                 <button class="inline-res-btn" data-res="240" onclick="loadInlineResolution('240')">240p</button>
@@ -129,7 +129,7 @@ function loadInlineResolution(targetQuality) {
             if (fallbackUi) {
                 fallbackUi.innerHTML = `
                     <div style="font-size: 0.7rem; color: #BC002D; font-weight: bold; margin-bottom: 5px;">
-                        ⚠️ Gagal memuat biner video di resolusi ini.
+                        Failed to created biner in this video.
                     </div>
                     <a href="${finalVercelProxyUrl}" target="_blank" download="video.mp4" style="font-size: 0.65rem; color: #333; font-weight: bold; text-decoration: underline;">
                         Klik disini untuk download / putar eksternal.
