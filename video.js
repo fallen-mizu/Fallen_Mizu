@@ -1,8 +1,7 @@
 // =================================================================
-// MIZU PLAYER - ENHANCED LIGHTWEIGHT PLYR INTEGRATION (video.js)
+// MIZU PLAYER - PERFECT PATH-INJECTION PLYR INTEGRATION (video.js)
 // =================================================================
 
-// Simpan instance global Plyr agar tidak terjadi re-initialization yang bikin berat
 let mizuPlyrInstance = null;
 
 async function playVideoTrack(videoId, title) {
@@ -28,7 +27,7 @@ async function playVideoTrack(videoId, title) {
     inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
     inlineVideoContainer.setAttribute("data-active-title", title);
 
-    // Default load resolusi awal ke 360p
+    // Kita mulai dari resolusi standar yang stabil
     loadInlineResolution("360");
 }
 
@@ -39,26 +38,19 @@ function loadInlineResolution(targetQuality) {
     const videoId = inlineContainer.getAttribute("data-active-id");
     const title = inlineContainer.getAttribute("data-active-title");
 
-    // Amankan durasi saat ini sebelum player di-rebuild demi kelancaran perpindahan kualitas
     let lastTimestamp = 0;
     let isPlaying = true;
     
     if (mizuPlyrInstance) {
         lastTimestamp = mizuPlyrInstance.currentTime;
         isPlaying = mizuPlyrInstance.playing;
-        // Hancurkan instance lama secara bersih untuk mengosongkan RAM/Memory leak
         mizuPlyrInstance.destroy();
         mizuPlyrInstance = null;
     }
 
-    // 🔥 PERUBAHAN UTAMA: Merakit URL YouTube menjadi format googleusercontent bayangan
-    // Sesuai contoh request kamu: https://youtu.be/1glFz07y27I?si=kSu30Na2eZ5bde3t + videoId
-    const fakeGoogleUrl = "https://youtu.be/1glFz07y27I?si=kSu30Na2eZ5bde3t" + videoId.trim();
+    // Tembak ke Backend Vercel membawa ID asli dan format resolusi pilihan
+    const finalVercelProxyUrl = `/api/search?id=${encodeURIComponent(videoId)}&format=${targetQuality}&stream=true`;
 
-    // Kirim URL bayangan tersebut ke backend Vercel melalui query parameter 'url'
-    const finalVercelProxyUrl = `/api/search?url=${encodeURIComponent(fakeGoogleUrl)}&format=${targetQuality}&stream=true`;
-
-    // Konstruksi HTML Player Menggunakan Standar Wrapper Plyr
     inlineContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
             📺 Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
@@ -72,7 +64,7 @@ function loadInlineResolution(targetQuality) {
         </div>
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (Vercel Proxy)</label>
+            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (Direct Injection)</label>
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
                 <button class="inline-res-btn" data-res="144" onclick="loadInlineResolution('144')">144p</button>
                 <button class="inline-res-btn" data-res="240" onclick="loadInlineResolution('240')">240p</button>
@@ -85,7 +77,6 @@ function loadInlineResolution(targetQuality) {
         </div>
 
         <style>
-            /* Kustomisasi Tema Warna Plyr agar menyatu dengan aksen Crimson web kamu */
             :root {
                 --plyr-color-main: #BC002D;
                 --plyr-video-control-background-hover: rgba(188, 0, 45, 0.2);
@@ -102,7 +93,6 @@ function loadInlineResolution(targetQuality) {
         </style>
     `;
 
-    // Inisialisasi Plyr Core Engine
     mizuPlyrInstance = new Plyr("#mizu-inline-video-element", {
         controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
         tooltips: { controls: false, seek: true },
@@ -110,15 +100,13 @@ function loadInlineResolution(targetQuality) {
         blankVideo: 'https://cdn.plyr.io/static/blank.mp4'
     });
 
-    // Pasang ulang timestamp durasi nonton setelah engine siap
     mizuPlyrInstance.on('ready', () => {
         mizuPlyrInstance.currentTime = lastTimestamp;
         if (isPlaying) {
-            mizuPlyrInstance.play().catch(e => console.log("Autoplay blocked:", e));
+            mizuPlyrInstance.play().catch(e => console.log("Autoplay block bypass:", e));
         }
     });
 
-    // Tandai tombol resolusi aktif
     document.querySelectorAll(".inline-res-btn").forEach(btn => {
         if (btn.getAttribute("data-res") === targetQuality) {
             btn.classList.add("active-inline-res");
@@ -127,19 +115,17 @@ function loadInlineResolution(targetQuality) {
 
     inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-    // Fallback UI Error handler jika ada kegagalan tipe data codec
     const videoElement = document.getElementById("mizu-inline-video-element");
     if (videoElement) {
-        // Hubungkan ke penanganan error bawaan HTML5 video melalui objek Plyr
         videoElement.onerror = () => {
             const fallbackUi = document.getElementById("codec-fallback-ui");
             if (fallbackUi) {
                 fallbackUi.innerHTML = `
                     <div style="font-size: 0.7rem; color: #BC002D; font-weight: bold; margin-bottom: 5px;">
-                        ⚠️ Gagal memuat biner video di resolusi ini.
+                        ⚠️ Gagal memuat stream video.
                     </div>
                     <a href="${finalVercelProxyUrl}" target="_blank" download="video.mp4" style="font-size: 0.65rem; color: #333; font-weight: bold; text-decoration: underline;">
-                        Klik disini untuk download / putar eksternal.
+                        Klik disini untuk mencoba download langsung.
                     </a>
                 `;
             }
@@ -150,10 +136,8 @@ function loadInlineResolution(targetQuality) {
 function closeInlineVideoPlayer() {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     if (mizuPlyrInstance) {
-        // 🔥 Penanganan Error palsu saat tombol silang diclick
         const videoElement = document.getElementById("mizu-inline-video-element");
         if (videoElement) videoElement.onerror = null;
-
         mizuPlyrInstance.destroy();
         mizuPlyrInstance = null;
     }
@@ -161,3 +145,4 @@ function closeInlineVideoPlayer() {
         inlineContainer.remove();
     }
 }
+    
