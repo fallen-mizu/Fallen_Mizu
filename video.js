@@ -1,5 +1,5 @@
 // =================================================================
-// MIZU PLAYER - HYBRID PROXY STREAM WITH PLYR INTERACTION (video.js)
+// MIZU PLAYER - CLOUDFLARE WORKER DYNAMIC RESOLUTION INTEGRATION
 // =================================================================
 
 let mizuPlyrInstance = null;
@@ -20,18 +20,41 @@ async function playVideoTrack(videoId, title) {
     inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
     inlineVideoContainer.setAttribute("data-active-title", title);
 
-    // Jalankan inisialisasi awal ke resolusi aman (360p)
-    loadInlineResolution("360");
+    inlineVideoContainer.innerHTML = `
+        <div id="video-loader" style="text-align: center; padding: 25px 0;">
+            <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px;">🎬 MIZU ENGINE v2 (Cloudflare Workers)</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 3px;">Analyzing YouTube resolutions & FPS support...</div>
+        </div>
+    `;
+
+    try {
+        // 1. Ambil resolusi yang didukung asli oleh video ini via Vercel -> Cloudflare Worker Meta
+        const metaResponse = await fetch(`/api/search?id=${encodeURIComponent(cleanVideoId)}&stream=true&meta=true`);
+        const metaData = await metaResponse.json();
+
+        // Ambil list resolusi yang didukung asli (Contoh: ["144", "240", "360", "480", "720", "1080p60"])
+        const dynamicQualities = metaData.qualities || ["144", "240", "360", "480"];
+
+        // Set resolusi awal otomatis ke yang paling stabil (360p atau resolusi tertinggi yang ada)
+        const initialQuality = dynamicQualities.includes("360") ? "360" : dynamicQualities[0];
+        
+        // 2. Render Player dengan tombol resolusi dinamis asli YouTube
+        loadInlineResolutionWithQualities(initialQuality, dynamicQualities);
+
+    } catch (e) {
+        console.error("Failed to load meta resolutions:", e);
+        // Fallback jika meta gagal, pakai profil standar max 480p
+        loadInlineResolutionWithQualities("360", ["144", "240", "360", "480"]);
+    }
 }
 
-function loadInlineResolution(targetQuality) {
+function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     if (!inlineContainer) return;
 
     const videoId = inlineContainer.getAttribute("data-active-id");
     const title = inlineContainer.getAttribute("data-active-title");
 
-    // Amankan durasi saat ini sebelum ganti kualitas agar tidak mengulang dari awal
     let lastTimestamp = 0;
     let isPlaying = true;
     
@@ -42,8 +65,20 @@ function loadInlineResolution(targetQuality) {
         mizuPlyrInstance = null;
     }
 
-    // ⚡️ KUNCI UTAMA: Arahkan source langsung ke endpoint API Vercel kita yang sudah bypass CORS!
+    // Arahkan source langsung ke proxy stream biner Vercel yang akan di-redirect ke Cloudflare Worker
     const finalVercelProxyUrl = `/api/search?id=${encodeURIComponent(videoId)}&format=${targetQuality}&stream=true`;
+
+    // 3. Bangun tombol resolusi secara dinamis berdasar array allowedQualitiesList
+    let resolutionButtonsHtml = '';
+    allowedQualitiesList.forEach(q => {
+        // Tampilkan teks kustom jika resolusi mendukung 60fps
+        let buttonLabel = q.includes("p60") ? q : `${q}p`;
+        resolutionButtonsHtml += `
+            <button class="inline-res-btn" data-res="${q}" onclick="loadInlineResolutionWithQualities('${q}', [${allowedQualitiesList.map(item => `'${item}'`).join(',')}])">
+                ${buttonLabel}
+            </button>
+        `;
+    });
 
     inlineContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
@@ -58,16 +93,10 @@ function loadInlineResolution(targetQuality) {
         </div>
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Quality Selector (CORS Bypass Mode)</label>
+            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Resolution Tracker (Max 1080p)</label>
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
-                <button class="inline-res-btn" data-res="144" onclick="loadInlineResolution('144')">144p</button>
-                <button class="inline-res-btn" data-res="240" onclick="loadInlineResolution('240')">240p</button>
-                <button class="inline-res-btn" data-res="360" onclick="loadInlineResolution('360')">360p</button>
-                <button class="inline-res-btn" data-res="480" onclick="loadInlineResolution('480')">480p</button>
-                <button class="inline-res-btn" data-res="720" onclick="loadInlineResolution('720')">720p</button>
-                <button class="inline-res-btn" data-res="1080" onclick="loadInlineResolution('1080')">1080p</button>
+                ${resolutionButtonsHtml}
             </div>
-            <div id="codec-fallback-ui" style="margin-top: 5px;"></div>
         </div>
 
         <style>
@@ -87,22 +116,19 @@ function loadInlineResolution(targetQuality) {
         </style>
     `;
 
-    // Nyalakan Plyr Engine
     mizuPlyrInstance = new Plyr("#mizu-inline-video-element", {
         controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-        tooltips: { controls: false, seek: true },
         ratio: '16:9'
     });
 
-    // Kembalikan durasi nonton terakhir setelah engine siap buffer
     mizuPlyrInstance.on('ready', () => {
         mizuPlyrInstance.currentTime = lastTimestamp;
         if (isPlaying) {
-            mizuPlyrInstance.play().catch(e => console.log("Stream play triggered", e));
+            mizuPlyrInstance.play().catch(e => console.log("Workers Autoplay success", e));
         }
     });
 
-    // Nyalakan warna tombol aktif
+    // Nyalakan class active pada tombol kualitas pilihan saat ini
     document.querySelectorAll(".inline-res-btn").forEach(btn => {
         if (btn.getAttribute("data-res") === targetQuality) {
             btn.classList.add("active-inline-res");
@@ -110,21 +136,6 @@ function loadInlineResolution(targetQuality) {
     });
 
     inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
-
-    // Fallback UI jika resolusi video tersebut macet di server API
-    const videoElement = document.getElementById("mizu-inline-video-element");
-    if (videoElement) {
-        videoElement.onerror = () => {
-            const fallbackUi = document.getElementById("codec-fallback-ui");
-            if (fallbackUi) {
-                fallbackUi.innerHTML = `
-                    <div style="font-size: 0.65rem; color: #BC002D; font-weight: bold; margin-bottom: 5px;">
-                        ⚠️ Kualitas ${targetQuality}p bermasalah di API. Silakan pilih resolusi lain!
-                    </div>
-                `;
-            }
-        };
-    }
 }
 
 function closeInlineVideoPlayer() {
@@ -136,4 +147,4 @@ function closeInlineVideoPlayer() {
     if (inlineContainer) {
         inlineContainer.remove();
     }
-}
+            }
