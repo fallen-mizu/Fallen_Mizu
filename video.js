@@ -48,5 +48,22 @@ async function playVideoTrack(videoId, title) {
         </div>
         
         <div style="margin-top: 14px; display: flex; flex-direction: column; align-items: center; width: 100%;">
-            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform
-            
+            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Official Player Tunnel</label>
+            <div style="font-size: 0.65rem; color: #666; margin-top: 4px; font-style: italic; text-align: center; padding: 0 10px;">
+                Controls, subtitles, and quality engine are handled natively by YouTube.
+            </div>
+        </div>
+    `;
+
+    inlineVideoContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+/**
+ * Fungsi untuk menghentikan video dan menghapus elemen player
+ */
+function closeInlineVideoPlayer() {
+    const inlineContainer = document.getElementById("mizu-inline-video-container");
+    if (inlineContainer) {
+        inlineContainer.remove();
+    }
+}
