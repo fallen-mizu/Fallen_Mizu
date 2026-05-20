@@ -13,6 +13,45 @@
     
     <style>
 
+/* =================================================================
+   MIZU CORE SECURITY & UI OPTIMIZATION (ANTI-COPY & CLEAN CLICK)
+   ================================================================= */
+
+/* 1. PROTEKSI ANTI-COPY & SELECT (LINDUNGI SELURUH HALAMAN WEB) */
+html, body {
+    -webkit-user-select: none;  /* Safari & iOS Browser */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* IE / Edge Old */
+    user-select: none;          /* Google Chrome, Opera, & Standard modern */
+    
+    /* Tambahan opsional: Mencegah menu klik kanan/save image di HP (long press) */
+    -webkit-touch-callout: none;
+}
+
+/* 2. HILANGKAN WARNA / HIGHLIGHT BIRU SAAT TOMBOL DIKLIK DI HP */
+button, 
+a, 
+input, 
+div[onclick], 
+span[onclick],
+.inline-res-btn,
+.yt-song-item { /* Tambahkan class/tag tombol kamu di sini jika ada yang kurang */
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+}
+
+/* 3. PENGECUALIAN (KOTAK PENCARIAN TENTU HARUS TETAP BISA DIKETIK) */
+input[type="text"], 
+input[type="search"], 
+textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+        
+
+        
         /* Gaya dasar baris daftar lagu */
 .song-row {
     display: flex;
