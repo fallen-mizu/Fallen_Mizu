@@ -1,5 +1,5 @@
 // =================================================================
-// MIZU PLAYER - NATIVE YT CLOUDFLARE WORKER INTEGRATION (video.js)
+// MIZU PLAYER - FIXED DIRECT MUXED YT STREAMER (video.js)
 // =================================================================
 
 let mizuPlyrInstance = null;
@@ -29,8 +29,8 @@ async function playVideoTrack(videoId, title) {
     // Render state loading selagi menganalisis manifest asli YouTube di Cloudflare Workers
     inlineVideoContainer.innerHTML = `
         <div id="video-loader" style="text-align: center; padding: 35px 0; width: 100%; max-width: 450px; background: #fafafa; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.05);">
-            <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px; animation: mizuPulse 1.5s infinite;">🎬 MIZU NATIVE ENGINE v3</div>
-            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 5px;">Analyzing video stream tracks & FPS sync...</div>
+            <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px; animation: mizuPulse 1.5s infinite;">🎬 MIZU NATIVE ENGINE v4</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 5px;">Synchronizing track streams from Cloudflare Workers...</div>
         </div>
         <style>
             @keyframes mizuPulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
@@ -38,17 +38,16 @@ async function playVideoTrack(videoId, title) {
     `;
 
     try {
-        // 1. Lakukan cek ombak (Pre-fetch Meta) untuk menarik resolusi asli bawaan video YouTube tersebut
+        // 1. Ambil data resolusi asli bawaan video YouTube tersebut via Worker Meta Gateway
         const metaResponse = await fetch(`/api/search?id=${encodeURIComponent(cleanVideoId)}&stream=true&meta=true`);
         const metaData = await metaResponse.json();
 
-        // Ambil array resolusi dari worker (Contoh: ["144p", "360p", "720p60", "1080p60"])
+        // Ambil array resolusi asli (Contoh: ["144p", "360p", "720p60", "1080p60"])
         const dynamicQualities = metaData.qualities || ["144p", "240p", "360p", "480p"];
 
-        // Cari resolusi default yang paling stabil untuk pemutaran awal (utamakan 360p jika ada)
+        // Tentukan resolusi default awal pemutaran (Utamakan 360p atau 480p agar buffer awal instan)
         let initialQuality = "360p";
         if (!dynamicQualities.includes("360p")) {
-            // Jika tidak ada 360p, ambil indeks tengah atau resolusi pertama yang tersedia
             initialQuality = dynamicQualities.includes("480p") ? "480p" : dynamicQualities[0];
         }
 
@@ -57,7 +56,7 @@ async function playVideoTrack(videoId, title) {
 
     } catch (e) {
         console.error("Mizu Core Metadata Extractor Failed:", e);
-        // Fallback darurat jika manifest YouTube gagal dibedah, sediakan profil standar maksimal 480p
+        // Fallback darurat jika manifest YouTube gagal dibedah, sediakan profil standar
         loadInlineResolutionWithQualities("360p", ["144p", "240p", "360p", "480p"]);
     }
 }
@@ -85,10 +84,11 @@ function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) 
         mizuPlyrInstance = null;
     }
 
-    // ⚡️ MEMBERSIHKAN FORMAT: Ubah string seperti "1080p60" menjadi murni angka "1080" untuk query backend Vercel
+    // ⚡️ FIX SINKRONISASI MUTLAK: Ekstrak angka murni (misal "1080p60" -> "1080", "720p" -> "720")
+    // Ini dikirim agar Worker Cloudflare dapat mendeteksi kecocokan string secara akurat
     const cleanFormatNumber = targetQuality.replace("p", "").replace("60", "").trim();
 
-    // Tembak source langsung ke Vercel API Gateway yang mengarah ke Cloudflare Workers ter-bypass CORS
+    // Tembak source langsung ke Vercel API Gateway yang akan melakukan redirect langsung ke Cloudflare Workers
     const finalVercelProxyUrl = `/api/search?id=${encodeURIComponent(videoId)}&format=${cleanFormatNumber}&stream=true`;
 
     // 3. Bangun tombol resolusi secara dinamis berdasarkan track asli video YouTube-nya
@@ -148,7 +148,7 @@ function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) 
         ratio: '16:9'
     });
 
-    // Jalankan sinkronisasi detitk video dan trigger auto play bypass
+    // Jalankan sinkronisasi detik video dan trigger auto play bypass
     mizuPlyrInstance.on('ready', () => {
         mizuPlyrInstance.currentTime = lastTimestamp;
         if (isPlaying) {
@@ -156,7 +156,7 @@ function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) 
         }
     });
 
-    // Tandai tombol resolusi mana yang saat ini sedang aktif menyala Crimson
+    // Tandai tombol resolusi mana yang saat ini sedang aktif menyala Crimson (#BC002D)
     document.querySelectorAll(".inline-res-btn").forEach(btn => {
         if (btn.getAttribute("data-res") === targetQuality) {
             btn.classList.add("active-inline-res");
@@ -173,7 +173,7 @@ function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) 
             if (errorUi) {
                 errorUi.innerHTML = `
                     <div style="font-size: 0.65rem; color: #BC002D; font-weight: bold; text-align: center;">
-                        ⚠️ Jalur stream ${targetQuality} sibuk di CDN Google. Silakan klik resolusi lain di atas!
+                        ⚠️ Jalur stream ${targetQuality} sedang sibuk atau dibatasi oleh YouTube. Silakan klik resolusi lain!
                     </div>
                 `;
             }
@@ -195,4 +195,5 @@ function closeInlineVideoPlayer() {
     if (inlineContainer) {
         inlineContainer.remove();
     }
-}
+                                                           }
+            
