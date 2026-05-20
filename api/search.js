@@ -1,13 +1,13 @@
 // =================================================================
-// VERCEL BACKEND GATEWAY - REVERSE PROXY STREAMING (api/search.js)
+// VERCEL BACKEND GATEWAY - FIXED REVERSE PROXY (api/search.js)
 // =================================================================
 import ytSearch from 'yt-search';
 
-// ⚠️ GANTI DENGAN URL SUBDOMAIN WORKER CLOUDFLARE KAMU YANG SEBENARNYA
+// ⚠️ PASTIKAN URL WORKER CLOUDFLARE KAMU SUDAH BENAR
 const CLOUDFLARE_WORKER_URL = "https://mizu-api-video.tohsakarin756.workers.dev"; 
 
 export default async function handler(req, res) {
-    // Set standar CORS Header di sisi Vercel agar Plyr bebas membaca data
+    // Set standar CORS Header agar Plyr bebas membaca stream byte
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Range");
@@ -32,30 +32,42 @@ export default async function handler(req, res) {
             const cleanId = videoId.trim();
             const mockGoogleUrl = `http://googleusercontent.com/youtube.com/${cleanId}`;
 
-            // Rakit URL menuju Worker
-            let targetWorkerUrl = `${CLOUDFLARE_WORKER_URL}?url=${encodeURIComponent(mockGoogleUrl)}&format=${targetFormat}`;
-            if (isMeta) targetWorkerUrl += "&meta=true";
+            // 🔥 PERBAIKAN UTAMA: Gunakan URLSearchParams agar query string 100% aman dari masking/stripping Vercel
+            const workerParams = new URLSearchParams();
+            workerParams.append("url", mockGoogleUrl);
+            workerParams.append("format", targetFormat);
+            if (isMeta) {
+                workerParams.append("meta", "true");
+            }
+
+            const finalWorkerUrl = `${CLOUDFLARE_WORKER_URL}?${workerParams.toString()}`;
 
             // JALUR A: Minta data resolusi tombol (Meta)
             if (isMeta) {
-                const metaResponse = await fetch(targetWorkerUrl);
+                const metaResponse = await fetch(finalWorkerUrl);
                 const metaData = await metaResponse.json();
                 return res.status(200).json(metaData);
             }
 
-            // JALUR B: STREAM BINER (REVERSE PROXY - BYPASS TOTAL BLACK SCREEN)
-            // Teruskan HTTP Range dari browser pengunjung ke Cloudflare Worker
+            // JALUR B: STREAM BINER (REVERSE PROXY)
             const browserHeaders = {};
             if (req.headers.range) {
                 browserHeaders["Range"] = req.headers.range;
             }
             browserHeaders["User-Agent"] = req.headers["user-agent"] || "Mozilla/5.0";
 
-            const workerResponse = await fetch(targetWorkerUrl, {
+            const workerResponse = await fetch(finalWorkerUrl, {
                 headers: browserHeaders
             });
 
-            // Ambil semua header penting terkait content-range (fitur scrubbing/seek video)
+            // Jika Worker mengembalikan status error, teruskan ke log untuk mempermudah debug
+            if (!workerResponse.ok) {
+                const errorText = await workerResponse.text();
+                console.error("Worker Bridge Error:", errorText);
+                return res.status(workerResponse.status).send(errorText);
+            }
+
+            // Ambil semua header penting terkait content-range (untuk fitur seek/scrubbing video)
             res.setHeader("Content-Type", "video/mp4");
             if (workerResponse.headers.get("Content-Range")) {
                 res.setHeader("Content-Range", workerResponse.headers.get("Content-Range"));
@@ -67,13 +79,11 @@ export default async function handler(req, res) {
                 res.setHeader("Accept-Ranges", workerResponse.headers.get("Accept-Ranges"));
             }
 
-            // Set status 206 jika browser meminta potongan video (Scrubbing), sisanya beri 200/status asli worker
             res.status(workerResponse.status);
 
-            // Alirkan biner video secara langsung (Pipe/Stream stream body) dari Worker ke browser
+            // Alirkan biner video secara langsung (Pipe Stream) dari Worker ke browser
             const reader = workerResponse.body.getReader();
             
-            // Fungsi rekursif untuk menyemburkan chunk data biner tanpa interupsi buffer
             async function pushChunks() {
                 const { done, value } = await reader.read();
                 if (done) {
@@ -88,7 +98,7 @@ export default async function handler(req, res) {
             return;
 
         } catch (error) {
-            console.error("Vercel Proxy Error:", error);
+            console.error("Vercel Proxy Critical Error:", error);
             return res.status(500).json({ error: error.message });
         }
     }
@@ -114,3 +124,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ status: false, message: error.message });
     }
 }
+    
