@@ -1,28 +1,29 @@
 import ytSearch from 'yt-search';
 
 export default async function handler(req, res) {
-    // 🔥 PATH INJECTION REAL URL ALIGNMENT (SINKRON DENGAN VIDEO.JS)
+    // 🔥 PATH INJECTION REAL URL + STRICT RESOLUTION ALIGNMENT
     if (req.query.stream === "true" || req.query.id) {
         const videoId = req.query.id;
+        const targetFormat = req.query.format || "360"; // Tangkap parameter resolusi wajib dari frontend
 
         if (!videoId) {
             return res.status(400).json({ error: "Missing video 'id' parameter" });
         }
 
-        // Set Header JSON & CORS agar aman diakses frontend
         res.setHeader("Content-Type", "application/json");
         res.setHeader("Access-Control-Allow-Origin", "*");
 
         try {
             const cleanId = videoId.trim();
+            const cleanFormat = targetFormat.toString().trim();
             
-            // 🔥 FIX UTAMA: Kirim URL YouTube Asli / Resmi agar dikenali oleh API Zenzxz
+            // Masukkan link bayangan YouTube resmi
             const realYoutubeUrl = `https://www.youtube.com/watch?v=${cleanId}`;
             
-            // Masukkan real URL ke dalam parameter request API Zenzxz
-            const zenzxzApiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(realYoutubeUrl)}`;
+            // 🔥 KRUSIAL: Kirim &format= angka resolusi secara strict sesuai instruksi kamu!
+            const zenzxzApiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(realYoutubeUrl)}&format=${cleanFormat}`;
 
-            console.log("🎬 Connecting to Zenzxz Core with Real URL:", zenzxzApiUrl);
+            console.log("🎬 Connecting to Zenzxz with Strict Quality Target:", zenzxzApiUrl);
 
             const apiResponse = await fetch(zenzxzApiUrl, {
                 headers: {
@@ -33,18 +34,18 @@ export default async function handler(req, res) {
             if (!apiResponse.ok) throw new Error("Zenzxz Returns HTTP " + apiResponse.status);
             const data = await apiResponse.json();
 
-            // Saring link biner mp4 langsung dari properti download/url hasil bypass
+            // Saring link download langsung dari payload respons sukses
             let realDownloadUrl = data?.result?.download || data?.result?.url || data?.downloadUrl || data?.url || data?.result?.video;
 
-            if (!realDownloadUrl) {
-                return res.status(200).json({ status: false, error: "Link download tidak ditemukan dalam payload API." });
+            if (!realDownloadUrl || data.status === false) {
+                return res.status(200).json({ status: false, error: data.message || "Resolusi ditolak oleh server API." });
             }
 
-            // Kembalikan link video mentah (.mp4) dari Savetube secara bersih ke frontend
+            // Kembalikan objek sukses beserta url download langsungnya ke Plyr
             return res.status(200).json({ status: true, videoUrl: realDownloadUrl });
 
         } catch (proxyError) {
-            console.error("Vercel Direct Proxy Error:", proxyError);
+            console.error("Vercel Quality Proxy Error:", proxyError);
             return res.status(500).json({ status: false, error: proxyError.message });
         }
     }
@@ -73,4 +74,3 @@ export default async function handler(req, res) {
         return res.status(500).json({ status: false, message: error.message });
     }
 }
-    
