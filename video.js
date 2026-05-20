@@ -195,5 +195,4 @@ function closeInlineVideoPlayer() {
     if (inlineContainer) {
         inlineContainer.remove();
     }
-                                                           }
-            
+}
