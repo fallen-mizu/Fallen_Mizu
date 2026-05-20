@@ -1,28 +1,27 @@
 import ytSearch from 'yt-search';
 
-// 🔥 MASUKKAN URL CLOUDFLARE WORKER KAMU DI SINI
+// GANTI DENGAN URL SUBDOMAIN WORKER CLOUDFLARE KAMU YANG SEBENARNYA
 const CLOUDFLARE_WORKER_URL = "https://mizu-api-video.tohsakarin756.workers.dev"; 
 
 export default async function handler(req, res) {
-    // JALUR GATEWAY CLOUDFLARE WORKERS INTEGRATION
+    // GATEWAY TUNNEL INTEGRATION
     if (req.query.stream === "true" || req.query.id) {
         const videoId = req.query.id;
         const targetFormat = req.query.format || "360";
         const isMeta = req.query.meta === "true";
 
         if (!videoId) {
-            return res.status(400).json({ error: "Missing video 'id'" });
+            return res.status(400).json({ error: "Missing video 'id' parameter" });
         }
 
         try {
             const cleanId = videoId.trim();
-            const fakeGoogleUrl = `http://googleusercontent.com/youtube.com/${cleanId}`;
+            const mockGoogleUrl = `http://googleusercontent.com/youtube.com/${cleanId}`;
 
-            // Rakit URL instruksi ke Cloudflare Worker
-            let targetWorkerUrl = `${CLOUDFLARE_WORKER_URL}?url=${encodeURIComponent(fakeGoogleUrl)}&format=${targetFormat}`;
+            // Rakit query string menuju Cloudflare Worker secara transparan
+            let targetWorkerUrl = `${CLOUDFLARE_WORKER_URL}?url=${encodeURIComponent(mockGoogleUrl)}&format=${targetFormat}`;
             if (isMeta) targetWorkerUrl += "&meta=true";
 
-            // Jika hanya meminta metadata resolusi, kembalikan data JSON
             if (isMeta) {
                 const metaResponse = await fetch(targetWorkerUrl);
                 const metaData = await metaResponse.json();
@@ -31,7 +30,7 @@ export default async function handler(req, res) {
                 return res.status(200).json(metaData);
             }
 
-            // Jika meminta biner video, redirect langsung browser ke Worker Cloudflare (Sangat hemat memori RAM Vercel!)
+            // Alihkan (Redirect) Plyr Player langsung ke Cloudflare Worker untuk streaming data biner anti-timeout
             res.redirect(302, targetWorkerUrl);
             return;
 
@@ -41,7 +40,7 @@ export default async function handler(req, res) {
     }
 
     // =================================================================
-    // JALUR PENCARIAN 5 LAGU UTAMA (TETAP SAMA SEPERTI SEMULA)
+    // JALUR LAMA: FITUR PENCARIAN 5 LAGU UTAMA
     // =================================================================
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -63,4 +62,5 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ status: false, message: error.message });
     }
-            }
+}
+    
