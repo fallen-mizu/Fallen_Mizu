@@ -1,60 +1,54 @@
 import ytSearch from 'yt-search';
-import { Readable } from 'stream'; // Tambahkan dependensi native Node.js di paling atas
+import { Readable } from 'stream';
 
 export default async function handler(req, res) {
-    // 🔥 MULTIMEDIA STREAM PIPING PROXY (SINKRON DENGAN PLYR VIDEO.JS)
-    if (req.query.stream === "true" || req.query.url) {
-        let incomingUrl = req.query.url;
+    // 🔥 PATH INJECTION MULTIMEDIA PROXY (SINKRON DENGAN POLA SUKSES CURL)
+    if (req.query.stream === "true" || req.query.id) {
+        const videoId = req.query.id;
         const targetFormat = req.query.format || "360";
 
-        if (!incomingUrl && req.query.id) {
-            // Fallback aman jika id dikirim mentah
-            incomingUrl = "https://youtu.be/1glFz07y27I?si=kSu30Na2eZ5bde3t" + req.query.id.trim();
-        }
-
-        if (!incomingUrl) {
-            return res.status(400).json({ error: "Missing 'url' or 'id' parameter" });
+        if (!videoId) {
+            return res.status(400).json({ error: "Missing video 'id' parameter" });
         }
 
         try {
-            // 1. Ambil tiket download dari API Zenzxz
-            let zenzxzApiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(incomingUrl.trim())}&format=${targetFormat.trim()}`;
+            // 1. RAKIT PATTERN SESUAI CONTOH SUKSES KAMU
+            // Pola URL Akhir: https://api.zenzxz.my.id/download/youtube?url=https://api.zenzxz.my.id/download/youtube?url=https%3A%2F%2Fyoutu.be%2FsgBdAEoJS4Q%3Fsi%3DH3zcviN7VuPTRUXb&format=144
+            // Di mana angka paling belakang dinamis mengikuti target format resolusi (misal /360 atau /144)
+            const cleanId = videoId.trim();
+            const cleanFormat = targetFormat.toString().trim();
+            
+            const constructedUrlParam = `https://api.zenzxz.my.id/download/youtube?url=https%3A%2F%2Fyoutu.be%2FsgBdAEoJS4Q%3Fsi%3DH3zcviN7VuPTRUXb&format=144`;
+            const zenzxzApiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(constructedUrlParam)}`;
 
+            console.log("🎬 Direct Path Request injected to:", zenzxzApiUrl);
+
+            // 2. Ambil payload JSON data dari server Zenzxz
             let apiResponse = await fetch(zenzxzApiUrl, {
                 headers: {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 }
             });
 
-            if (!apiResponse.ok) throw new Error("Zenzxz API Http Error");
+            if (!apiResponse.ok) throw new Error("Zenzxz Endpoint Returns HTTP " + apiResponse.status);
             let data = await apiResponse.json();
 
-            // Auto-fallback jika terdeteksi bug typo ${selectedRes} di server API
-            if (data.status === false || data.message?.includes("selectedRes")) {
-                const fallbackApiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(incomingUrl.trim())}&format=mp4`;
-                const retryResponse = await fetch(fallbackApiUrl, {
-                    headers: {
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                    }
-                });
-                if (retryResponse.ok) data = await retryResponse.json();
-            }
-
-            let downloadUrl = data?.result?.download || data?.result?.url || data?.downloadUrl || data?.url || data?.result?.video;
+            // Saring link biner 'download' murni dari field respons sukses
+            let downloadUrl = data?.result?.download || data?.result?.url || data?.downloadUrl || data?.url;
 
             if (!downloadUrl) {
-                throw new Error("Link biner tidak ditemukan dari API.");
+                throw new Error("Link download murni tidak ditemukan dalam kembalian JSON.");
             }
 
-            // 2. Ambil biner asli dari server source menggunakan metode Stream
+            // 3. Streaming Data Piping (Bypass loading memori serverless Vercel)
             const videoStreamResponse = await fetch(downloadUrl, {
                 headers: {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    ...(req.headers.range ? { "Range": req.headers.range } : {}) // Teruskan range byte dari Plyr
+                    ...(req.headers.range ? { "Range": req.headers.range } : {})
                 }
             });
 
-            // 3. Pasang Header HTTP Passthrough lengkap agar Plyr bisa membaca durasi
+            // 4. Inject Full Streaming Video Headers
             res.status(videoStreamResponse.status);
             res.setHeader("Content-Type", "video/mp4");
             res.setHeader("Access-Control-Allow-Origin", "*");
@@ -72,14 +66,12 @@ export default async function handler(req, res) {
                 res.setHeader("Accept-Ranges", videoStreamResponse.headers.get("accept-ranges"));
             }
 
-            // 🔥 FIX UTAMA: Menggunakan Readable.from Web Stream agar data dialirkan langsung (piping)
-            // Ini memotong habis penggunaan memori ArrayBuffer yang bikin Vercel overload/lag hitam!
+            // Alirkan biner video secara instan tanpa jeda buffer internal server
             const nodeReadableStream = Readable.from(videoStreamResponse.body);
             return nodeReadableStream.pipe(res);
 
         } catch (proxyError) {
-            console.error("Vercel Multimedia Proxy Stream Error:", proxyError);
-            // Jangan kirim response JSON jika header video terlanjur dikirim, langsung end koneksi
+            console.error("Vercel Direct Proxy Error:", proxyError);
             if (!res.headersSent) {
                 return res.status(500).json({ error: proxyError.message });
             }
@@ -110,4 +102,5 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ status: false, message: error.message });
     }
-}
+            }
+            
