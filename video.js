@@ -48,8 +48,9 @@ function loadInlineResolution(targetQuality) {
         mizuPlyrInstance = null;
     }
 
-    // Tembak ke Backend Vercel membawa ID asli dan format resolusi pilihan
-    const finalVercelProxyUrl = `/api/search?id=${encodeURIComponent(videoId)}&format=${targetQuality}&stream=true`;
+    // Di dalam file video.js, ubah baris rakitan URL-nya menjadi seperti ini:
+const finalVercelProxyUrl = `/api/search?id=${encodeURIComponent(videoId)}&stream=true`;
+    
 
     inlineContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
