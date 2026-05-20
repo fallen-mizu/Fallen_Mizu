@@ -1,19 +1,19 @@
 // =================================================================
-// MIZU MULTIMEDIA ENGINE - CLIENT-SIDE EMBED REBUILD (video.js)
+// MIZU MULTIMEDIA ENGINE - UTILITY EMBED PLAYER REBUILD (video.js)
 // =================================================================
 
 let mizuPlyrInstance = null;
 
 /**
  * Fungsi utama untuk menginisialisasi container player multimedia Mizu
- * @param {string} videoId - ID Video dari YouTube
+ * @param {string} videoId - ID Video dari YouTube (bisa mengandung prefix youtube_)
  * @param {string} title - Judul video untuk ditampilkan di UI Player
  */
 async function playVideoTrack(videoId, title) {
     const songListContainer = document.getElementById("yt-song-list");
     if (!songListContainer) return;
 
-    // Cari atau buat container video inline di bawah daftar lagu
+    // Cari atau buat container video inline di bawah daftar lagu jika belum ada
     let inlineVideoContainer = document.getElementById("mizu-inline-video-container");
     if (!inlineVideoContainer) {
         inlineVideoContainer = document.createElement("div");
@@ -28,13 +28,13 @@ async function playVideoTrack(videoId, title) {
     inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
     inlineVideoContainer.setAttribute("data-active-title", title);
 
-    // Hancurkan instance lama jika ada sebelum membuat yang baru
+    // Hancurkan instance lama jika ada sebelum membuat yang baru agar memori bersih
     if (mizuPlyrInstance) {
         mizuPlyrInstance.destroy();
         mizuPlyrInstance = null;
     }
 
-        // Terapkan struktur HTML Player menggunakan provider native YouTube dengan rasio stabil
+    // Render struktur HTML Player menggunakan provider native YouTube dengan aspek rasio stabil
     inlineVideoContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
             📺 Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
@@ -62,24 +62,24 @@ async function playVideoTrack(videoId, title) {
 
         <style>
             :root {
-                --plyr-color-main: #BC002D; /* Warna Crimson kebanggaan */
+                --plyr-color-main: #BC002D; /* Warna Crimson kebanggaan Mizu */
                 --plyr-video-control-background-hover: rgba(188, 0, 45, 0.2);
             }
             .plyr { border-radius: 12px; width: 100%; }
             
-            /* 🔥 PERBAIKAN CSS: Berikan ruang bernapas yang pas agar pop-up resolusi tidak terpotong */
+            /* 🔥 PERBAIKAN CSS: Mengembalikan ukuran normal agar popup menu resolusi tidak terpotong */
             .plyr__video-embed iframe { 
                 top: 0 !important; 
                 height: 100% !important; 
-                transform: scale(1.01); /* Menghilangkan border tipis bawaan iframe */
+                transform: scale(1.01); /* Menghilangkan sisa border tipis bawaan iframe */
             }
         </style>
     `;
 
-    // Inisialisasi ulang instance Plyr dengan pengaturan paksa parameter kualitas
+    // Inisialisasi ulang instance Plyr dengan opsi pengaturan paksa parameter kualitas
     mizuPlyrInstance = new Plyr("#mizu-inline-video-element", {
         controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
-        settings: ['quality', 'speed'], // Paksa 'quality' masuk ke daftar menu utama gerigi
+        settings: ['quality', 'speed'], // Paksa opsi 'quality' masuk ke daftar menu utama gerigi bersama speed
         youtube: { 
             noCookie: true, 
             rel: 0, 
@@ -89,14 +89,14 @@ async function playVideoTrack(videoId, title) {
         }
     });
 
-    // Otomatis putar saat komponen siap
+    // Otomatis putar jika player sudah siap mendengarkan data
     mizuPlyrInstance.on('ready', () => {
         mizuPlyrInstance.play().catch(e => console.log("Autoplay context handled:", e));
     });
 
-    // Gulir halus ke arah posisi video
+    // Gulir halus ke area pemutar video
     inlineVideoContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    
+}
 
 /**
  * Fungsi untuk menghentikan player dan menghapus container multimedia dari halaman web
@@ -110,4 +110,4 @@ function closeInlineVideoPlayer() {
     if (inlineContainer) {
         inlineContainer.remove();
     }
-}
+        }
