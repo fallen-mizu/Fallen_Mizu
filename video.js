@@ -1,17 +1,16 @@
 // =================================================================
-// MIZU MULTIMEDIA ENGINE - CLEAN NATIVE EMBED (video.js)
+// MIZU MULTIMEDIA ENGINE - ULTRA CLEAN NATIVE EMBED (video.js)
 // =================================================================
 
 /**
- * Fungsi utama untuk merender video menggunakan native YouTube iframe player
- * @param {string} videoId - ID Video dari YouTube (contoh: youtube_xxxx atau xxxx)
+ * Fungsi utama untuk merender video menggunakan native YouTube iframe player dengan proteksi layout clean
+ * @param {string} videoId - ID Video dari YouTube
  * @param {string} title - Judul video untuk UI header
  */
 async function playVideoTrack(videoId, title) {
     const songListContainer = document.getElementById("yt-song-list");
     if (!songListContainer) return;
 
-    // Cari atau buat container video inline di bawah daftar lagu
     let inlineVideoContainer = document.getElementById("mizu-inline-video-container");
     if (!inlineVideoContainer) {
         inlineVideoContainer = document.createElement("div");
@@ -20,29 +19,29 @@ async function playVideoTrack(videoId, title) {
         songListContainer.after(inlineVideoContainer);
     }
 
-    // Bersihkan prefix jika ada
     const cleanVideoId = videoId.replace("youtube_", "").trim();
     
-    // Simpan state aktif ke container attribute
     inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
     inlineVideoContainer.setAttribute("data-active-title", title);
 
-    // Render Player menggunakan Native Iframe YouTube murni tanpa bungkus Plyr
-    // Menggunakan parameter premium-bypass agar pemutar bersih dari distorsi layout
+    // Render Player dengan optimasi parameter URL dan trik CSS overflow clipping
     inlineVideoContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
             📺 Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
         </div>
 
         <div style="position: relative; width: 100%; max-width: 450px; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); background: #000;">
-            <iframe
-                src="https://www.youtube.com/embed/${cleanVideoId}?autoplay=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1"
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-            ></iframe>
             
-            <div onclick="closeInlineVideoPlayer()" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; font-weight: bold; z-index: 10; user-select: none; -webkit-tap-highlight-color: transparent;">×</div>
+            <div style="position: absolute; top: -5%; left: -2%; width: 104%; height: 110%; overflow: hidden;">
+                <iframe
+                    src="https://www.youtube.com/embed/${cleanVideoId}?autoplay=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1&controls=1&fs=1"
+                    style="width: 100%; height: 100%; border: 0;"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                ></iframe>
+            </div>
+            
+            <div onclick="closeInlineVideoPlayer()" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; font-weight: bold; z-index: 20; user-select: none; -webkit-tap-highlight-color: transparent;">×</div>
         </div>
         
         <div style="margin-top: 12px; display: flex; flex-direction: column; align-items: center; width: 100%;">
@@ -53,16 +52,16 @@ async function playVideoTrack(videoId, title) {
         </div>
     `;
 
-    // Gulir layar secara halus ke posisi pemutar video
     inlineVideoContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 /**
- * Fungsi untuk menghentikan video dan menghapus elemen player dari DOM
+ * Fungsi untuk menghentikan video dan menghapus elemen player
  */
 function closeInlineVideoPlayer() {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     if (inlineContainer) {
         inlineContainer.remove();
     }
-}
+            }
+            
