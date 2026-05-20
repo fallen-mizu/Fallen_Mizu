@@ -1,8 +1,7 @@
 import ytSearch from 'yt-search';
-import { Readable } from 'stream';
 
 export default async function handler(req, res) {
-    // 🔥 PERFECT REBUILD: PATH INJECTION STREAM ALIGNMENT
+    // 🔥 BACKEND VERCEL SEBAGAI API LINK GENERATOR (BUKAN PROXY BINER)
     if (req.query.stream === "true" || req.query.id) {
         const videoId = req.query.id;
 
@@ -10,75 +9,44 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Missing video 'id' parameter" });
         }
 
+        // Set Header JSON & CORS agar bisa dibaca dengan aman oleh frontend
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
         try {
             const cleanId = videoId.trim();
-            
-            // 🔥 KUNCI UTAMA: Kita rakit URL bayangan persis seperti contoh curl suksesmu.
-            // ID Video diletakkan langsung di paling belakang menggantikan angka mock!
+            // Rakit URL bayangan sesuai dengan cURL suksesmu
             const constructedUrlParam = `http://googleusercontent.com/youtube.com/${cleanId}`;
-            
-            // Tembak ke API Zenzxz HANYA membawa parameter url bersih tanpa append format angka yang bikin eror typo
             const zenzxzApiUrl = `https://api.zenzxz.my.id/download/youtube?url=${encodeURIComponent(constructedUrlParam)}`;
 
-            console.log("🎬 Connecting to Zenzxz Core Injector:", zenzxzApiUrl);
-
-            let apiResponse = await fetch(zenzxzApiUrl, {
+            console.log("🔗 Fetching link from Zenzxz...");
+            const apiResponse = await fetch(zenzxzApiUrl, {
                 headers: {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 }
             });
 
-            if (!apiResponse.ok) throw new Error("Zenzxz Returns HTTP " + apiResponse.status);
+            if (!apiResponse.ok) throw new Error("Zenzxz API Http Error");
             const data = await apiResponse.json();
 
-            // Ambil link biner mp4 langsung dari properti download/url hasil bypass
-            let downloadUrl = data?.result?.download || data?.result?.url || data?.downloadUrl || data?.url || data?.result?.video;
+            // Saring link mp4 mentah dari server Savetube
+            let realDownloadUrl = data?.result?.download || data?.result?.url || data?.downloadUrl || data?.url || data?.result?.video;
 
-            if (!downloadUrl) {
-                throw new Error("API Zenzxz tidak mengembalikan link biner (.mp4) yang valid.");
+            if (!realDownloadUrl) {
+                return res.status(200).json({ status: false, error: "Link video tidak ditemukan" });
             }
 
-            // Ambil data biner stream dari resource destination
-            const videoStreamResponse = await fetch(downloadUrl, {
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    ...(req.headers.range ? { "Range": req.headers.range } : {})
-                }
-            });
-
-            // Set Passthrough Headers untuk kelancaran Buffer Plyr Engine
-            res.status(videoStreamResponse.status);
-            res.setHeader("Content-Type", "video/mp4");
-            res.setHeader("Access-Control-Allow-Origin", "*");
-            res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-            res.setHeader("Access-Control-Allow-Headers", "Content-Type, Range");
-            res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges");
-
-            if (videoStreamResponse.headers.get("content-length")) {
-                res.setHeader("Content-Length", videoStreamResponse.headers.get("content-length"));
-            }
-            if (videoStreamResponse.headers.get("content-range")) {
-                res.setHeader("Content-Range", videoStreamResponse.headers.get("content-range"));
-            }
-            if (videoStreamResponse.headers.get("accept-ranges")) {
-                res.setHeader("Accept-Ranges", videoStreamResponse.headers.get("accept-ranges"));
-            }
-
-            // Alirkan data video secara langsung (piping) tanpa memakan memori RAM serverless Vercel
-            const nodeReadableStream = Readable.from(videoStreamResponse.body);
-            return nodeReadableStream.pipe(res);
+            // Kembalikan URL mentahnya secara bersih ke frontend video.js
+            return res.status(200).json({ status: true, videoUrl: realDownloadUrl });
 
         } catch (proxyError) {
-            console.error("Vercel Proxy Critical Error:", proxyError);
-            if (!res.headersSent) {
-                return res.status(500).json({ error: proxyError.message });
-            }
-            return res.end();
+            console.error("Vercel Link Generator Error:", proxyError);
+            return res.status(500).json({ status: false, error: proxyError.message });
         }
     }
 
     // =================================================================
-    // JALUR LAMA: FITUR PENCARIAN 5 LAGU UTAMA (TETAP DIPERTAHANKAN)
+    // JALUR PENCARIAN 5 LAGU UTAMA (TETAP SAMA)
     // =================================================================
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -100,4 +68,4 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ status: false, message: error.message });
     }
-}
+                }
