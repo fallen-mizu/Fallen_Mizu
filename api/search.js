@@ -1,14 +1,14 @@
 // =================================================================
-// VERCEL BACKEND GATEWAY - INVIDIOUS ENGINE PROXY (api/search.js)
+// VERCEL BACKEND GATEWAY - PIPED HLS CORE EXTRACTOR (api/search.js)
 // =================================================================
 import ytSearch from 'yt-search';
 
-// Daftar mirror Invidious publik yang stabil untuk fallback jika salah satu down
-const INVIDIOUS_INSTANCES = [
-    "https://invidious.projectsegfau.lt",
-    "https://yewtu.be",
-    "https://inv.tux.digital",
-    "https://invidious.nerdvpn.de"
+// Daftar kluster server Piped resmi yang memiliki rotasi proxy tangguh
+const PIPED_INSTANCES = [
+    "https://pipedapi.kavin.rocks",
+    "https://pipedapi.tokhmi.xyz",
+    "https://api.piped.yt",
+    "https://pipedapi.adminforge.de"
 ];
 
 export default async function handler(req, res) {
@@ -20,89 +20,63 @@ export default async function handler(req, res) {
 
     if (req.query.stream === "true" || req.query.id) {
         const videoId = req.query.id;
-        const targetFormat = req.query.format || "360"; // "360", "720", "1080"
-        const isMeta = req.query.meta === "true";
+        const isHlsRequest = req.query.type === "hls";
+        const requestedFormat = req.query.format || "360";
 
-        if (!videoId) return res.status(400).json({ error: "Missing video 'id' parameter" });
-
+        if (!videoId) return res.status(400).json({ error: "Missing id parameter" });
         const cleanId = videoId.trim();
 
-        // Cari instance Invidious yang sedang aktif merespons
-        let invidiousData = null;
-        let activeInstance = INVIDIOUS_INSTANCES[0];
-
-        for (const instance of INVIDIOUS_INSTANCES) {
+        // 1. Ambil data manifes komprehensif dari kluster Piped API
+        let pipedData = null;
+        for (const instance of PIPED_INSTANCES) {
             try {
-                const response = await fetch(`${instance}/api/v1/videos/${cleanId}?fields=formatStreams,adaptiveFormats`);
-                if (response.ok) {
-                    invidiousData = await response.json();
-                    activeInstance = instance;
+                const pipedResponse = await fetch(`${instance}/streams/${cleanId}`);
+                if (pipedResponse.ok) {
+                    pipedData = await pipedResponse.json();
                     break;
                 }
             } catch (e) {
-                console.log(`Mirror ${instance} busy, trying next...`);
+                console.log(`Piped instance busy, rotating to next server...`);
             }
         }
 
-        if (!invidiousData) {
-            return res.status(500).json({ error: "Semua server proxy sedang sibuk. Coba lagi nanti." });
+        if (!pipedData) {
+            return res.status(500).json({ error: "YouTube core gateway timeout. Coba beberapa saat lagi." });
         }
 
-        // JALUR A: MINTA DATA RESOLUSI ASLI YANG AKURAT
-        if (isMeta) {
-            let uniqueQualities = new Set();
-            
-            // Cek format standar (Muxed)
-            if (invidiousData.formatStreams) {
-                invidiousData.formatStreams.forEach(f => {
-                    if (f.qualityLabel) uniqueQualities.add(f.qualityLabel);
-                });
+        // JALUR A: STREAMING ADAPTIF UTAMA (HLS / m3u8) -> Mendukung Suara + Video 1080p disatukan otomatis
+        if (isHlsRequest && pipedData.hls) {
+            try {
+                const manifestResponse = await fetch(pipedData.hls);
+                const manifestText = await manifestResponse.text();
+                
+                res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
+                res.setHeader("Cache-Control", "no-cache");
+                return res.status(200).send(manifestText);
+            } catch (err) {
+                return res.status(500).send(err.message);
             }
-            // Cek format adaptif (DASH)
-            if (invidiousData.adaptiveFormats) {
-                invidiousData.adaptiveFormats.forEach(f => {
-                    if (f.qualityLabel) uniqueQualities.add(f.qualityLabel);
-                });
-            }
-
-            let finalQualities = Array.from(uniqueQualities).sort((a, b) => parseInt(a) - parseInt(b));
-            if (finalQualities.length === 0) finalQualities = ["360p", "480p"];
-
-            return res.status(200).json({ status: true, qualities: finalQualities });
         }
 
-        // JALUR B: ALIRKAN BINER VIDEO (.MP4)
-        let streamUrl = "";
-        
-        // Cari video yang memiliki kecocokan resolusi (misal mengandung "720p" atau "1080p")
-        const allStreams = [...(invidiousData.formatStreams || []), ...(invidiousData.adaptiveFormats || [])];
-        const matchedStream = allStreams.find(f => f.container === "mp4" && f.qualityLabel && f.qualityLabel.includes(targetFormat));
-
-        if (matchedStream && matchedStream.url) {
-            streamUrl = matchedStream.url;
-        } else {
-            // Fallback ke stream pertama yang tersedia jika resolusi spesifik tidak ketemu
-            const fallback = allStreams.find(f => f.container === "mp4" && f.url);
-            streamUrl = fallback ? fallback.url : "";
+        // JALUR B: FALLBACK SINGLE STREAM (MP4 KUALITAS STANDAR)
+        let fallbackUrl = "";
+        if (pipedData.videoStreams) {
+            // Cari format video murni yang cocok dengan parameter format
+            const matchedStream = pipedData.videoStreams.find(s => s.quality === `${requestedFormat}p` || s.quality === requestedFormat);
+            fallbackUrl = matchedStream ? matchedStream.url : pipedData.videoStreams[0].url;
         }
 
-        if (!streamUrl) return res.status(404).json({ error: "Stream biner tidak ditemukan" });
-
-        // Jika URL Invidious berbentuk relatif, jahit dengan domain utamanya
-        if (streamUrl.startsWith("/")) {
-            streamUrl = `${activeInstance}${streamUrl}`;
-        }
+        if (!fallbackUrl) return res.status(404).json({ error: "Video stream stream untrunnelled." });
 
         try {
             const browserHeaders = {};
             if (req.headers.range) browserHeaders["Range"] = req.headers.range;
             browserHeaders["User-Agent"] = req.headers["user-agent"] || "Mozilla/5.0";
 
-            const videoResponse = await fetch(streamUrl, { headers: browserHeaders });
+            const videoResponse = await fetch(fallbackUrl, { headers: browserHeaders });
 
             res.setHeader("X-Accel-Buffering", "no");
             res.setHeader("Content-Type", "video/mp4");
-            res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 
             if (videoResponse.headers.get("Content-Range")) res.setHeader("Content-Range", videoResponse.headers.get("Content-Range"));
             if (videoResponse.headers.get("Content-Length")) res.setHeader("Content-Length", videoResponse.headers.get("Content-Length"));
@@ -127,7 +101,7 @@ export default async function handler(req, res) {
         }
     }
 
-    // JALUR PENCARIAN 5 LAGU UTAMA
+    // JALUR LAMA: PENCARIAN 5 LAGU UTAMA
     const { q } = req.query;
     if (!q) return res.status(400).json({ status: false, message: "Query q diperlukan" });
 
@@ -144,5 +118,4 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ status: false, message: error.message });
     }
-                                                                   }
-        
+        }
