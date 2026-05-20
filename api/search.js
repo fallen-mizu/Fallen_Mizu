@@ -1,7 +1,7 @@
 import ytSearch from 'yt-search';
 
 // 🔥 MASUKKAN URL CLOUDFLARE WORKER KAMU DI SINI
-const CLOUDFLARE_WORKER_URL = "https://nama-worker-kamu.workers.dev"; 
+const CLOUDFLARE_WORKER_URL = "https://mizu-api-video.tohsakarin756.workers.dev"; 
 
 export default async function handler(req, res) {
     // JALUR GATEWAY CLOUDFLARE WORKERS INTEGRATION
