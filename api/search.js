@@ -1,9 +1,9 @@
 // =================================================================
-// VERCEL BACKEND GATEWAY - FIXED REVERSE PROXY (api/search.js)
+// VERCEL BACKEND GATEWAY - FIXED STREAMING BYPASS (api/search.js)
 // =================================================================
 import ytSearch from 'yt-search';
 
-// ⚠️ PASTIKAN URL WORKER CLOUDFLARE KAMU SUDAH BENAR
+// GANTI DENGAN URL SUBDOMAIN WORKER CLOUDFLARE KAMU YANG SEBENARNYA
 const CLOUDFLARE_WORKER_URL = "https://mizu-api-video.tohsakarin756.workers.dev"; 
 
 export default async function handler(req, res) {
@@ -32,7 +32,6 @@ export default async function handler(req, res) {
             const cleanId = videoId.trim();
             const mockGoogleUrl = `http://googleusercontent.com/youtube.com/${cleanId}`;
 
-            // 🔥 PERBAIKAN UTAMA: Gunakan URLSearchParams agar query string 100% aman dari masking/stripping Vercel
             const workerParams = new URLSearchParams();
             workerParams.append("url", mockGoogleUrl);
             workerParams.append("format", targetFormat);
@@ -49,7 +48,9 @@ export default async function handler(req, res) {
                 return res.status(200).json(metaData);
             }
 
-            // JALUR B: STREAM BINER (REVERSE PROXY)
+            // ---------------------------------------------------------
+            // 🔥 JALUR B: FIXED STREAM BINER (ANTI-BUFFERING VERCEL)
+            // ---------------------------------------------------------
             const browserHeaders = {};
             if (req.headers.range) {
                 browserHeaders["Range"] = req.headers.range;
@@ -60,15 +61,19 @@ export default async function handler(req, res) {
                 headers: browserHeaders
             });
 
-            // Jika Worker mengembalikan status error, teruskan ke log untuk mempermudah debug
             if (!workerResponse.ok) {
                 const errorText = await workerResponse.text();
                 console.error("Worker Bridge Error:", errorText);
                 return res.status(workerResponse.status).send(errorText);
             }
 
-            // Ambil semua header penting terkait content-range (untuk fitur seek/scrubbing video)
+            // ⚡️ KRITIKAL: Paksa Vercel Serverless untuk mematikan buffering internal!
+            // Dengan header ini, setiap kali Worker mengirimkan chunk kecil biner,
+            // Vercel akan langsung meneruskannya ke Plyr detik itu juga (Real-time Streaming).
+            res.setHeader("X-Accel-Buffering", "no");
             res.setHeader("Content-Type", "video/mp4");
+            res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
             if (workerResponse.headers.get("Content-Range")) {
                 res.setHeader("Content-Range", workerResponse.headers.get("Content-Range"));
             }
@@ -79,27 +84,33 @@ export default async function handler(req, res) {
                 res.setHeader("Accept-Ranges", workerResponse.headers.get("Accept-Ranges"));
             }
 
+            // Teruskan status HTTP asli dari worker (200 OK atau 206 Partial Content)
             res.status(workerResponse.status);
 
-            // Alirkan biner video secara langsung (Pipe Stream) dari Worker ke browser
+            // Alirkan biner video menggunakan Web Streams API secara asinkronus
             const reader = workerResponse.body.getReader();
             
-            async function pushChunks() {
+            while (true) {
                 const { done, value } = await reader.read();
-                if (done) {
-                    res.end();
-                    return;
-                }
+                if (done) break;
+                
                 res.write(value);
-                await pushChunks();
+                
+                // Jika koneksi diputus oleh user (misal pindah lagu), hentikan loop agar ramah memori
+                if (req.destroyed) {
+                    reader.cancel();
+                    break;
+                }
             }
-
-            await pushChunks();
+            
+            res.end();
             return;
 
         } catch (error) {
             console.error("Vercel Proxy Critical Error:", error);
-            return res.status(500).json({ error: error.message });
+            if (!res.writableEnded) {
+                return res.status(500).json({ error: error.message });
+            }
         }
     }
 
@@ -124,4 +135,3 @@ export default async function handler(req, res) {
         return res.status(500).json({ status: false, message: error.message });
     }
 }
-    
