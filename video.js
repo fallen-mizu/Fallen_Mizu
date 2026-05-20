@@ -67,13 +67,13 @@ async function playVideoTrack(videoId, title) {
  * @param {Array} allowedQualitiesList - Array kumpulan resolusi asli video tersebut
  */
 function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) {
+function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
     if (!inlineContainer) return;
 
     const videoId = inlineContainer.getAttribute("data-active-id");
     const title = inlineContainer.getAttribute("data-active-title");
 
-    // Amankan posisi durasi detik terakhir dan status play/pause video agar tidak terreset ke awal saat ganti resolusi
     let lastTimestamp = 0;
     let isPlaying = true;
     
@@ -84,17 +84,15 @@ function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) 
         mizuPlyrInstance = null;
     }
 
-    // ⚡️ FIX SINKRONISASI MUTLAK: Ekstrak angka murni (misal "1080p60" -> "1080", "720p" -> "720")
-    // Ini dikirim agar Worker Cloudflare dapat mendeteksi kecocokan string secara akurat
+    // Bersihkan format string agar menjadi angka murni (Contoh: "1080p60" -> "1080")
     const cleanFormatNumber = targetQuality.replace("p", "").replace("60", "").trim();
 
-    // Tembak source langsung ke Vercel API Gateway yang akan melakukan redirect langsung ke Cloudflare Workers
+    // TEMBAK KE VERCEL GATEWAY YANG AKAN USER REDIRECT KE CLOUDFLARE WORKER V6 BARU
     const finalVercelProxyUrl = `/api/search?id=${encodeURIComponent(videoId)}&format=${cleanFormatNumber}&stream=true`;
 
-    // 3. Bangun tombol resolusi secara dinamis berdasarkan track asli video YouTube-nya
+    // Bangun tombol resolusi secara dinamis 
     let resolutionButtonsHtml = '';
     allowedQualitiesList.forEach(q => {
-        // Membungkus parameter array string dengan tanda kutip tunggal agar aman dibaca JavaScript engine onclick
         const escapedListStr = allowedQualitiesList.map(item => `'${item}'`).join(',');
         
         resolutionButtonsHtml += `
@@ -103,6 +101,9 @@ function loadInlineResolutionWithQualities(targetQuality, allowedQualitiesList) 
             </button>
         `;
     });
+    
+    // ... Sisa kode render innerHTML Plyr ke bawah tetap pertahankan versi sebelumnya ...
+    
 
     inlineContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
