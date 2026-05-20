@@ -1,5 +1,5 @@
 // =================================================================
-// MIZU MULTIMEDIA ENGINE - EXTERNAL CONTROL REBUILD (video.js)
+// MIZU MULTIMEDIA ENGINE - ACCURATE DIRECT STREAM v8 (video.js)
 // =================================================================
 
 let mizuPlyrInstance = null;
@@ -25,38 +25,95 @@ async function playVideoTrack(videoId, title) {
     inlineVideoContainer.setAttribute("data-active-id", cleanVideoId);
     inlineVideoContainer.setAttribute("data-active-title", title);
 
+    // Render loading transparan saat backend mendiagnosis manifes server proxy
+    inlineVideoContainer.innerHTML = `
+        <div id="video-loader" style="text-align: center; padding: 35px 0; width: 100%; max-width: 450px; background: #fafafa; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.05);">
+            <div style="font-weight: bold; font-size: 0.8rem; color: #BC002D; letter-spacing: 0.5px; animation: mizuPulse 1.5s infinite;">🎬 MIZU NATIVE ENGINE v8</div>
+            <div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin-top: 5px;">Analyzing secure direct stream manifest...</div>
+        </div>
+        <style>
+            @keyframes mizuPulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        </style>
+    `;
+
+    try {
+        // Ambil data kapasitas resolusi asli video tersebut dari backend Vercel
+        const metaResponse = await fetch(`/api/search?id=${encodeURIComponent(cleanVideoId)}&stream=true&meta=true`);
+        const metaData = await metaResponse.json();
+
+        const dynamicQualities = metaData.qualities || ["360p", "480p"];
+
+        // Tentukan kualitas awal (Utamakan 360p agar buffer pertama instan)
+        let initialQuality = "360p";
+        if (!dynamicQualities.includes("360p")) {
+            initialQuality = dynamicQualities[0];
+        }
+
+        // Bangun player berdasarkan daftar resolusi asli yang tersedia
+        loadInlineDirectStream(initialQuality, dynamicQualities);
+
+    } catch (e) {
+        console.error("Mizu Core Metadata Extractor Failed:", e);
+        // Fallback darurat jika server sibuk
+        loadInlineDirectStream("360p", ["360p", "480p"]);
+    }
+}
+
+/**
+ * Merender player HTML5 tag video murni dengan injeksi tombol resolusi dinamis
+ * @param {string} targetQuality - Kualitas aktif (misal: "720p")
+ * @param {Array} allowedQualitiesList - Daftar array resolusi asli video tersebut
+ */
+function loadInlineDirectStream(targetQuality, allowedQualitiesList) {
+    const inlineContainer = document.getElementById("mizu-inline-video-container");
+    if (!inlineContainer) return;
+
+    const videoId = inlineContainer.getAttribute("data-active-id");
+    const title = inlineContainer.getAttribute("data-active-title");
+
+    let lastTimestamp = 0;
+    let isPlaying = true;
+    
     if (mizuPlyrInstance) {
+        lastTimestamp = mizuPlyrInstance.currentTime;
+        isPlaying = mizuPlyrInstance.playing;
         mizuPlyrInstance.destroy();
         mizuPlyrInstance = null;
     }
 
-    // Render ulang struktur UI: Kita buat tombol resolusi HTML kustom secara eksplisit
-    inlineVideoContainer.innerHTML = `
+    // Ekstrak angka murni resolusi ("720p" -> "720")
+    const cleanFormatNumber = targetQuality.replace("p", "").trim();
+    const finalProxyStreamUrl = `/api/search?id=${encodeURIComponent(videoId)}&format=${cleanFormatNumber}&stream=true`;
+
+    // Buat tombol resolusi yang dijamin 100% akurat sesuai video aslinya
+    let resolutionButtonsHtml = '';
+    allowedQualitiesList.forEach(q => {
+        const escapedListStr = JSON.stringify(allowedQualitiesList).replace(/"/g, "'");
+        resolutionButtonsHtml += `
+            <button class="inline-res-btn" data-res="${q}" onclick="loadInlineDirectStream('${q}', ${escapedListStr})">
+                ${q}
+            </button>
+        `;
+    });
+
+    inlineContainer.innerHTML = `
         <div style="font-size: 0.75rem; font-weight: bold; color: #333; text-align: center; margin-bottom: 12px; width: 100%; max-width: 450px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">
             📺 Playing Video: <span style="font-weight: 500; color: #666;">${title}</span>
         </div>
 
         <div style="position: relative; width: 100%; max-width: 450px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); background: #000;">
-            <div class="plyr__video-embed" id="mizu-inline-video-element">
-                <iframe
-                    src="https://www.youtube.com/embed/${cleanVideoId}?iv_load_policy=3&modestbranding=1&playsinline=1&showinfo=0&rel=0&enablejsapi=1"
-                    allowfullscreen
-                    allowtransparency
-                    allow="autoplay"
-                ></iframe>
-            </div>
-            
-            <div onclick="closeInlineVideoPlayer()" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; font-weight: bold; z-index: 11; user-select: none; -webkit-tap-highlight-color: transparent;">×</div>
+            <video id="mizu-inline-video-element" playsinline controls crossorigin="anonymous">
+                <source src="${finalProxyStreamUrl}" type="video/mp4" />
+            </video>
+            <div onclick="closeInlineVideoPlayer()" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; font-weight: bold; z-index: 10; user-select: none; -webkit-tap-highlight-color: transparent;">×</div>
         </div>
         
         <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Native Quality Selector</label>
+            <label style="color: #999; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Mizu Native Track Synchronizer</label>
             <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
-                <button class="mizu-res-btn" data-quality="hd1080" onclick="changeMizuVideoQuality('hd1080', this)">1080p</button>
-                <button class="mizu-res-btn" data-quality="hd720" onclick="changeMizuVideoQuality('hd720', this)">720p</button>
-                <button class="mizu-res-btn" data-quality="large" onclick="changeMizuVideoQuality('large', this)">480p</button>
-                <button class="mizu-res-btn active-mizu-res" data-quality="medium" onclick="changeMizuVideoQuality('medium', this)">360p</button>
+                ${resolutionButtonsHtml}
             </div>
+            <div id="mizu-codec-error-ui" style="margin-top: 5px;"></div>
         </div>
 
         <style>
@@ -64,60 +121,44 @@ async function playVideoTrack(videoId, title) {
                 --plyr-color-main: #BC002D;
                 --plyr-video-control-background-hover: rgba(188, 0, 45, 0.2);
             }
-            .plyr { border-radius: 12px; width: 100%; }
-            .plyr__video-embed iframe { top: 0 !important; height: 100% !important; transform: scale(1.01); }
-            
-            /* Styling Tombol Resolusi Kustom */
-            .mizu-res-btn {
+            .inline-res-btn {
                 background: #ffffff; color: #555; border: 1px solid rgba(0,0,0,0.08);
-                padding: 5px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+                padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
             }
-            .mizu-res-btn:hover { background: #f9f9f9; }
-            .mizu-res-btn.active-mizu-res {
+            .inline-res-btn:hover { background: #f9f9f9; }
+            .inline-res-btn.active-inline-res {
                 background: #BC002D !important; color: white !important; border-color: #BC002D !important; box-shadow: 0 2px 6px rgba(188, 0, 45, 0.25);
             }
+            .plyr { border-radius: 12px; width: 100%; }
         </style>
     `;
 
-    // Inisialisasi Plyr tanpa menu settings bawaan agar tidak membingungkan
+    // Jalankan Plyr HTML5 Player
     mizuPlyrInstance = new Plyr("#mizu-inline-video-element", {
         controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-        youtube: { noCookie: true, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1 }
+        ratio: '16:9'
     });
 
+    // Sinkronkan kembali durasi detik video sebelum tombol resolusi diklik
     mizuPlyrInstance.on('ready', () => {
-        mizuPlyrInstance.play().catch(e => console.log("Autoplay handled:", e));
+        mizuPlyrInstance.currentTime = lastTimestamp;
+        if (isPlaying) {
+            mizuPlyrInstance.play().catch(e => console.log("Buffer streaming resume caught:", e));
+        }
     });
 
-    inlineVideoContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // Beri tanda Crimson pada tombol resolusi aktif
+    document.querySelectorAll(".inline-res-btn").forEach(btn => {
+        if (btn.getAttribute("data-res") === targetQuality) {
+            btn.classList.add("active-inline-res");
+        }
+    });
+
+    inlineContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 /**
- * 🔥 FUNGSI UTAMA BYPASS RESOLUSI
- * Mengubah kualitas video lewat interaksi API jembatan Plyr & YouTube
- * @param {string} qualityKey - Target parameter kualitas YouTube (medium, large, hd720, hd1080)
- * @param {HTMLElement} element - Elemen tombol yang diklik
- */
-function changeMizuVideoQuality(qualityKey, element) {
-    if (!mizuPlyrInstance || !mizuPlyrInstance.embed) return;
-
-    try {
-        // Tembak langsung ke internal embed YouTube player API
-        // Referensi internal: 360p = medium, 480p = large, 720p = hd720, 1080p = hd1080
-        mizuPlyrInstance.embed.setPlaybackQuality(qualityKey);
-        
-        // Perbarui highlight warna Crimson pada tombol aktif
-        document.querySelectorAll(".mizu-res-btn").forEach(btn => btn.classList.remove("active-mizu-res"));
-        element.classList.add("active-mizu-res");
-        
-        console.log(`Mizu Engine: Quality forced to ${qualityKey}`);
-    } catch (error) {
-        console.error("Failed to alter iframe execution quality:", error);
-    }
-}
-
-/**
- * Fungsi menutup player
+ * Menghentikan dan membersihkan player
  */
 function closeInlineVideoPlayer() {
     const inlineContainer = document.getElementById("mizu-inline-video-container");
@@ -128,4 +169,5 @@ function closeInlineVideoPlayer() {
     if (inlineContainer) {
         inlineContainer.remove();
     }
-}
+        }
+    
