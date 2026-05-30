@@ -155,7 +155,7 @@ onAuthStateChanged(auth, async (user) => {
     const mainContent = document.getElementById('main-content');
     const chatBox = document.getElementById('chat-box');
 
-    if (user) { if (typeof window.refreshUserMetaPanel === "function") {
+    if (user) { 
         window.refreshUserMetaPanel();
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
