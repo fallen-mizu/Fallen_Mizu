@@ -13,41 +13,28 @@
     
     <style>
         /* =================================================================
-           MIZU CORE SECURITY & UI OPTIMIZATION (ANTI-COPY & CLEAN CLICK)
+           MIZU CORE SECURITY & UI OPTIMIZATION
            ================================================================= */
-
-        /* 1. PROTEKSI ANTI-COPY & SELECT (LINDUNGI SELURUH HALAMAN WEB) */
         html, body {
-            -webkit-user-select: none;  /* Safari & iOS Browser */
-            -moz-user-select: none;     /* Firefox */
-            -ms-user-select: none;      /* IE / Edge Old */
-            user-select: none;          /* Google Chrome, Opera, & Standard modern */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
             -webkit-touch-callout: none;
         }
 
-        /* 2. HILANGKAN WARNA / HIGHLIGHT BIRU SAAT TOMBOL DIKLIK DI HP */
-        button, 
-        a, 
-        input, 
-        div[onclick], 
-        span[onclick],
-        .inline-res-btn,
-        .yt-song-item { 
+        button, a, input, div[onclick], span[onclick], .inline-res-btn, .yt-song-item { 
             -webkit-tap-highlight-color: transparent !important;
             outline: none !important;
         }
 
-        /* 3. PENGECUALIAN (KOTAK PENCARIAN TENTU HARUS TETAP BISA DIKETIK) */
-        input[type="text"], 
-        input[type="search"], 
-        textarea {
+        input[type="text"], input[type="search"], textarea {
             -webkit-user-select: text;
             -moz-user-select: text;
             -ms-user-select: text;
             user-select: text;
         }
                 
-        /* Gaya dasar baris daftar lagu */
         .song-row {
             display: flex;
             align-items: center;
@@ -58,17 +45,13 @@
             border: 1px solid rgba(0,0,0,0.04);
             cursor: pointer;
             transition: all 0.2s ease-in-out;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent; 
         }
 
-        /* Efek ketika baris lagu ditekan/diklik oleh jari (Feedback Instan) */
         .song-row:active {
             transform: scale(0.97); 
             background-color: rgba(188, 0, 45, 0.05); 
         }
 
-        /* Keadaan ketika lagu tersebut sukses terpilih dan sedang diputar */
         .active-track {
             background: rgba(188, 0, 45, 0.08) !important; 
             border: 1px solid rgba(188, 0, 45, 0.2) !important;
@@ -76,13 +59,11 @@
         }
                 
         :root {
-            --wasabi-red: #BC002D; /* Red from Japan flag */
+            --wasabi-red: #BC002D;
             --ink-black: #1A1A1B;
             --paper-white: #F9F9F7;
             --border-light: rgba(0,0,0,0.08);
             --transition-speed: 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-            
-            /* --- COMPLEX SYSTEM EXTENSIONS --- */
             --mizu-glow: rgba(188, 0, 45, 0.15);
             --mizu-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
             --blur-bg: cubic-bezier(0.16, 1, 0.3, 1);
@@ -99,7 +80,6 @@
             position: relative;
         }
 
-        /* --- COMPLEX ANIMS: BACKGROUND LINES & ZEN PARTICLES --- */
         body::before {
             content: '';
             position: fixed;
@@ -125,27 +105,146 @@
             z-index: 2;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        /* =================================================================
+           NEW: ADVANCED HAMBURGER & NAVIGATION DRAWER STYLE
+           ================================================================= */
+        .mizu-navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 30px;
+            box-sizing: border-box;
+            z-index: 1000;
+            pointer-events: none;
         }
 
-        @keyframes mizuPulse {
-            0% { box-shadow: 0 0 0 0 rgba(188, 0, 45, 0.2); }
-            70% { box-shadow: 0 0 0 10px rgba(188, 0, 45, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(188, 0, 45, 0); }
+        .hamburger-btn {
+            width: 45px; height: 45px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            pointer-events: auto;
+            transition: all 0.4s var(--mizu-easing);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
-        @keyframes floatEffect {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-            100% { transform: translateY(0px); }
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            border-color: var(--wasabi-red);
+            box-shadow: 0 4px 15px var(--mizu-glow);
+        }
+        .hamburger-line {
+            width: 18px; height: 1.5px;
+            background-color: var(--ink-black);
+            transition: all 0.4s var(--mizu-easing);
+            transform-origin: center;
+        }
+        /* Hamburger Active Animation State */
+        .hamburger-btn.active .line-1 { transform: translateY(6.5px) rotate(45deg); background-color: var(--wasabi-red); }
+        .hamburger-btn.active .line-2 { opacity: 0; transform: scaleX(0); }
+        .hamburger-btn.active .line-3 { transform: translateY(-6.5px) rotate(-45deg); background-color: var(--wasabi-red); }
+
+        .mizu-drawer {
+            position: fixed;
+            top: 0; right: -320px; width: 320px; height: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.05);
+            z-index: 999;
+            box-sizing: border-box;
+            padding: 100px 40px 40px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: right 0.6s var(--blur-bg);
+        }
+        .mizu-drawer.open { right: 0; }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.15);
+            backdrop-filter: blur(4px);
+            z-index: 998;
+            opacity: 0; visibility: hidden;
+            transition: all 0.5s var(--blur-bg);
+        }
+        .drawer-overlay.show { opacity: 1; visibility: visible; }
+
+        .drawer-menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        .drawer-item {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink-black);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 5px 0;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .drawer-item:hover {
+            color: var(--wasabi-red);
+            padding-left: 8px;
+        }
+        .drawer-item svg {
+            width: 18px; height: 18px;
+            opacity: 0.7;
+            transition: color 0.3s;
+        }
+        .drawer-item:hover svg { color: var(--wasabi-red); opacity: 1; }
+
+        .drawer-logout-wrapper {
+            border-top: 1px solid var(--border-light);
+            padding-top: 30px;
+        }
+        .modern-logout-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: var(--wasabi-red);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(188, 0, 45, 0.2);
+            transition: all 0.4s var(--mizu-easing);
+        }
+        .modern-logout-btn:hover {
+            background: #a00024;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(188, 0, 45, 0.35);
         }
 
-        /* --- Global AOS Style --- */
+        /* =================================================================
+           UI RESTYLING & COMPLEX EXPERIENCES
+           ================================================================= */
         [data-aos] { opacity: 0; transform: translateY(30px); transition: var(--transition-speed); }
         .aos-visible { opacity: 1; transform: translateY(0); }
 
-        /* --- CLOCK SECTION --- */
         .osaka-time-box {
             text-align: right;
             margin-bottom: 50px;
@@ -159,35 +258,33 @@
             text-shadow: 0 0 10px rgba(188, 0, 45, 0.1);
         }
         #full-date { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.6; }
-        #osaka-clock { font-size: 1.8rem; font-weight: 300; color: var(--ink-black); position: relative; }
+        #osaka-clock { font-size: 1.8rem; font-weight: 300; color: var(--ink-black); }
         .timezone-label { font-size: 0.6rem; opacity: 0.5; margin-top: 5px; }
 
-        /* --- PROFILE & HEADER --- */
         .profile-img {
-            width: 80px; height: 80px;
+            width: 85px; height: 85px;
             border-radius: 50%;
             filter: grayscale(100%);
             border: 1px solid var(--border-light);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             object-fit: cover;
             display: block;
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: floatEffect 5s ease-in-out infinite;
         }
         .profile-img:hover {
-            filter: grayscale(0%) contrast(1.1);
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 10px 25px rgba(188, 0, 45, 0.15);
+            filter: grayscale(0%) contrast(1.05);
+            transform: scale(1.08) rotate(3deg);
+            box-shadow: 0 10px 25px rgba(188, 0, 45, 0.12);
             border-color: var(--wasabi-red);
         }
 
         h1 { 
             font-family: 'Noto Serif JP', serif; 
-            font-size: 3rem; 
+            font-size: 3.2rem; 
             font-weight: 900; 
             margin: 0; 
             letter-spacing: -2px; 
-            line-height: 1; 
+            line-height: 1.05; 
             overflow: hidden;
         }
         h1 span { display: inline-block; transform: translateY(110%); transition: transform 1.2s var(--transition-speed); }
@@ -198,29 +295,20 @@
             font-size: 0.65rem; 
             letter-spacing: 5px; 
             font-weight: 600; 
-            margin-top: 10px;
+            margin-top: 12px;
             margin-bottom: 40px; 
             position: relative;
             display: inline-block;
         }
-        .subtitle::after {
-            content: '';
-            position: absolute;
-            bottom: -2px; left: 0; width: 0; height: 1px;
-            background-color: var(--wasabi-red);
-            transition: width 0.5s ease;
-        }
-        header:hover .subtitle::after { width: 100%; }
 
-        /* --- SECTIONS --- */
         .section-title {
             font-family: 'Noto Serif JP', serif;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 600;
             margin-top: 80px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border-bottom: 1px solid var(--border-light);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
             position: relative;
             transition: padding-left 0.4s var(--mizu-easing);
         }
@@ -232,128 +320,104 @@
             background: var(--wasabi-red);
             transition: width 0.4s var(--mizu-easing);
         }
-        section:hover .section-title {
-            padding-left: 10px;
-            color: var(--wasabi-red);
-        }
-        section:hover .section-title::after {
-            width: 100%;
-        }
-        .journey-text { font-size: 0.85rem; margin-bottom: 25px; color: #444; transition: color 0.3s; }
-        section:hover .journey-text { color: var(--ink-black); }
-        .japanese-text { font-family: 'Sawarabi Mincho', serif; font-size: 0.9rem; line-height: 2; color: #333; }
+        section:hover .section-title { padding-left: 10px; color: var(--wasabi-red); }
+        section:hover .section-title::after { width: 100%; }
 
-        /* --- BUTTONS --- */
-        #new-chat-btn {
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-        #new-chat-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%; width: 300%; height: 300%;
-            background: var(--wasabi-red);
-            transition: transform 0.6s var(--blur-bg);
-            transform: translate(-50%, -50%) scale(0);
-            border-radius: 50%;
-            z-index: -1;
-        }
-        #new-chat-btn:hover::before {
-            transform: translate(-50%, -50%) scale(1);
-        }
-        #new-chat-btn:hover {
-            color: white !important;
-            border-color: var(--wasabi-red) !important;
-            box-shadow: 0 4px 15px var(--mizu-glow);
-        }
-
-        /* --- INTERACTIVE CONTAINER SHADOWS --- */
         #chat-box, #mizu-yt-music > div {
             transition: all 0.5s var(--blur-bg);
         }
         #chat-box:hover, #mizu-yt-music > div:hover {
-            box-shadow: 0 15px 35px rgba(0,0,0,0.03), 0 0 30px rgba(188, 0, 45, 0.02);
-            border-color: rgba(188, 0, 45, 0.15) !important;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.03), 0 0 30px rgba(188, 0, 45, 0.01);
+            border-color: rgba(188, 0, 45, 0.12) !important;
             transform: translateY(-2px);
         }
 
-        /* --- COMPLEX INPUT ANIMATIONS --- */
-        input[type="text"] {
-            transition: all 0.4s var(--mizu-easing) !important;
-        }
+        input[type="text"] { transition: all 0.4s var(--mizu-easing) !important; }
         input[type="text"]:focus {
             box-shadow: 0 0 0 3px var(--mizu-glow) !important;
             border-color: var(--wasabi-red) !important;
             background: #ffffff !important;
-            transform: scale(1.01);
         }
 
-        #send-chat-btn, #yt-search-btn {
-            transition: all 0.4s var(--mizu-easing) !important;
-            animation: mizuPulse 3s infinite;
-        }
+        #send-chat-btn, #yt-search-btn { transition: all 0.4s var(--mizu-easing) !important; }
         #send-chat-btn:hover, #yt-search-btn:hover {
-            transform: scale(1.05) translateY(-1px);
-            box-shadow: 0 8px 20px rgba(188, 0, 45, 0.3) !important;
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(188, 0, 45, 0.25) !important;
             background: #a00024 !important;
         }
 
-        /* --- GALLERY GRID --- */
         .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 60px; }
         .gallery-item { 
-            position: relative; 
-            overflow: hidden; 
-            background: white; 
-            border: 1px solid var(--border-light); 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.02); 
-            border-radius: 16px;
+            position: relative; overflow: hidden; background: white; 
+            border: 1px solid var(--border-light); border-radius: 16px;
             transition: all 0.6s var(--blur-bg);
         }
-        .gallery-item img { width: 100%; height: auto; display: block; filter: grayscale(80%); transition: 1.2s var(--transition-speed); }
+        .gallery-item img { width: 100%; height: auto; display: block; filter: grayscale(70%); transition: 1.2s var(--transition-speed); }
         .gallery-item:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.06), 0 0 25px rgba(188, 0, 45, 0.04);
-            border-color: rgba(188, 0, 45, 0.2);
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            border-color: rgba(188, 0, 45, 0.15);
         }
-        .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.05); }
-        .caption { margin-top: 15px; font-size: 0.75rem; border-left: 2px solid var(--wasabi-red); padding-left: 15px; opacity: 0.8; padding-bottom: 15px; transition: padding-left 0.3s; }
-        .gallery-item:hover .caption { padding-left: 20px; }
-        .caption strong { display: block; margin-bottom: 5px; }
-        .caption .japanese { font-family: 'Sawarabi Mincho', serif; font-size: 0.8rem; opacity: 0.6; }
+        .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.03); }
+        .caption { margin-top: 15px; font-size: 0.75rem; border-left: 2px solid var(--wasabi-red); padding-left: 15px; padding-bottom: 15px; }
 
-        /* --- CONTACT GRID --- */
-        .app-grid { display: grid; grid-template-columns: repeat(2, 100px); gap: 20px; margin-top: 80px; justify-content: center; }
-        .app-icon { text-decoration: none; color: inherit; width: 100px; height: 100px; background: white; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: all 0.4s var(--mizu-easing); border: 1px solid var(--border-light); }
-        .app-icon:hover { 
-            transform: translateY(-8px) scale(1.08) rotate(2deg); 
-            border-color: var(--wasabi-red);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.08), 0 0 15px rgba(188, 0, 45, 0.1);
-        }
-        .app-icon svg { width: 30px; height: 30px; margin-bottom: 8px; transition: transform 0.4s var(--mizu-easing); }
-        .app-icon:hover svg { transform: scale(1.15); }
-        .app-icon span { font-size: 0.6rem; font-weight: 600; letter-spacing: 1px; }
+        .app-grid { display: grid; grid-template-columns: repeat(2, 100px); gap: 20px; margin-top: 60px; justify-content: center; }
+        .app-icon { text-decoration: none; color: inherit; width: 100px; height: 100px; background: white; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.4s var(--mizu-easing); border: 1px solid var(--border-light); }
+        .app-icon:hover { transform: translateY(-5px); border-color: var(--wasabi-red); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
-        /* --- LEGAL OVERLAY --- */
         .legal-section { margin-top: 100px; font-size: 0.7rem; color: #888; border-top: 1px solid var(--border-light); padding-top: 30px; }
-        .legal-section p { margin-bottom: 0.8em; }
-        .legal-section strong { color: var(--ink-black); }
 
         @media (max-width: 600px) {
             .container { padding: 60px 20px; }
-            h1 { font-size: 2.5rem; }
+            h1 { font-size: 2.6rem; }
             .gallery-grid { grid-template-columns: 1fr; gap: 30px; }
-            .app-grid { grid-template-columns: repeat(2, 90px); gap: 15px; }
-            .app-icon { width: 90px; height: 90px; border-radius: 18px; }
-            .app-icon svg { width: 26px; height: 26px; }
-            .app-icon span { font-size: 0.55rem; }
+            .mizu-navbar { padding: 0 20px; height: 60px; }
         }
     </style>
 </head>
 <body>
 
-<div id="clear-confirm" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 999;">
-    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; width: 260px; animation: fadeIn 0.3s ease;">
+<div class="mizu-navbar">
+    <button class="hamburger-btn" id="menu-toggle" onclick="toggleMizuDrawer()" title="Open System Menu">
+        <div class="hamburger-line line-1"></div>
+        <div class="hamburger-line line-2"></div>
+        <div class="hamburger-line line-3"></div>
+    </button>
+</div>
+
+<div class="drawer-overlay" id="menu-overlay" onclick="toggleMizuDrawer()"></div>
+<div class="mizu-drawer" id="sidebar-drawer">
+    <div class="drawer-menu-items">
+        <div style="font-size: 0.6rem; letter-spacing: 2px; color: var(--wasabi-red); font-weight: bold; margin-bottom: 10px;">CORE MENU // メニュー</div>
+        <a href="#" class="drawer-item" onclick="toggleMizuDrawer()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Architecture Profile
+        </a>
+        <a href="#mizu-chat-container" class="drawer-item" onclick="toggleMizuDrawer()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            AI Consultation
+        </a>
+        <a href="#mizu-yt-music" class="drawer-item" onclick="toggleMizuDrawer()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="5.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle><line x1="3" y1="12" x2="21" y2="12"></line></svg>
+            Mizu Audio Engine
+        </a>
+    </div>
+
+    <div class="drawer-logout-wrapper">
+        <button class="modern-logout-btn" id="system-logout" onclick="if(window.handleLogout){window.handleLogout();}else{alert('Session Terminated.');}">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            LOGOUT SESSION
+        </button>
+        <div style="font-size: 0.55rem; color: #aaa; text-align: center; margin-top: 15px; font-family: monospace;">SECURE NODE: OSK-026</div>
+    </div>
+</div>
+
+<div id="clear-confirm" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 1005;">
+    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; width: 260px;">
         <p style="margin-bottom: 15px; font-size: 0.85rem;">Clear all chat?</p>
         <div style="display: flex; gap: 10px; justify-content: center;">
             <button onclick="clearChatAdvanced()" style="padding: 6px 12px; border: none; background: var(--wasabi-red); color: white; border-radius: 10px; cursor: pointer; font-size: 0.8rem;">Yes</button>
@@ -422,7 +486,7 @@
         </div>
     </section>
 
-    <div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
+    <div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 995; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
         <div style="display: flex; align-items: center; gap: 10px; width: 50%; min-width: 0;">
             <img id="yt-thumb" src="" alt="thumb" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; display: none;">
             <div style="min-width: 0;">
@@ -485,16 +549,19 @@
     </footer>  
 </div>  
 
-<button id="logout-btn" style="position: fixed; bottom: 95px; right: 20px; background: var(--wasabi-red); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; z-index: 10000; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Logout">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-</button>
-
 <script>  
-    // AOS (Animate On Scroll) Observer  
+    // DRAWER CONTROL SYSTEM (Garis 3 Kontroler)
+    function toggleMizuDrawer() {
+        const btn = document.getElementById('menu-toggle');
+        const drawer = document.getElementById('sidebar-drawer');
+        const overlay = document.getElementById('menu-overlay');
+        
+        btn.classList.toggle('active');
+        drawer.classList.toggle('open');
+        overlay.classList.toggle('show');
+    }
+
+    // AOS (Animate On Scroll) Engine
     const observer = new IntersectionObserver((entries) => {  
         entries.forEach(entry => {  
             if (entry.isIntersecting) {  
@@ -505,7 +572,7 @@
 
     document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));  
       
-    // Niigata/Tokyo Time Display  
+    // Realtime Niigata System Clock
     function updateOsakaTime() {  
         const now = new Date();  
         const dateOptions = { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };  
@@ -521,7 +588,7 @@
     setInterval(updateOsakaTime, 1000);  
     updateOsakaTime();  
 
-    // Network Ping Response Time Logic
+    // Network Ping Target Latency Tracker
     async function updateResponseTime() {
         const start = performance.now();
         try {  
@@ -537,7 +604,7 @@
     setInterval(updateResponseTime, 3000);
     updateResponseTime();
 
-    // Modal Confirmation Controllers
+    // Modal Confirmation Area
     function confirmClearChat() {
         document.getElementById("clear-confirm").style.display = "flex";
     }
@@ -575,4 +642,4 @@
 <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
 <script src="video.js"></script>
 </body>  
-                </html>
+</html>
