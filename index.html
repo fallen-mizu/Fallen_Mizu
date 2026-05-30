@@ -100,13 +100,13 @@
         .container {
             max-width: 700px;
             margin: 0 auto;
-            padding: 80px 30px;
+            padding: 80px 30px 140px 30px; /* Ditambah padding bawah agar tidak tertutup player bar */
             position: relative;
             z-index: 2;
         }
 
         /* =================================================================
-           NEW: ADVANCED HAMBURGER & NAVIGATION DRAWER STYLE
+           HAMBURGER & NAVIGATION DRAWER STYLE
            ================================================================= */
         .mizu-navbar {
             position: fixed;
@@ -148,7 +148,6 @@
             transition: all 0.4s var(--mizu-easing);
             transform-origin: center;
         }
-        /* Hamburger Active Animation State */
         .hamburger-btn.active .line-1 { transform: translateY(6.5px) rotate(45deg); background-color: var(--wasabi-red); }
         .hamburger-btn.active .line-2 { opacity: 0; transform: scaleX(0); }
         .hamburger-btn.active .line-3 { transform: translateY(-6.5px) rotate(-45deg); background-color: var(--wasabi-red); }
@@ -361,17 +360,44 @@
         .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.03); }
         .caption { margin-top: 15px; font-size: 0.75rem; border-left: 2px solid var(--wasabi-red); padding-left: 15px; padding-bottom: 15px; }
 
-        .app-grid { display: grid; grid-template-columns: repeat(2, 100px); gap: 20px; margin-top: 60px; justify-content: center; }
-        .app-icon { text-decoration: none; color: inherit; width: 100px; height: 100px; background: white; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.4s var(--mizu-easing); border: 1px solid var(--border-light); }
-        .app-icon:hover { transform: translateY(-5px); border-color: var(--wasabi-red); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        /* =================================================================
+           FIXED: OFFICIAL APP BRAND ICONS LOGO STYLE
+           ================================================================= */
+        .app-grid { display: flex; gap: 30px; margin-top: 60px; justify-content: center; }
+        .app-icon { 
+            text-decoration: none; color: inherit; width: 110px; height: 110px; 
+            background: white; border-radius: 24px; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; transition: all 0.4s var(--mizu-easing); 
+            border: 1px solid var(--border-light); box-shadow: 0 6px 20px rgba(0,0,0,0.03);
+        }
+        
+        /* WhatsApp Hoover & Colors */
+        .app-icon.whatsapp-brand:hover { 
+            border-color: #25D366; 
+            box-shadow: 0 12px 25px rgba(37, 211, 102, 0.15);
+            transform: translateY(-6px) scale(1.03);
+        }
+        /* Signal Hoover & Colors */
+        .app-icon.signal-brand:hover { 
+            border-color: #3A76F0; 
+            box-shadow: 0 12px 25px rgba(58, 118, 240, 0.15);
+            transform: translateY(-6px) scale(1.03);
+        }
+
+        .app-icon svg { width: 34px; height: 34px; margin-bottom: 10px; transition: transform 0.3s ease; }
+        .app-icon:hover svg { transform: scale(1.1); }
+        .app-icon span { font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; color: #555; }
+        .app-icon:hover span { color: var(--ink-black); }
 
         .legal-section { margin-top: 100px; font-size: 0.7rem; color: #888; border-top: 1px solid var(--border-light); padding-top: 30px; }
 
         @media (max-width: 600px) {
-            .container { padding: 60px 20px; }
+            .container { padding: 60px 20px 140px 20px; }
             h1 { font-size: 2.6rem; }
             .gallery-grid { grid-template-columns: 1fr; gap: 30px; }
             .mizu-navbar { padding: 0 20px; height: 60px; }
+            .app-grid { gap: 20px; }
+            .app-icon { width: 100px; height: 100px; border-radius: 20px; }
         }
     </style>
 </head>
@@ -404,7 +430,7 @@
     </div>
 
     <div class="drawer-logout-wrapper">
-        <button class="modern-logout-btn" id="system-logout" onclick="if(window.handleLogout){window.handleLogout();}else{alert('Session Terminated.');}">
+        <button class="modern-logout-btn" id="system-logout" onclick="triggerMizuLogout()">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -440,7 +466,7 @@
         <div class="subtitle">デジタル建築家 // NIIGATA ARCHITECT</div>  
     </header>  
 
-    <section class="my-journey" data-aos>  
+     <section class="my-journey" data-aos>  
         <h2 class="section-title">My Journey / 私の旅路</h2>  
         <div class="journey-text">  
             <p>From an introverted past, I embarked on a solo journey, finding my voice and purpose far from home. Working in Niigata, I've built a life independently, overcoming challenges to become a digital architect. This path has taught me resilience and the power of self-reliance, proving that true strength comes from within.</p>  
@@ -471,7 +497,7 @@
         <p style="color: #000000; font-size: 0.8rem; margin-top: 15px;">Best regards,<br><strong>Fallen</strong></p>
     </section>
         
-    <section id="mizu-yt-music" data-aos style="margin-top: 60px; margin-bottom: 120px;">
+    <section id="mizu-yt-music" data-aos style="margin-top: 60px; margin-bottom: 60px;">
         <h2 class="section-title">Mizu Player / 音楽プレーヤー</h2>
         
         <div style="background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
@@ -485,23 +511,8 @@
             </div>
         </div>
     </section>
-
-    <div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 995; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
-        <div style="display: flex; align-items: center; gap: 10px; width: 50%; min-width: 0;">
-            <img id="yt-thumb" src="" alt="thumb" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; display: none;">
-            <div style="min-width: 0;">
-                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333;">Track Title</div>
-                <div id="yt-playing-status" style="font-size: 0.6rem; font-weight: bold; color: #BC002D; letter-spacing: 1px; margin-top: 2px;">PLAYING</div>
-            </div>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 10px; width: 45%; justify-content: flex-end;">
-            <audio id="audio-player" controls preload="auto" style="width: 100%; max-width: 180px; height: 30px; outline: none;"></audio>
-            <span onclick="closeAudioPlayer()" style="font-size: 1.2rem; color: #333; cursor: pointer; padding: 0 5px; font-weight: 300; line-height: 1; user-select: none;">&times;</span>
-        </div>
-    </div>
     
-    <p style="font-size: 0.75rem; color: #BC002D; text-align: center; font-weight: 500; padding: 0 15px; margin-bottom: 100px; line-height: 1.4;">
+    <p style="font-size: 0.75rem; color: #BC002D; text-align: center; font-weight: 500; padding: 0 15px; margin-bottom: 80px; line-height: 1.4;">
         Please wait a few minutes if you have clicked on a titles, because it is downloading and will be sent to you.
     </p>
              
@@ -528,12 +539,16 @@
     <section class="contact-grid" data-aos>  
         <h2 class="section-title">Contact / お問い合わせ</h2>  
         <div class="app-grid">  
-            <a href="https://wa.me/message/EC337HOVT7OLD1" target="_blank" class="app-icon">  
-                <svg viewBox="0 0 24 24" fill="#25D366"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.459 3.419 1.263 4.858L2 22l5.335-1.4c1.4.759 2.993 1.188 4.677 1.188 5.508 0 9.987-4.479 9.987-9.987 0-5.508-4.479-9.987-9.987-9.987zm0 1.745c4.553 0 8.242 3.689 8.242 8.242 0 4.553-3.689 8.242-8.242 8.242-1.505 0-2.911-.403-4.126-1.106l-.297-.173-3.076.808.822-3.003-.191-.304c-.759-1.208-1.161-2.612-1.161-4.137 0-4.553 3.689-8.242 8.242-8.242z"/></svg>  
+            <a href="https://wa.me/message/EC337HOVT7OLD1" target="_blank" class="app-icon whatsapp-brand">  
+                <svg viewBox="0 0 24 24" fill="#25D366">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.703 1.458h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
                 <span>WHATSAPP</span>  
             </a>  
-            <a href="https://signal.me/#eu/5v6uZK3GEphH3uALQAK9V47K2FuLvOlpCgLaVWu9CMnoyyIU4uFPFaEoayfR8MHX" target="_blank" class="app-icon">  
-                <svg viewBox="0 0 24 24" fill="#3A76F0"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.659 1.432 5.167L2 22l4.833-1.432C8.341 21.476 10.109 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>  
+            <a href="https://signal.me/#eu/5v6uZK3GEphH3uALQAK9V47K2FuLvOlpCgLaVWu9CMnoyyIU4uFPFaEoayfR8MHX" target="_blank" class="app-icon signal-brand">  
+                <svg viewBox="0 0 24 24" fill="#3A76F0">
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.566 16.161c-.18.68-.758 1.233-1.442 1.392-1.636.38-3.298.447-4.965.445-1.786-.002-3.573-.105-5.347-.464-.66-.134-1.21-.667-1.405-1.319-.446-1.493-.412-3.031-.41-4.564.002-1.554-.047-3.116.425-4.624.199-.636.732-1.157 1.385-1.303 1.748-.393 3.53-.474 5.32-.475 1.7-.001 3.402.063 5.088.423.682.146 1.252.684 1.444 1.365.449 1.591.403 3.228.406 4.856.002 1.488.04 2.992-.499 4.272zm-1.614-7.469c-.201-.453-.615-.658-1.077-.638-1.484.062-2.969.053-4.453.003-.505-.017-.933.225-1.109.704-.158.429-.023.829.351 1.092.302.213.67.247 1.023.253.513.009 1.026.002 1.539.002l-4.225 4.225c-.312.312-.312.818 0 1.13.312.312.818.312 1.13 0l4.218-4.217c0 .543-.008 1.086.003 1.628.008.4.152.748.513.961.393.232.8.188 1.14-.112.285-.251.388-.588.381-.96-.02-1.087-.01-2.175-.011-3.262v-.812z"/>
+                </svg>
                 <span>SIGNAL</span>  
             </a>  
         </div>  
@@ -541,7 +556,7 @@
 
     <footer class="legal-section" data-aos>  
         <p><strong>LEGAL COMPLIANCE (法的順守):</strong> This portfolio operates under the Constitution of Japan and is governed by the Japanese Copyright Law (Act No. 48 of 1970). All moral and economic rights are legally protected in the Niigata region.</p>  
-        <p>このポートフォリオは日本国憲法に準拠し、日本の著作権法（昭和45年法律第48号）に基づき運営されています。すべての著作者人格権および著作財産権は、新潟地域において法的に保護されています。</p>  
+        <p>このポートフォリオは日本国憲法に準拠し、日本の著作権法（昭和45年法律第48号）に基づき運営されています。すべての著作者人格権および著作財産権 Grandma は、新潟地域において法的に保護されています。</p>  
         <p>© 2025 - 2026 FALLEN_MIZU. Crafted with Zen in Niigata.</p>  
         <p>This website was created on December 23, 2025</p>  
         <p style="color: #BC002D;">Please do not attempt to copy this website, as it is copyrighted. Any harmful actions will be reported to the authorities. Thank you.</p>  
@@ -549,8 +564,37 @@
     </footer>  
 </div>  
 
+<div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 995; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
+    <div style="display: flex; align-items: center; gap: 10px; width: 50%; min-width: 0;">
+        <img id="yt-thumb" src="" alt="thumb" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; display: none;">
+        <div style="min-width: 0;">
+            <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333;">Track Title</div>
+            <div id="yt-playing-status" style="font-size: 0.6rem; font-weight: bold; color: #BC002D; letter-spacing: 1px; margin-top: 2px;">PLAYING</div>
+        </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; width: 45%; justify-content: flex-end;">
+        <audio id="audio-player" controls preload="auto" style="width: 100%; max-width: 180px; height: 30px; outline: none;"></audio>
+        <span onclick="closeAudioPlayer()" style="font-size: 1.2rem; color: #333; cursor: pointer; padding: 0 5px; font-weight: 300; line-height: 1; user-select: none;">&times;</span>
+    </div>
+</div>
+
 <script>  
-    // DRAWER CONTROL SYSTEM (Garis 3 Kontroler)
+    // FIXED: SECURE LOGOUT REDIRECTION MECHANISM
+    function triggerMizuLogout() {
+        // Menutup menu drawer terlebih dahulu dengan animasi smooth
+        toggleMizuDrawer();
+        
+        // Opsional: hapus local session jika ada database tersimpan
+        localStorage.removeItem("mizu_session"); 
+        
+        alert("Session Terminated. Redirecting to access portal...");
+        
+        // PENGALIEHAN KEMBALI KE HALAMAN LOGIN (Ganti 'login.html' sesuai nama file login asli Anda)
+        window.location.href = "login.html"; 
+    }
+
+    // DRAWER CONTROL SYSTEM
     function toggleMizuDrawer() {
         const btn = document.getElementById('menu-toggle');
         const drawer = document.getElementById('sidebar-drawer');
@@ -642,4 +686,4 @@
 <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
 <script src="video.js"></script>
 </body>  
-</html>
+    </html>
