@@ -12,77 +12,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;600;900&family=Sawarabi+Mincho&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
+        /* =================================================================
+           MIZU CORE SECURITY & UI OPTIMIZATION (ANTI-COPY & CLEAN CLICK)
+           ================================================================= */
 
-/* =================================================================
-   MIZU CORE SECURITY & UI OPTIMIZATION (ANTI-COPY & CLEAN CLICK)
-   ================================================================= */
+        /* 1. PROTEKSI ANTI-COPY & SELECT (LINDUNGI SELURUH HALAMAN WEB) */
+        html, body {
+            -webkit-user-select: none;  /* Safari & iOS Browser */
+            -moz-user-select: none;     /* Firefox */
+            -ms-user-select: none;      /* IE / Edge Old */
+            user-select: none;          /* Google Chrome, Opera, & Standard modern */
+            -webkit-touch-callout: none;
+        }
 
-/* 1. PROTEKSI ANTI-COPY & SELECT (LINDUNGI SELURUH HALAMAN WEB) */
-html, body {
-    -webkit-user-select: none;  /* Safari & iOS Browser */
-    -moz-user-select: none;     /* Firefox */
-    -ms-user-select: none;      /* IE / Edge Old */
-    user-select: none;          /* Google Chrome, Opera, & Standard modern */
-    
-    /* Tambahan opsional: Mencegah menu klik kanan/save image di HP (long press) */
-    -webkit-touch-callout: none;
-}
+        /* 2. HILANGKAN WARNA / HIGHLIGHT BIRU SAAT TOMBOL DIKLIK DI HP */
+        button, 
+        a, 
+        input, 
+        div[onclick], 
+        span[onclick],
+        .inline-res-btn,
+        .yt-song-item { 
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
 
-/* 2. HILANGKAN WARNA / HIGHLIGHT BIRU SAAT TOMBOL DIKLIK DI HP */
-button, 
-a, 
-input, 
-div[onclick], 
-span[onclick],
-.inline-res-btn,
-.yt-song-item { /* Tambahkan class/tag tombol kamu di sini jika ada yang kurang */
-    -webkit-tap-highlight-color: transparent !important;
-    outline: none !important;
-}
-
-/* 3. PENGECUALIAN (KOTAK PENCARIAN TENTU HARUS TETAP BISA DIKETIK) */
-input[type="text"], 
-input[type="search"], 
-textarea {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
-        
-
-        
+        /* 3. PENGECUALIAN (KOTAK PENCARIAN TENTU HARUS TETAP BISA DIKETIK) */
+        input[type="text"], 
+        input[type="search"], 
+        textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+                
         /* Gaya dasar baris daftar lagu */
-.song-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 15px;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.04);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent; /* Hilangkan kotak biru bawaan HP Android */
-}
+        .song-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent; 
+        }
 
-/* Efek ketika baris lagu ditekan/diklik oleh jari (Feedback Instan) */
-.song-row:active {
-    transform: scale(0.97); /* Baris agak mengecil sejenak saat ditekan */
-    background-color: rgba(188, 0, 45, 0.05); /* Memunculkan semburat warna merah mizu */
-}
+        /* Efek ketika baris lagu ditekan/diklik oleh jari (Feedback Instan) */
+        .song-row:active {
+            transform: scale(0.97); 
+            background-color: rgba(188, 0, 45, 0.05); 
+        }
 
-/* Keadaan ketika lagu tersebut sukses terpilih dan sedang diputar */
-.active-track {
-    background: rgba(188, 0, 45, 0.08) !important; /* Warna Crimson transparan sesuai identitas kamu */
-    border: 1px solid rgba(188, 0, 45, 0.2) !important;
-    box-shadow: 0 4px 12px rgba(188, 0, 45, 0.05);
-}
-        
-
-
-        
+        /* Keadaan ketika lagu tersebut sukses terpilih dan sedang diputar */
+        .active-track {
+            background: rgba(188, 0, 45, 0.08) !important; 
+            border: 1px solid rgba(188, 0, 45, 0.2) !important;
+            box-shadow: 0 4px 12px rgba(188, 0, 45, 0.05);
+        }
+                
         :root {
             --wasabi-red: #BC002D; /* Red from Japan flag */
             --ink-black: #1A1A1B;
@@ -138,21 +130,10 @@ textarea {
             to { opacity: 1; transform: scale(1); }
         }
 
-        @keyframes rotateVinyl {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(36deg); }
-        }
-
-        /* --- COMPLEX ANIMATIONS DEFINITIONS --- */
         @keyframes mizuPulse {
             0% { box-shadow: 0 0 0 0 rgba(188, 0, 45, 0.2); }
             70% { box-shadow: 0 0 0 10px rgba(188, 0, 45, 0); }
             100% { box-shadow: 0 0 0 0 rgba(188, 0, 45, 0); }
-        }
-        @keyframes textShimmer {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
         @keyframes floatEffect {
             0% { transform: translateY(0px); }
@@ -416,20 +397,17 @@ textarea {
 
         <div id="chat-box" style="height: 350px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);"></div>
         
-        
         <div style="display: flex; gap: 10px;">
-    <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.85rem;">
-    
-    <button id="send-chat-btn" onclick="window.sendMessage()" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">SEND</button>
+            <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.85rem;">
+            <button id="send-chat-btn" onclick="if(window.sendMessage) { window.sendMessage(); }" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">SEND</button>
         </div>
         
-
         <p style="color: #BC002D; font-size: 0.7rem; margin-top: 15px; font-weight: 600;">⚠️ Attention ⚠️: Due to API limitations, your message may not be responded to or an error may appear, I apologize for that. 🙏</p>
         <p style="color: #BC002D; font-size: 0.7rem; margin-top: 5px;">The daily message limit is 30 per day, do not spam, because your account is visible in the database.</p>
         <p style="color: #000000; font-size: 0.8rem; margin-top: 15px;">Best regards,<br><strong>Fallen</strong></p>
     </section>
         
-             <section id="mizu-yt-music" data-aos style="margin-top: 60px; margin-bottom: 120px;">
+    <section id="mizu-yt-music" data-aos style="margin-top: 60px; margin-bottom: 120px;">
         <h2 class="section-title">Mizu Player / 音楽プレーヤー</h2>
         
         <div style="background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
@@ -445,30 +423,24 @@ textarea {
     </section>
 
     <div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
-    
-    <div style="display: flex; align-items: center; gap: 10px; width: 50%; min-width: 0;">
-        <img id="yt-thumb" src="" alt="thumb" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; display: none;">
-        <div style="min-width: 0;">
-            <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333;">Track Title</div>
-            <div id="yt-playing-status" style="font-size: 0.6rem; font-weight: bold; color: #BC002D; letter-spacing: 1px; margin-top: 2px;">PLAYING</div>
+        <div style="display: flex; align-items: center; gap: 10px; width: 50%; min-width: 0;">
+            <img id="yt-thumb" src="" alt="thumb" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; display: none;">
+            <div style="min-width: 0;">
+                <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333;">Track Title</div>
+                <div id="yt-playing-status" style="font-size: 0.6rem; font-weight: bold; color: #BC002D; letter-spacing: 1px; margin-top: 2px;">PLAYING</div>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; width: 45%; justify-content: flex-end;">
+            <audio id="audio-player" controls preload="auto" style="width: 100%; max-width: 180px; height: 30px; outline: none;"></audio>
+            <span onclick="closeAudioPlayer()" style="font-size: 1.2rem; color: #333; cursor: pointer; padding: 0 5px; font-weight: 300; line-height: 1; user-select: none;">&times;</span>
         </div>
     </div>
-
-    <div style="display: flex; align-items: center; gap: 10px; width: 45%; justify-content: flex-end;">
-        <audio id="audio-player" controls preload="auto" style="width: 100%; max-width: 180px; height: 30px; outline: none;"></audio>
-        <span onclick="closeAudioPlayer()" style="font-size: 1.2rem; color: #333; cursor: pointer; padding: 0 5px; font-weight: 300; line-height: 1; user-select: none;">&times;</span>
-    </div>
-
-    </div>
     
-
-    
-            
-<p style="font-size: 0.75rem; color: #BC002D; text-align: center; font-weight: 500; padding: 0 15px; margin-bottom: 100px; line-height: 1.4;">
-    Please wait a few minutes if you have clicked on a titles, because it is downloading and will be sent to you.
-</p>
+    <p style="font-size: 0.75rem; color: #BC002D; text-align: center; font-weight: 500; padding: 0 15px; margin-bottom: 100px; line-height: 1.4;">
+        Please wait a few minutes if you have clicked on a titles, because it is downloading and will be sent to you.
+    </p>
              
-    
     <section class="gallery-container" data-aos>  
         <h2 class="section-title">My Gallery / 私のギャラリー</h2>  
         <div class="gallery-grid">  
@@ -513,7 +485,7 @@ textarea {
     </footer>  
 </div>  
 
-<button id="logout-btn" style="position: fixed; bottom: 20px; right: 20px; background: var(--wasabi-red); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Logout">
+<button id="logout-btn" style="position: fixed; bottom: 95px; right: 20px; background: var(--wasabi-red); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; z-index: 10000; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Logout">
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
         <polyline points="16 17 21 12 16 7"></polyline>
@@ -589,14 +561,18 @@ textarea {
 
         closeConfirm();
     }
+
+    function closeAudioPlayer() {
+        const playerBar = document.getElementById("spotify-player-bar");
+        if (playerBar) playerBar.style.display = "none";
+        const audioPlayer = document.getElementById("audio-player");
+        if (audioPlayer) audioPlayer.pause();
+    }
 </script>
 
 <script type="module" src="ai.js"></script>
 <script src="yt.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
-    <script src="video.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+<script src="video.js"></script>
 </body>  
-    </html>
-            
-            <div id="yt-song-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-                <div style="font-size: 0.75rem; opacity: 0.5; font-style: italic; text-align: center; padding: 10px;">Search fo
+                </html>
