@@ -1,36 +1,41 @@
 // =================================================================
-// BATTERY & IP TRACKER MODULE (TOP BAR JAPANESE ZEN STYLE) - batteryandip.js
+// BATTERY & IP TRACKER MODULE (NON-BLOCKING TOP DESIGN) - batteryandip.js
 // =================================================================
 
-// 1. INJEKSI STYLING TAMPILAN FIXED DI PALING ATAS WEB
+// 1. INJEKSI STYLING INTEGRASI TINGKAT TINGGI (TIDAK MERUSAK DOM UTAMA)
 const geoBatteryStyle = document.createElement('style');
 geoBatteryStyle.innerHTML = `
     .mizu-meta-topbar {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         box-sizing: border-box;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 6px 20px;
-        background: #ffffff;
+        justify-content: flex-start;
+        gap: 25px;
+        /* Menyediakan ruang 80px di kanan agar tidak menabrak tombol menu bulat portofolio */
+        padding: 8px 80px 8px 20px; 
+        background: rgba(255, 255, 255, 0.95);
         border-bottom: 1px solid #e5e5e5;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        position: relative;
-        z-index: 999;
+        z-index: 10; /* Berada tepat di bawah tombol menu utama agar overlay tidak tertutup */
+        pointer-events: auto;
     }
     .meta-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        color: #666;
+        gap: 6px;
+        font-size: 10px;
+        color: #555;
         font-weight: 500;
         letter-spacing: 0.3px;
     }
     .meta-label {
-        color: #aaa;
+        color: #a0a0a0;
         text-transform: uppercase;
-        font-size: 9px;
+        font-size: 8.5px;
         font-weight: 700;
     }
     .meta-value {
@@ -40,6 +45,12 @@ geoBatteryStyle.innerHTML = `
     .status-accent-red {
         color: #BC002D;
         font-weight: bold;
+    }
+    
+    /* PENYESUAIAN BODY AGAR ELEMEN UTAMA TURUN SECARA PRESISI DAN BORDER MIZU KEMBALI */
+    body {
+        padding-top: 33px !important; 
+        position: relative;
     }
 `;
 document.head.appendChild(geoBatteryStyle);
@@ -57,7 +68,7 @@ async function initBatteryTracker() {
                 const isDesktopOrNoBattery = battery.charging && battery.chargingTime === 0 && battery.dischargingTime === Infinity;
                 
                 if (isDesktopOrNoBattery) {
-                    batteryStatusEl.innerHTML = `🔌 <span style="color:#555;">AC Power (Desktop PC)</span>`;
+                    batteryStatusEl.innerHTML = `🔌 <span style="color:#555;">AC Power (PC)</span>`;
                 } else {
                     const levelPercent = Math.round(battery.level * 100);
                     const chargingStatus = battery.charging ? "⚡ " : "";
@@ -105,9 +116,8 @@ async function initIpAddressTracker() {
     }
 }
 
-// 4. RENDERING DAN INJEKSI DI BAGIAN PALING ATAS BODY WEBSITE
+// 4. RENDERING DAN INJEKSI DI STRUKTUR PALING ATAS
 function injectMetaPanel() {
-    // Cari elemen pembungkus utama web atau langsung disisipkan di awal tag <body>
     if (document.getElementById('mizu-user-topbar')) return;
 
     const topbar = document.createElement('div');
@@ -115,19 +125,18 @@ function injectMetaPanel() {
     topbar.className = 'mizu-meta-topbar';
     topbar.innerHTML = `
         <div class="meta-item">
-            <span class="meta-label">USER IP:</span>
+            <span class="meta-label">IP:</span>
             <span class="meta-value" id="mizu-ip-status">Fetching...</span>
         </div>
         <div class="meta-item">
-            <span class="meta-label">POWER STATUS:</span>
+            <span class="meta-label">POWER:</span>
             <span class="meta-value" id="mizu-battery-status">Detecting...</span>
         </div>
     `;
 
-    // Menyisipkan di baris paling pertama di dalam tag <body> agar berada di atas halaman web
+    // Disuntikkan langsung ke awal body tanpa merusak wrapper div portofolio bawaan Anda
     document.body.insertBefore(topbar, document.body.firstChild);
 
-    // Jalankan Tracker
     initBatteryTracker();
     initIpAddressTracker();
 }
@@ -139,5 +148,5 @@ if (document.readyState === 'loading') {
     injectMetaPanel();
 }
 
-// Ekspor fungsi global untuk refresh pasca login jika dibutuhkan
 window.refreshUserMetaPanel = injectMetaPanel;
+        
