@@ -1,6 +1,4 @@
-// =================================================================
-// 0. UTILS & TIME MANAGEMENT
-// =================================================================
+// 0. UTILS
 function getJapanTime(timestamp = null) {
     const date = timestamp ? new Date(timestamp) : new Date();
     const hours = date.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", hour: "numeric", hour12: true });
@@ -8,9 +6,6 @@ function getJapanTime(timestamp = null) {
     return hours.replace("時", "") + ":" + minutes;
 }
 
-// =================================================================
-// 1. FIREBASE INITIALIZATION
-// =================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -32,9 +27,7 @@ const provider = new GoogleAuthProvider();
 const DAILY_LIMIT = 30;
 const WHATSAPP_LINK = "https://wa.me/message/7HHZHXNC5EVRB1";
 
-// =================================================================
-// 2. DYNAMIC CSS DESIGN SYSTEM INJECTION
-// =================================================================
+// 2. UI STYLES (Isi tetap sama seperti kode awal kamu)
 const style = document.createElement('style');
 style.innerHTML = `
     .code-container { position: relative; }
@@ -46,16 +39,26 @@ style.innerHTML = `
     }
     .copy-btn:hover { opacity: 1; background: #BC002D; border-color: #BC002D; }
     .copy-btn.copied { background: #10b981; border-color: #10b981; }
-    
     #chat-box { 
         display: flex; 
         flex-direction: column; 
         padding: 15px; 
-        gap: 8px;
+        gap: 10px; 
         overflow-y: auto; 
-        height: 480px;
+        height: 450px; 
         scroll-behavior: smooth; 
-        background: #fdfdfd;
+        background: #fdfdfd; /* Warna background lebih soft */
+    }
+    
+     #chat-box { 
+        display: flex; 
+        flex-direction: column; 
+        padding: 15px; 
+        gap: 8px; /* Jarak vertikal antar pesan lebih rapat ala WA */
+        overflow-y: auto; 
+        height: 480px; /* Sedikit ditinggikan agar lebih pas */
+        scroll-behavior: smooth; 
+        background: #fdfdfd; /* Background chat lebih clean */
     }
 
     .chat-row { 
@@ -69,42 +72,50 @@ style.innerHTML = `
     
     .bubble { 
         padding: 8px 12px; 
-        max-width: 70%;
+        /* --- KUNCI: Tidak Melebar --- */
+        max-width: 70%; /* Lebih rapat dari sebelumnya agar mirip contoh */
         font-size: 14px; 
         line-height: 1.5; 
         position: relative; 
-        word-wrap: break-word;
+        word-wrap: break-word; /* Pastikan kata panjang tidak merusak layout */
     }
     
+    /* BUBBLE MIZU (SEBELAH KIRI - PENGIRIM) */
     .mizu-bubble { 
         background: #ffffff; 
         color: #222; 
+        /* --- BENTUK SESUAI GAMBAR CONTOH (KIRI) --- */
+        /* Membulat penuh, kecuali sudut KIRI BAWAH */
         border-radius: 15px 15px 15px 0px; 
         border: 1px solid #f0f0f0;
-        box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        box-shadow: 0 1px 1px rgba(0,0,0,0.05); /* Shadow super tipis */
     }
     
+    /* BUBBLE USER (SEBELAH KANAN - ANDA) */
     .user-bubble { 
+        /* --- TETAP PERTAHANKAN WARNA MERAH JEPANG --- */
         background: #BC002D; 
-        color: #ffffff;
+        color: #ffffff; /* Teks putih agar kontras */
+        /* --- BENTUK SESUAI GAMBAR CONTOH (KANAN) --- */
+        /* Membulat penuh, kecuali sudut KANAN BAWAH */
         border-radius: 15px 15px 0px 15px; 
         box-shadow: 0 1px 1px rgba(0,0,0,0.1);
     }
 
+    /* Penyesuaian Meta Data (Teks Waktu) */
     .bubble div[style*="font-size:10px"] {
         font-size: 9px !important;
         opacity: 0.8 !important;
         margin-top: 4px !important;
     }
     .user-bubble div[style*="font-size:10px"] {
-        color: #fff !important;
+        color: #fff !important; /* Teks waktu putih di merah */
     }
     
     .bubble pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid #333; }
     .bubble code { font-family: 'Fira Code', monospace; font-size: 0.85rem; }
     .typing-cursor { display: inline-block; width: 7px; height: 15px; background: #BC002D; margin-left: 5px; animation: blink 0.8s infinite; vertical-align: middle; }
     @keyframes blink { 50% { opacity: 0; } }
-    
     #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; }
     .google-btn { background: #4285F4; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     .limit-banner { background: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; border: 1px solid #f87171; margin-bottom: 10px; }
@@ -119,9 +130,7 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
-// =================================================================
 // 3. REAL-TIME STATUS LISTENER
-// =================================================================
 function listenToMizuStatus() {
     const statusRef = doc(db, "system", "status");
     onSnapshot(statusRef, (docSnap) => {
@@ -142,41 +151,41 @@ function listenToMizuStatus() {
             el.innerHTML = "Status Error: Doc Missing";
         }
     }, (error) => {
+        // INI AKAN MEMBERITAHU KITA KENAPA DATABASE REJECTED
         console.error("Penyebab Database Rejected:", error.code, error.message);
         alert("Firestore Error: " + error.message); 
     });
 }
 
-// =================================================================
-// 4. AUTHENTICATION & STATE MANAGEMENT (CONNECTED TO OVERLAY LOGOUT)
-// =================================================================
+
+// 4. AUTHENTICATION & INITIALIZATION
 onAuthStateChanged(auth, async (user) => {
     let overlay = document.getElementById('auth-overlay');
     const mainContent = document.getElementById('main-content');
     const chatBox = document.getElementById('chat-box');
 
-    if (user) { 
-        window.refreshUserMetaPanel();
+    if (user) {
         if (overlay) overlay.style.display = 'none';
         if (mainContent) mainContent.style.display = 'block';
         document.body.style.overflow = 'auto';
         
+        // Render Indikator Status jika belum ada
         if (chatBox && !document.getElementById('mizu-status')) {
-            const statusWrapper = document.createElement('div');
-            statusWrapper.className = 'status-container';
-            statusWrapper.innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <div id="mizu-status" class="status-indicator status-online">
-                        <span class="status-dot"></span> Mizu Online
-                    </div>
-                    <div style="font-size: 9px; color: #aaa; font-weight: 600; margin-left: 5px; letter-spacing: 0.3px;">
-                        Powered by <span style="color: #f55036;">Groq AI</span>
-                    </div>
-                </div>
-                <div style="font-size: 10px; color: #999; font-weight: bold; opacity: 0.7;">REAL-TIME SYNC</div>
-            `;
-            chatBox.parentNode.insertBefore(statusWrapper, chatBox);
-            listenToMizuStatus(); 
+    const statusWrapper = document.createElement('div');
+    statusWrapper.className = 'status-container';
+    statusWrapper.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div id="mizu-status" class="status-indicator status-online">
+                <span class="status-dot"></span> Mizu Online
+            </div>
+            <div style="font-size: 9px; color: #aaa; font-weight: 600; margin-left: 5px; letter-spacing: 0.3px;">
+                Powered by <span style="color: #f55036;">Groq AI</span>
+            </div>
+        </div>
+        <div style="font-size: 10px; color: #999; font-weight: bold; opacity: 0.7;">REAL-TIME SYNC</div>
+    `;
+    chatBox.parentNode.insertBefore(statusWrapper, chatBox);
+    listenToMizuStatus(); 
         }
 
         await syncUserLimit(user);
@@ -226,29 +235,7 @@ function createAuthUI() {
     return div;
 }
 
-// HUBUNGKAN LOGOUT DRAWER UTAMA INDEX.HTML KE KODE CORE FIREBASE AUTH DI SINI
-window.triggerMizuLogout = async () => {
-    // Menutup menu laci/drawer samping jika fungsi toggleMizuDrawer() tersedia di index.html
-    if (typeof window.toggleMizuDrawer === "function") {
-        window.toggleMizuDrawer();
-    }
-    
-    if (confirm("Logout now and terminate session?")) {
-        try {
-            await signOut(auth);
-            // Membersihkan history lokal jika tersimpan di cache browser
-            localStorage.removeItem("mizu_history");
-            // Reload opsional agar struktur DOM memuat ulang pembatasan dengan sempurna
-            window.location.reload();
-        } catch (e) { 
-            alert("Error logging out: " + e.message); 
-        }
-    }
-};
-
-// =================================================================
 // 5. DATABASE LOGIC
-// =================================================================
 async function syncUserLimit(user) {
     const today = new Date().toDateString();
     const userRef = doc(db, "users", user.uid);
@@ -297,9 +284,7 @@ function applyLock() {
     if (input) { input.disabled = true; input.placeholder = "Daily limit reached..."; }
 }
 
-// =================================================================
-// 6. CHAT CORE ENGINE LOGIC
-// =================================================================
+// 6. CHAT LOGIC
 window.sendMessage = async () => {
     const user = auth.currentUser;
     if (!user) return;
@@ -307,6 +292,7 @@ window.sendMessage = async () => {
     const statusRef = doc(db, "system", "status");
 
     try {
+        // Cek Status Global
         const statusSnap = await getDoc(statusRef);
         const isOnline = statusSnap.exists() ? statusSnap.data().isOnline : true;
         if (!isOnline) {
@@ -314,6 +300,7 @@ window.sendMessage = async () => {
             return;
         }
 
+        // Cek Limit User
         const userRef = doc(db, "users", user.uid);
         const snap = await getDoc(userRef);
         if (snap.data().usageCount >= DAILY_LIMIT && !snap.data().isPremium) return applyLock();
@@ -339,6 +326,7 @@ window.sendMessage = async () => {
         });
 
         if (!response.ok) {
+            // Update Firestore ke Offline jika API mati
             await updateDoc(statusRef, { isOnline: false });
             throw new Error("Offline");
         }
@@ -348,21 +336,26 @@ window.sendMessage = async () => {
         await renderTypingEffect('mizu', data.reply || "Mizu is offline.");
         await updateDoc(userRef, { usageCount: increment(1) });
 
-    } catch (err) {
+        } catch (err) {
         const loaders = document.querySelectorAll('[id^="loading-"]');
         loaders.forEach(l => l.remove());
+        
         console.error("DETEKSI ERROR:", err);
 
+        // Jika ini adalah error API (response tidak ok)
         if (err.message === "Offline" || err.message === "API_ERROR") {
+            // Coba paksa update Firestore, jika gagal tampilkan di console
             updateDoc(statusRef, { isOnline: false })
                 .then(() => console.log("Status berhasil diubah ke Offline secara otomatis"))
                 .catch((fErr) => console.error("Gagal mengubah status ke Firestore: ", fErr));
             
             renderRow('mizu', "System exhausted. Mizu will be back soon.");
         } else {
+            // Jika error karena jaringan/firestore sendiri
             renderRow('mizu', "Connection error or Database rejected. Check console (F12).");
         }
     }
+    
 };
 
 window.newChat = async () => {
@@ -376,9 +369,7 @@ window.newChat = async () => {
     }
 };
 
-// =================================================================
-// 7. RENDERING ENGINE & MARKDOWN INJECTION
-// =================================================================
+/// 7. RENDERING ENGINE
 function renderRow(role, text, id = null, timestamp = null) {
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
@@ -391,6 +382,7 @@ function renderRow(role, text, id = null, timestamp = null) {
     const content = document.createElement('div');
     content.innerHTML = (typeof marked !== 'undefined') ? marked.parse(text) : text;
 
+    // --- LOGIKA TOMBOL COPY ---
     content.querySelectorAll('pre').forEach(pre => {
         const container = document.createElement('div');
         container.className = 'code-container';
@@ -414,6 +406,7 @@ function renderRow(role, text, id = null, timestamp = null) {
             });
         });
     });
+    // ---------------------------
 
     const meta = document.createElement('div');
     meta.style.cssText = "display:flex; justify-content:flex-end; font-size:10px; opacity:0.6; margin-top:5px; gap:4px;";
@@ -427,7 +420,8 @@ function renderRow(role, text, id = null, timestamp = null) {
     
     if (typeof hljs !== 'undefined') row.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
     chatBox.scrollTop = chatBox.scrollHeight;
-}
+                                }
+    
 
 async function renderTypingEffect(role, fullText) {
     const chatBox = document.getElementById('chat-box');
@@ -457,22 +451,22 @@ async function renderTypingEffect(role, fullText) {
             } else {
                 clearInterval(interval);
                 messageDiv.querySelectorAll('pre').forEach(pre => {
-                    if (pre.parentElement.className === 'code-container') return;
-                    const container = document.createElement('div');
-                    container.className = 'code-container';
-                    pre.parentNode.insertBefore(container, pre);
-                    container.appendChild(pre);
-                    const button = document.createElement('button');
-                    button.className = 'copy-btn';
-                    button.innerText = 'Copy';
-                    container.appendChild(button);
-                    button.onclick = () => {
-                        const code = pre.querySelector('code')?.innerText || pre.innerText;
-                        navigator.clipboard.writeText(code);
-                        button.innerText = 'Copied!';
-                        setTimeout(() => button.innerText = 'Copy', 2000);
-                    };
-                });
+    if (pre.parentElement.className === 'code-container') return;
+    const container = document.createElement('div');
+    container.className = 'code-container';
+    pre.parentNode.insertBefore(container, pre);
+    container.appendChild(pre);
+    const button = document.createElement('button');
+    button.className = 'copy-btn';
+    button.innerText = 'Copy';
+    container.appendChild(button);
+    button.onclick = () => {
+        const code = pre.querySelector('code')?.innerText || pre.innerText;
+        navigator.clipboard.writeText(code);
+        button.innerText = 'Copied!';
+        setTimeout(() => button.innerText = 'Copy', 2000);
+    };
+});
                 cursor.remove();
                 const meta = document.createElement('div');
                 meta.style.cssText = "display:flex; justify-content:flex-end; font-size:10px; opacity:0.6; margin-top:5px;";
@@ -486,10 +480,22 @@ async function renderTypingEffect(role, fullText) {
     });
 }
 
-// =================================================================
-// 8. DOM INITIALIZATION EVENTS
-// =================================================================
+// 8. LOGOUT & DOM EVENTS
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('user-input');
     if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.sendMessage(); });
+
+    // Tambahkan Event Listener Logout secara dinamis
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.onclick = async () => {
+            if (confirm("Logout now?")) {
+                try {
+                    await signOut(auth);
+                    window.location.reload();
+                } catch (e) { alert("Error: " + e.message); }
+            }
+        };
+    }
 });
+      
