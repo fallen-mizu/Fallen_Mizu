@@ -100,34 +100,35 @@ async function initBatteryTracker() {
     }
 }
 
-// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION
+// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION (MENGGUNAKAN IPAPI.CO)
 async function initIpAddressTracker() {
     const ipStatusEl = document.getElementById('mizu-ip-status');
     if (!ipStatusEl) return;
 
     try {
-        // Menggunakan ipwho.is yang menyediakan data IP, Region, dan Emoji Bendera sekaligus
-        const response = await fetch('https://ipwho.is/');
+        // Menggunakan ipapi.co sebagai alternatif yang sangat stabil
+        const response = await fetch('https://ipapi.co/json/');
         if (!response.ok) throw new Error("Network response was not ok");
         
         const data = await response.json();
         
-        if(data.success) {
-            // Mengambil IP, Region (Provinsi/Negara Bagian), dan Emoji Bendera
-            const ipAddress = data.ip;
-            const region = data.region || data.city; // Fallback ke kota jika region kosong
-            const flagEmoji = data.flag.emoji;
-            
-            // Format output: 192.168.1.1 🇮🇩 (Jakarta / West Java)
-            ipStatusEl.innerHTML = `
-                <span>${ipAddress}</span> 
-                <span class="meta-geo-info">${flagEmoji} ${region}</span>
-            `;
-        } else {
-            ipStatusEl.innerText = "Gagal memuat info lokasi";
-        }
+        const ipAddress = data.ip;
+        const region = data.region || data.city;
+        
+        // Karena ipapi.co tidak menyediakan emoji bendera langsung, 
+        // kita buat fungsi sederhana untuk mengubah Country Code (misal: ID, JP) menjadi Emoji Bendera
+        const countryCode = data.country_code;
+        const flagEmoji = countryCode 
+            ? countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) 
+            : "🌐";
+        
+        ipStatusEl.innerHTML = `
+            <span>${ipAddress}</span> 
+            <span class="meta-geo-info">${flagEmoji} ${region}</span>
+        `;
     } catch (error) {
         console.error("Error fetching IP Address & Geo:", error);
+        // Jika gagal total, teks ini yang akan muncul
         ipStatusEl.innerText = "127.0.0.1 (Local/Proxy)";
     }
 }
