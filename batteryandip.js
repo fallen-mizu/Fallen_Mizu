@@ -36,10 +36,22 @@ geoBatteryStyle.innerHTML = `
     .meta-value {
         color: #222;
         font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
     .status-accent-red {
         color: #BC002D;
         font-weight: bold;
+    }
+    /* Style tambahan untuk memisahkan teks lokasi agar rapi */
+    .meta-geo-info {
+        color: #888;
+        font-weight: 400;
+        font-size: 10px;
+        background: #f5f5f5;
+        padding: 2px 6px;
+        border-radius: 4px;
     }
 `;
 document.head.appendChild(geoBatteryStyle);
@@ -88,26 +100,40 @@ async function initBatteryTracker() {
     }
 }
 
-// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP
+// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION
 async function initIpAddressTracker() {
     const ipStatusEl = document.getElementById('mizu-ip-status');
     if (!ipStatusEl) return;
 
     try {
-        const response = await fetch('https://api.ipify.org?format=json');
+        // Menggunakan ipwho.is yang menyediakan data IP, Region, dan Emoji Bendera sekaligus
+        const response = await fetch('https://ipwho.is/');
         if (!response.ok) throw new Error("Network response was not ok");
         
         const data = await response.json();
-        ipStatusEl.innerText = data.ip;
+        
+        if(data.success) {
+            // Mengambil IP, Region (Provinsi/Negara Bagian), dan Emoji Bendera
+            const ipAddress = data.ip;
+            const region = data.region || data.city; // Fallback ke kota jika region kosong
+            const flagEmoji = data.flag.emoji;
+            
+            // Format output: 192.168.1.1 🇮🇩 (Jakarta / West Java)
+            ipStatusEl.innerHTML = `
+                <span>${ipAddress}</span> 
+                <span class="meta-geo-info">${flagEmoji} ${region}</span>
+            `;
+        } else {
+            ipStatusEl.innerText = "Gagal memuat info lokasi";
+        }
     } catch (error) {
-        console.error("Error fetching IP Address:", error);
+        console.error("Error fetching IP Address & Geo:", error);
         ipStatusEl.innerText = "127.0.0.1 (Local/Proxy)";
     }
 }
 
 // 4. RENDERING DAN INJEKSI DI BAGIAN PALING ATAS BODY WEBSITE
 function injectMetaPanel() {
-    // Cari elemen pembungkus utama web atau langsung disisipkan di awal tag <body>
     if (document.getElementById('mizu-user-topbar')) return;
 
     const topbar = document.createElement('div');
@@ -115,7 +141,7 @@ function injectMetaPanel() {
     topbar.className = 'mizu-meta-topbar';
     topbar.innerHTML = `
         <div class="meta-item">
-            <span class="meta-label">USER IP:</span>
+            <span class="meta-label">USER IP & LOCATION:</span>
             <span class="meta-value" id="mizu-ip-status">Fetching...</span>
         </div>
         <div class="meta-item">
@@ -124,7 +150,6 @@ function injectMetaPanel() {
         </div>
     `;
 
-    // Menyisipkan di baris paling pertama di dalam tag <body> agar berada di atas halaman web
     document.body.insertBefore(topbar, document.body.firstChild);
 
     // Jalankan Tracker
@@ -141,3 +166,4 @@ if (document.readyState === 'loading') {
 
 // Ekspor fungsi global untuk refresh pasca login jika dibutuhkan
 window.refreshUserMetaPanel = injectMetaPanel;
+    
