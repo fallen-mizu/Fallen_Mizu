@@ -2,7 +2,7 @@
 // BATTERY & IP TRACKER MODULE (TOP BAR JAPANESE ZEN STYLE) - batteryandip.js
 // =================================================================
 
-// 1. INJEKSI STYLING TAMPILAN FIXED DI PALING ATAS WEB (RESPONSIF FOR IPv6)
+// 1. INJEKSI STYLING TAMPILAN FIXED DI PALING ATAS WEB
 const geoBatteryStyle = document.createElement('style');
 geoBatteryStyle.innerHTML = `
     .mizu-meta-topbar {
@@ -11,35 +11,27 @@ geoBatteryStyle.innerHTML = `
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 6px 16px;
+        padding: 6px 20px;
         background: #ffffff;
         border-bottom: 1px solid #e5e5e5;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         position: relative;
         z-index: 999;
-        overflow: hidden;
     }
     .meta-item {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         font-size: 11px;
         color: #666;
         font-weight: 500;
         letter-spacing: 0.3px;
-        white-space: nowrap;
-        max-width: 68%; /* Membatasi area agar IPv6 panjang tidak menubruk komponen kanan */
-    }
-    .meta-item:last-child {
-        max-width: 30%;
-        justify-content: flex-end;
     }
     .meta-label {
         color: #aaa;
         text-transform: uppercase;
         font-size: 9px;
         font-weight: 700;
-        flex-shrink: 0; /* Label teks konstan, tidak boleh mengecil */
     }
     .meta-value {
         color: #222;
@@ -47,13 +39,12 @@ geoBatteryStyle.innerHTML = `
         display: flex;
         align-items: center;
         gap: 6px;
-        overflow: hidden;
-        text-overflow: ellipsis; /* Otomatis memotong teks panjang menjadi ... jika layar sempit */
     }
     .status-accent-red {
         color: #BC002D;
         font-weight: bold;
     }
+    /* Style tambahan untuk memisahkan teks lokasi agar rapi */
     .meta-geo-info {
         color: #888;
         font-weight: 400;
@@ -61,10 +52,6 @@ geoBatteryStyle.innerHTML = `
         background: #f5f5f5;
         padding: 2px 6px;
         border-radius: 4px;
-        flex-shrink: 0; /* Bendera dan Region diprioritaskan agar selalu terlihat */
-        display: flex;
-        align-items: center;
-        gap: 4px;
     }
 `;
 document.head.appendChild(geoBatteryStyle);
@@ -82,7 +69,7 @@ async function initBatteryTracker() {
                 const isDesktopOrNoBattery = battery.charging && battery.chargingTime === 0 && battery.dischargingTime === Infinity;
                 
                 if (isDesktopOrNoBattery) {
-                    batteryStatusEl.innerHTML = `🔌 <span style="color:#555;">AC Power</span>`;
+                    batteryStatusEl.innerHTML = `🔌 <span style="color:#555;">AC Power (Desktop PC)</span>`;
                 } else {
                     const levelPercent = Math.round(battery.level * 100);
                     const chargingStatus = battery.charging ? "⚡ " : "";
@@ -113,6 +100,7 @@ async function initBatteryTracker() {
     }
 }
 
+// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION
 // 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION (MENGGUNAKAN IPAPI.CO)
 async function initIpAddressTracker() {
     const ipStatusEl = document.getElementById('mizu-ip-status');
@@ -120,7 +108,7 @@ async function initIpAddressTracker() {
 
     try {
         // Menggunakan ipapi.co sebagai alternatif yang sangat stabil
-        const response = await fetch('https://https://ipapi.co/json/');
+        const response = await fetch('https://ipapi.co/json/');
         if (!response.ok) throw new Error("Network response was not ok");
         
         const data = await response.json();
@@ -128,20 +116,20 @@ async function initIpAddressTracker() {
         const ipAddress = data.ip;
         const region = data.region || data.city;
         
-        // Mengubah Country Code (misal: ID, JP) menjadi Emoji Bendera secara otomatis
+        // Karena ipapi.co tidak menyediakan emoji bendera langsung, 
+        // kita buat fungsi sederhana untuk mengubah Country Code (misal: ID, JP) menjadi Emoji Bendera
         const countryCode = data.country_code;
         const flagEmoji = countryCode 
             ? countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) 
             : "🌐";
         
-        // Output dengan inline-style pendukung Solusi 2 agar IPv6 panjang otomatis terpotong (...)
         ipStatusEl.innerHTML = `
-            <span style="overflow: hidden; text-overflow: ellipsis;">${ipAddress}</span> 
-            <span class="meta-geo-info"><span>${flagEmoji}</span> <span>${region}</span></span>
+            <span>${ipAddress}</span> 
+            <span class="meta-geo-info">${flagEmoji} ${region}</span>
         `;
     } catch (error) {
         console.error("Error fetching IP Address & Geo:", error);
-        // Jika gagal total (masalah koneksi/CORS), teks cadangan ini tetap muncul agar tidak kosong
+        // Jika gagal total, teks ini yang akan muncul
         ipStatusEl.innerText = "127.0.0.1 (Local/Proxy)";
     }
 }
@@ -156,11 +144,11 @@ function injectMetaPanel() {
     topbar.className = 'mizu-meta-topbar';
     topbar.innerHTML = `
         <div class="meta-item">
-            <span class="meta-label">IP & LOC:</span>
+            <span class="meta-label">USER IP & LOCATION:</span>
             <span class="meta-value" id="mizu-ip-status">Fetching...</span>
         </div>
         <div class="meta-item">
-            <span class="meta-label">POWER:</span>
+            <span class="meta-label">POWER STATUS:</span>
             <span class="meta-value" id="mizu-battery-status">Detecting...</span>
         </div>
     `;
@@ -181,4 +169,3 @@ if (document.readyState === 'loading') {
 
 // Ekspor fungsi global untuk refresh pasca login jika dibutuhkan
 window.refreshUserMetaPanel = injectMetaPanel;
-                    
