@@ -5,7 +5,7 @@
 // 1. INJEKSI STYLING TAMPILAN FIXED DI PALING ATAS WEB
 const geoBatteryStyle = document.createElement('style');
 geoBatteryStyle.innerHTML = `
-        .mizu-meta-topbar {
+    .mizu-meta-topbar {
         width: 100%;
         box-sizing: border-box;
         display: flex;
@@ -53,7 +53,6 @@ geoBatteryStyle.innerHTML = `
         padding: 2px 6px;
         border-radius: 4px;
     }
-    
 `;
 document.head.appendChild(geoBatteryStyle);
 
@@ -101,7 +100,6 @@ async function initBatteryTracker() {
     }
 }
 
-// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION
 // 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION (MENGGUNAKAN IPAPI.CO)
 async function initIpAddressTracker() {
     const ipStatusEl = document.getElementById('mizu-ip-status');
@@ -134,8 +132,7 @@ async function initIpAddressTracker() {
         ipStatusEl.innerText = "127.0.0.1 (Local/Proxy)";
     }
 }
-
-
+        
 // 4. RENDERING DAN INJEKSI DI BAGIAN PALING ATAS BODY WEBSITE
 function injectMetaPanel() {
     if (document.getElementById('mizu-user-topbar')) return;
