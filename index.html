@@ -12,61 +12,83 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;600;900&family=Sawarabi+Mincho&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
-        /* =================================================================
-           MIZU CORE SECURITY & UI OPTIMIZATION
-           ================================================================= */
-        html, body {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-        }
 
-        button, a, input, div[onclick], span[onclick], .inline-res-btn, .yt-song-item { 
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
-        }
+/* =================================================================
+   MIZU CORE SECURITY & UI OPTIMIZATION (ANTI-COPY & CLEAN CLICK)
+   ================================================================= */
 
-        input[type="text"], input[type="search"], textarea {
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
-                
-        .song-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 15px;
-            background: white;
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,0.04);
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
+/* 1. PROTEKSI ANTI-COPY & SELECT (LINDUNGI SELURUH HALAMAN WEB) */
+html, body {
+    -webkit-user-select: none;  /* Safari & iOS Browser */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* IE / Edge Old */
+    user-select: none;          /* Google Chrome, Opera, & Standard modern */
+    
+    /* Tambahan opsional: Mencegah menu klik kanan/save image di HP (long press) */
+    -webkit-touch-callout: none;
+}
 
-        .song-row:active {
-            transform: scale(0.97); 
-            background-color: rgba(188, 0, 45, 0.05); 
-        }
+/* 2. HILANGKAN WARNA / HIGHLIGHT BIRU SAAT TOMBOL DIKLIK DI HP */
+button, 
+a, 
+input, 
+div[onclick], 
+span[onclick],
+.inline-res-btn,
+.yt-song-item { /* Tambahkan class/tag tombol kamu di sini jika ada yang kurang */
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+}
 
-        .active-track {
-            background: rgba(188, 0, 45, 0.08) !important; 
-            border: 1px solid rgba(188, 0, 45, 0.2) !important;
-            box-shadow: 0 4px 12px rgba(188, 0, 45, 0.05);
-        }
-                
+/* 3. PENGECUALIAN (KOTAK PENCARIAN TENTU HARUS TETAP BISA DIKETIK) */
+input[type="text"], 
+input[type="search"], 
+textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+        
+
+        
+        /* Gaya dasar baris daftar lagu */
+.song-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent; /* Hilangkan kotak biru bawaan HP Android */
+}
+
+/* Efek ketika baris lagu ditekan/diklik oleh jari (Feedback Instan) */
+.song-row:active {
+    transform: scale(0.97); /* Baris agak mengecil sejenak saat ditekan */
+    background-color: rgba(188, 0, 45, 0.05); /* Memunculkan semburat warna merah mizu */
+}
+
+/* Keadaan ketika lagu tersebut sukses terpilih dan sedang diputar */
+.active-track {
+    background: rgba(188, 0, 45, 0.08) !important; /* Warna Crimson transparan sesuai identitas kamu */
+    border: 1px solid rgba(188, 0, 45, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(188, 0, 45, 0.05);
+}
+        
+
+
+        
         :root {
-            --wasabi-red: #BC002D;
+            --wasabi-red: #BC002D; /* Red from Japan flag */
             --ink-black: #1A1A1B;
             --paper-white: #F9F9F7;
             --border-light: rgba(0,0,0,0.08);
             --transition-speed: 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-            --mizu-glow: rgba(188, 0, 45, 0.15);
-            --mizu-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --blur-bg: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         body {
@@ -77,213 +99,58 @@
             line-height: 1.8;
             background-image: url("https://www.transparenttextures.com/patterns/handmade-paper.png");
             overflow-x: hidden;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 25%; width: 1px; height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.02) 20%, rgba(0,0,0,0.02) 80%, transparent);
-            z-index: -1;
-            pointer-events: none;
-        }
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0; right: 25%; width: 1px; height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(188, 0, 45, 0.03) 30%, rgba(188, 0, 45, 0.03) 70%, transparent);
-            z-index: -1;
-            pointer-events: none;
         }
 
         .container {
             max-width: 700px;
             margin: 0 auto;
-            padding: 80px 30px 140px 30px; /* Ditambah padding bawah agar tidak tertutup player bar */
-            position: relative;
-            z-index: 2;
+            padding: 80px 30px;
         }
 
-        /* =================================================================
-           HAMBURGER & NAVIGATION DRAWER STYLE
-           ================================================================= */
-        .mizu-navbar {
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 0 30px;
-            box-sizing: border-box;
-            z-index: 1000;
-            pointer-events: none;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .hamburger-btn {
-            width: 45px; height: 45px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border-light);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            pointer-events: auto;
-            transition: all 0.4s var(--mizu-easing);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-        .hamburger-btn:hover {
-            transform: scale(1.05);
-            border-color: var(--wasabi-red);
-            box-shadow: 0 4px 15px var(--mizu-glow);
-        }
-        .hamburger-line {
-            width: 18px; height: 1.5px;
-            background-color: var(--ink-black);
-            transition: all 0.4s var(--mizu-easing);
-            transform-origin: center;
-        }
-        .hamburger-btn.active .line-1 { transform: translateY(6.5px) rotate(45deg); background-color: var(--wasabi-red); }
-        .hamburger-btn.active .line-2 { opacity: 0; transform: scaleX(0); }
-        .hamburger-btn.active .line-3 { transform: translateY(-6.5px) rotate(-45deg); background-color: var(--wasabi-red); }
-
-        .mizu-drawer {
-            position: fixed;
-            top: 0; right: -320px; width: 320px; height: 100%;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-left: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.05);
-            z-index: 999;
-            box-sizing: border-box;
-            padding: 100px 40px 40px 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: right 0.6s var(--blur-bg);
-        }
-        .mizu-drawer.open { right: 0; }
-
-        .drawer-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.15);
-            backdrop-filter: blur(4px);
-            z-index: 998;
-            opacity: 0; visibility: hidden;
-            transition: all 0.5s var(--blur-bg);
-        }
-        .drawer-overlay.show { opacity: 1; visibility: visible; }
-
-        .drawer-menu-items {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-        .drawer-item {
-            font-family: 'Noto Serif JP', serif;
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--ink-black);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 5px 0;
-            border-bottom: 1px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .drawer-item:hover {
-            color: var(--wasabi-red);
-            padding-left: 8px;
-        }
-        .drawer-item svg {
-            width: 18px; height: 18px;
-            opacity: 0.7;
-            transition: color 0.3s;
-        }
-        .drawer-item:hover svg { color: var(--wasabi-red); opacity: 1; }
-
-        .drawer-logout-wrapper {
-            border-top: 1px solid var(--border-light);
-            padding-top: 30px;
-        }
-        .modern-logout-btn {
-            width: 100%;
-            padding: 12px 20px;
-            background: var(--wasabi-red);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(188, 0, 45, 0.2);
-            transition: all 0.4s var(--mizu-easing);
-        }
-        .modern-logout-btn:hover {
-            background: #a00024;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(188, 0, 45, 0.35);
+        @keyframes rotateVinyl {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(36deg); }
         }
 
-        /* =================================================================
-           UI RESTYLING & COMPLEX EXPERIENCES
-           ================================================================= */
+        /* --- Global AOS Style --- */
         [data-aos] { opacity: 0; transform: translateY(30px); transition: var(--transition-speed); }
         .aos-visible { opacity: 1; transform: translateY(0); }
 
+        /* --- CLOCK SECTION --- */
         .osaka-time-box {
             text-align: right;
             margin-bottom: 50px;
             border-right: 2px solid var(--wasabi-red);
             padding-right: 15px;
             font-family: 'Noto Serif JP', serif;
-            transition: all 0.5s var(--mizu-easing);
-        }
-        .osaka-time-box:hover {
-            transform: translateX(-5px);
-            text-shadow: 0 0 10px rgba(188, 0, 45, 0.1);
         }
         #full-date { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.6; }
         #osaka-clock { font-size: 1.8rem; font-weight: 300; color: var(--ink-black); }
         .timezone-label { font-size: 0.6rem; opacity: 0.5; margin-top: 5px; }
 
+        /* --- PROFILE & HEADER --- */
         .profile-img {
-            width: 85px; height: 85px;
+            width: 80px; height: 80px;
             border-radius: 50%;
             filter: grayscale(100%);
             border: 1px solid var(--border-light);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             object-fit: cover;
             display: block;
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .profile-img:hover {
-            filter: grayscale(0%) contrast(1.05);
-            transform: scale(1.08) rotate(3deg);
-            box-shadow: 0 10px 25px rgba(188, 0, 45, 0.12);
-            border-color: var(--wasabi-red);
         }
 
         h1 { 
             font-family: 'Noto Serif JP', serif; 
-            font-size: 3.2rem; 
+            font-size: 3rem; 
             font-weight: 900; 
             margin: 0; 
             letter-spacing: -2px; 
-            line-height: 1.05; 
+            line-height: 1; 
             overflow: hidden;
         }
         h1 span { display: inline-block; transform: translateY(110%); transition: transform 1.2s var(--transition-speed); }
@@ -294,22 +161,20 @@
             font-size: 0.65rem; 
             letter-spacing: 5px; 
             font-weight: 600; 
-            margin-top: 12px;
+            margin-top: 10px;
             margin-bottom: 40px; 
-            position: relative;
-            display: inline-block;
         }
 
+        /* --- SECTIONS --- */
         .section-title {
             font-family: 'Noto Serif JP', serif;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 600;
             margin-top: 80px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border-bottom: 1px solid var(--border-light);
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             position: relative;
-            transition: padding-left 0.4s var(--mizu-easing);
         }
         .section-title::after {
             content: "";
@@ -317,48 +182,25 @@
             bottom: -1px; left: 0;
             width: 40px; height: 1.5px;
             background: var(--wasabi-red);
-            transition: width 0.4s var(--mizu-easing);
         }
-        section:hover .section-title { padding-left: 10px; color: var(--wasabi-red); }
-        section:hover .section-title::after { width: 100%; }
+        .journey-text { font-size: 0.85rem; margin-bottom: 25px; color: #444; }
+        .japanese-text { font-family: 'Sawarabi Mincho', serif; font-size: 0.9rem; line-height: 2; color: #333; }
 
-        #chat-box, #mizu-yt-music > div {
-            transition: all 0.5s var(--blur-bg);
-        }
-        #chat-box:hover, #mizu-yt-music > div:hover {
-            box-shadow: 0 15px 35px rgba(0,0,0,0.03), 0 0 30px rgba(188, 0, 45, 0.01);
-            border-color: rgba(188, 0, 45, 0.12) !important;
-            transform: translateY(-2px);
-        }
-
-        input[type="text"] { transition: all 0.4s var(--mizu-easing) !important; }
-        input[type="text"]:focus {
-            box-shadow: 0 0 0 3px var(--mizu-glow) !important;
+        /* --- BUTTONS --- */
+        #new-chat-btn:hover {
+            background: var(--wasabi-red) !important;
+            color: white !important;
             border-color: var(--wasabi-red) !important;
-            background: #ffffff !important;
         }
 
-        #send-chat-btn, #yt-search-btn { transition: all 0.4s var(--mizu-easing) !important; }
-        #send-chat-btn:hover, #yt-search-btn:hover {
-            transform: scale(1.03);
-            box-shadow: 0 6px 15px rgba(188, 0, 45, 0.25) !important;
-            background: #a00024 !important;
-        }
-
+        /* --- GALLERY GRID --- */
         .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 60px; }
-        .gallery-item { 
-            position: relative; overflow: hidden; background: white; 
-            border: 1px solid var(--border-light); border-radius: 16px;
-            transition: all 0.6s var(--blur-bg);
-        }
-        .gallery-item img { width: 100%; height: auto; display: block; filter: grayscale(70%); transition: 1.2s var(--transition-speed); }
-        .gallery-item:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            border-color: rgba(188, 0, 45, 0.15);
-        }
-        .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.03); }
-        .caption { margin-top: 15px; font-size: 0.75rem; border-left: 2px solid var(--wasabi-red); padding-left: 15px; padding-bottom: 15px; }
+        .gallery-item { position: relative; overflow: hidden; background: white; border: 1px solid var(--border-light); box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .gallery-item img { width: 100%; height: auto; display: block; filter: grayscale(80%); transition: 1.2s var(--transition-speed); }
+        .gallery-item:hover img { filter: grayscale(0%); transform: scale(1.08); }
+        .caption { margin-top: 15px; font-size: 0.75rem; border-left: 2px solid var(--wasabi-red); padding-left: 15px; opacity: 0.8; padding-bottom: 15px; }
+        .caption strong { display: block; margin-bottom: 5px; }
+        .caption .japanese { font-family: 'Sawarabi Mincho', serif; font-size: 0.8rem; opacity: 0.6; }
 
         /* =================================================================
            FIXED: OFFICIAL APP BRAND ICONS LOGO STYLE
@@ -403,47 +245,8 @@
 </head>
 <body>
 
-<div class="mizu-navbar">
-    <button class="hamburger-btn" id="menu-toggle" onclick="toggleMizuDrawer()" title="Open System Menu">
-        <div class="hamburger-line line-1"></div>
-        <div class="hamburger-line line-2"></div>
-        <div class="hamburger-line line-3"></div>
-    </button>
-</div>
-
-<div class="drawer-overlay" id="menu-overlay" onclick="toggleMizuDrawer()"></div>
-<div class="mizu-drawer" id="sidebar-drawer">
-    <div class="drawer-menu-items">
-        <div style="font-size: 0.6rem; letter-spacing: 2px; color: var(--wasabi-red); font-weight: bold; margin-bottom: 10px;">CORE MENU // メニュー</div>
-        <a href="#" class="drawer-item" onclick="toggleMizuDrawer()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            Architecture Profile
-        </a>
-        <a href="#mizu-chat-container" class="drawer-item" onclick="toggleMizuDrawer()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            AI Consultation
-        </a>
-        <a href="#mizu-yt-music" class="drawer-item" onclick="toggleMizuDrawer()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="5.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle><line x1="3" y1="12" x2="21" y2="12"></line></svg>
-            Mizu Audio Engine
-        </a>
-    </div>
-
-    <div class="drawer-logout-wrapper">
-        <button class="modern-logout-btn" id="system-logout" onclick="triggerMizuLogout()">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            LOGOUT SESSION
-        </button>
-        <div style="font-size: 0.55rem; color: #aaa; text-align: center; margin-top: 15px; font-family: monospace;">SECURE NODE: OSK-026</div>
-    </div>
-</div>
-
-<div id="clear-confirm" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 1005;">
-    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; width: 260px;">
+<div id="clear-confirm" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); z-index: 999;">
+    <div style="background: white; padding: 20px; border-radius: 15px; text-align: center; width: 260px; animation: fadeIn 0.3s ease;">
         <p style="margin-bottom: 15px; font-size: 0.85rem;">Clear all chat?</p>
         <div style="display: flex; gap: 10px; justify-content: center;">
             <button onclick="clearChatAdvanced()" style="padding: 6px 12px; border: none; background: var(--wasabi-red); color: white; border-radius: 10px; cursor: pointer; font-size: 0.8rem;">Yes</button>
@@ -466,7 +269,7 @@
         <div class="subtitle">デジタル建築家 // NIIGATA ARCHITECT</div>  
     </header>  
 
-     <section class="my-journey" data-aos>  
+    <section class="my-journey" data-aos>  
         <h2 class="section-title">My Journey / 私の旅路</h2>  
         <div class="journey-text">  
             <p>From an introverted past, I embarked on a solo journey, finding my voice and purpose far from home. Working in Niigata, I've built a life independently, overcoming challenges to become a digital architect. This path has taught me resilience and the power of self-reliance, proving that true strength comes from within.</p>  
@@ -487,17 +290,20 @@
 
         <div id="chat-box" style="height: 350px; overflow-y: auto; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 20px; font-size: 0.85rem; margin-bottom: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);"></div>
         
+        
         <div style="display: flex; gap: 10px;">
-            <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.85rem;">
-            <button id="send-chat-btn" onclick="if(window.sendMessage) { window.sendMessage(); }" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">SEND</button>
+    <input type="text" id="user-input" placeholder="Ask Mizu Anything" style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border-light); background: white; outline: none; font-size: 0.85rem;">
+    
+    <button id="send-chat-btn" onclick="window.sendMessage()" style="padding: 10px 20px; background: var(--wasabi-red); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">SEND</button>
         </div>
         
+
         <p style="color: #BC002D; font-size: 0.7rem; margin-top: 15px; font-weight: 600;">⚠️ Attention ⚠️: Due to API limitations, your message may not be responded to or an error may appear, I apologize for that. 🙏</p>
         <p style="color: #BC002D; font-size: 0.7rem; margin-top: 5px;">The daily message limit is 30 per day, do not spam, because your account is visible in the database.</p>
         <p style="color: #000000; font-size: 0.8rem; margin-top: 15px;">Best regards,<br><strong>Fallen</strong></p>
     </section>
         
-    <section id="mizu-yt-music" data-aos style="margin-top: 60px; margin-bottom: 60px;">
+             <section id="mizu-yt-music" data-aos style="margin-top: 60px; margin-bottom: 120px;">
         <h2 class="section-title">Mizu Player / 音楽プレーヤー</h2>
         
         <div style="background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); backdrop-filter: blur(5px);">
@@ -511,11 +317,32 @@
             </div>
         </div>
     </section>
+
+    <div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
     
-    <p style="font-size: 0.75rem; color: #BC002D; text-align: center; font-weight: 500; padding: 0 15px; margin-bottom: 80px; line-height: 1.4;">
-        Please wait a few minutes if you have clicked on a titles, because it is downloading and will be sent to you.
-    </p>
+    <div style="display: flex; align-items: center; gap: 10px; width: 50%; min-width: 0;">
+        <img id="yt-thumb" src="" alt="thumb" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; display: none;">
+        <div style="min-width: 0;">
+            <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333;">Track Title</div>
+            <div id="yt-playing-status" style="font-size: 0.6rem; font-weight: bold; color: #BC002D; letter-spacing: 1px; margin-top: 2px;">PLAYING</div>
+        </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; width: 45%; justify-content: flex-end;">
+        <audio id="audio-player" controls preload="auto" style="width: 100%; max-width: 180px; height: 30px; outline: none;"></audio>
+        <span onclick="closeAudioPlayer()" style="font-size: 1.2rem; color: #333; cursor: pointer; padding: 0 5px; font-weight: 300; line-height: 1; user-select: none;">&times;</span>
+    </div>
+
+    </div>
+    
+
+    
+            
+<p style="font-size: 0.75rem; color: #BC002D; text-align: center; font-weight: 500; padding: 0 15px; margin-bottom: 100px; line-height: 1.4;">
+    Please wait a few minutes if you have clicked on a titles, because it is downloading and will be sent to you.
+</p>
              
+    
     <section class="gallery-container" data-aos>  
         <h2 class="section-title">My Gallery / 私のギャラリー</h2>  
         <div class="gallery-grid">  
@@ -539,16 +366,12 @@
     <section class="contact-grid" data-aos>  
         <h2 class="section-title">Contact / お問い合わせ</h2>  
         <div class="app-grid">  
-            <a href="https://wa.me/message/EC337HOVT7OLD1" target="_blank" class="app-icon whatsapp-brand">  
-                <svg viewBox="0 0 24 24" fill="#25D366">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.703 1.458h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
+            <a href="https://wa.me/message/EC337HOVT7OLD1" target="_blank" class="app-icon">  
+                <svg viewBox="0 0 24 24" fill="#25D366"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.459 3.419 1.263 4.858L2 22l5.335-1.4c1.4.759 2.993 1.188 4.677 1.188 5.508 0 9.987-4.479 9.987-9.987 0-5.508-4.479-9.987-9.987-9.987zm0 1.745c4.553 0 8.242 3.689 8.242 8.242 0 4.553-3.689 8.242-8.242 8.242-1.505 0-2.911-.403-4.126-1.106l-.297-.173-3.076.808.822-3.003-.191-.304c-.759-1.208-1.161-2.612-1.161-4.137 0-4.553 3.689-8.242 8.242-8.242z"/></svg>  
                 <span>WHATSAPP</span>  
             </a>  
-            <a href="https://signal.me/#eu/5v6uZK3GEphH3uALQAK9V47K2FuLvOlpCgLaVWu9CMnoyyIU4uFPFaEoayfR8MHX" target="_blank" class="app-icon signal-brand">  
-                <svg viewBox="0 0 24 24" fill="#3A76F0">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.566 16.161c-.18.68-.758 1.233-1.442 1.392-1.636.38-3.298.447-4.965.445-1.786-.002-3.573-.105-5.347-.464-.66-.134-1.21-.667-1.405-1.319-.446-1.493-.412-3.031-.41-4.564.002-1.554-.047-3.116.425-4.624.199-.636.732-1.157 1.385-1.303 1.748-.393 3.53-.474 5.32-.475 1.7-.001 3.402.063 5.088.423.682.146 1.252.684 1.444 1.365.449 1.591.403 3.228.406 4.856.002 1.488.04 2.992-.499 4.272zm-1.614-7.469c-.201-.453-.615-.658-1.077-.638-1.484.062-2.969.053-4.453.003-.505-.017-.933.225-1.109.704-.158.429-.023.829.351 1.092.302.213.67.247 1.023.253.513.009 1.026.002 1.539.002l-4.225 4.225c-.312.312-.312.818 0 1.13.312.312.818.312 1.13 0l4.218-4.217c0 .543-.008 1.086.003 1.628.008.4.152.748.513.961.393.232.8.188 1.14-.112.285-.251.388-.588.381-.96-.02-1.087-.01-2.175-.011-3.262v-.812z"/>
-                </svg>
+            <a href="https://signal.me/#eu/5v6uZK3GEphH3uALQAK9V47K2FuLvOlpCgLaVWu9CMnoyyIU4uFPFaEoayfR8MHX" target="_blank" class="app-icon">  
+                <svg viewBox="0 0 24 24" fill="#3A76F0"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.659 1.432 5.167L2 22l4.833-1.432C8.341 21.476 10.109 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>  
                 <span>SIGNAL</span>  
             </a>  
         </div>  
@@ -556,7 +379,7 @@
 
     <footer class="legal-section" data-aos>  
         <p><strong>LEGAL COMPLIANCE (法的順守):</strong> This portfolio operates under the Constitution of Japan and is governed by the Japanese Copyright Law (Act No. 48 of 1970). All moral and economic rights are legally protected in the Niigata region.</p>  
-        <p>このポートフォリオは日本国憲法に準拠し、日本の著作権法（昭和45年法律第48号）に基づき運営されています。すべての著作者人格権および著作財産権 Grandma は、新潟地域において法的に保護されています。</p>  
+        <p>このポートフォリオは日本国憲法に準拠し、日本の著作権法（昭和45年法律第48号）に基づき運営されています。すべての著作者人格権および著作財産権は、新潟地域において法的に保護されています。</p>  
         <p>© 2025 - 2026 FALLEN_MIZU. Crafted with Zen in Niigata.</p>  
         <p>This website was created on December 23, 2025</p>  
         <p style="color: #BC002D;">Please do not attempt to copy this website, as it is copyrighted. Any harmful actions will be reported to the authorities. Thank you.</p>  
@@ -564,48 +387,17 @@
     </footer>  
 </div>  
 
-<div id="spotify-player-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 995; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
-    <div style="display: flex; align-items: center; gap: 10px; width: 50%; min-width: 0;">
-        <img id="yt-thumb" src="" alt="thumb" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; display: none;">
-        <div style="min-width: 0;">
-            <div id="yt-playing-title" style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333;">Track Title</div>
-            <div id="yt-playing-status" style="font-size: 0.6rem; font-weight: bold; color: #BC002D; letter-spacing: 1px; margin-top: 2px;">PLAYING</div>
-        </div>
-    </div>
+<button id="logout-btn" style="position: fixed; bottom: 20px; right: 20px; background: var(--wasabi-red); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Logout">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+    </svg>
+</button>
 
-    <div style="display: flex; align-items: center; gap: 10px; width: 45%; justify-content: flex-end;">
-        <audio id="audio-player" controls preload="auto" style="width: 100%; max-width: 180px; height: 30px; outline: none;"></audio>
-        <span onclick="closeAudioPlayer()" style="font-size: 1.2rem; color: #333; cursor: pointer; padding: 0 5px; font-weight: 300; line-height: 1; user-select: none;">&times;</span>
-    </div>
-</div>
+<script>
 
-<script>  
-    // FIXED: SECURE LOGOUT REDIRECTION MECHANISM
-    function triggerMizuLogout() {
-        // Menutup menu drawer terlebih dahulu dengan animasi smooth
-        toggleMizuDrawer();
-        
-        // Opsional: hapus local session jika ada database tersimpan
-        localStorage.removeItem("mizu_session"); 
-        
-        alert("Session Terminated. Redirecting to access portal...");
-        
-        // PENGALIEHAN KEMBALI KE HALAMAN LOGIN (Ganti 'login.html' sesuai nama file login asli Anda)
-        window.location.href = "login.html"; 
-    }
-
-    // DRAWER CONTROL SYSTEM
-    function toggleMizuDrawer() {
-        const btn = document.getElementById('menu-toggle');
-        const drawer = document.getElementById('sidebar-drawer');
-        const overlay = document.getElementById('menu-overlay');
-        
-        btn.classList.toggle('active');
-        drawer.classList.toggle('open');
-        overlay.classList.toggle('show');
-    }
-
-    // AOS (Animate On Scroll) Engine
+    // AOS (Animate On Scroll) Observer  
     const observer = new IntersectionObserver((entries) => {  
         entries.forEach(entry => {  
             if (entry.isIntersecting) {  
@@ -616,7 +408,7 @@
 
     document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));  
       
-    // Realtime Niigata System Clock
+    // Niigata/Tokyo Time Display  
     function updateOsakaTime() {  
         const now = new Date();  
         const dateOptions = { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };  
@@ -632,7 +424,7 @@
     setInterval(updateOsakaTime, 1000);  
     updateOsakaTime();  
 
-    // Network Ping Target Latency Tracker
+    // Network Ping Response Time Logic
     async function updateResponseTime() {
         const start = performance.now();
         try {  
@@ -648,7 +440,7 @@
     setInterval(updateResponseTime, 3000);
     updateResponseTime();
 
-    // Modal Confirmation Area
+    // Modal Confirmation Controllers
     function confirmClearChat() {
         document.getElementById("clear-confirm").style.display = "flex";
     }
@@ -672,19 +464,12 @@
 
         closeConfirm();
     }
-
-    function closeAudioPlayer() {
-        const playerBar = document.getElementById("spotify-player-bar");
-        if (playerBar) playerBar.style.display = "none";
-        const audioPlayer = document.getElementById("audio-player");
-        if (audioPlayer) audioPlayer.pause();
-    }
 </script>
-    
-<script src="batteryandip.js" defer></script>
+
+    <script src="batteryandip.js" defer></script>
 <script type="module" src="ai.js"></script>
 <script src="yt.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
-<script src="video.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+    <script src="video.js"></script>
 </body>  
-    </html>
+</html>
