@@ -17,7 +17,6 @@ geoBatteryStyle.innerHTML = `
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         position: relative;
         z-index: 999;
-        overflow: hidden; /* Mencegah konten keluar jalur */
     }
     .meta-item {
         display: flex;
@@ -27,19 +26,12 @@ geoBatteryStyle.innerHTML = `
         color: #666;
         font-weight: 500;
         letter-spacing: 0.3px;
-        white-space: nowrap; /* Memaksa teks tetap satu baris */
-        max-width: 65%; /* Membatasi area IP agar tidak menubruk baterai */
-    }
-    .meta-item:last-child {
-        max-width: 35%;
-        justify-content: flex-end;
     }
     .meta-label {
         color: #aaa;
         text-transform: uppercase;
         font-size: 9px;
         font-weight: 700;
-        flex-shrink: 0; /* Label tidak boleh mengecil */
     }
     .meta-value {
         color: #222;
@@ -47,13 +39,12 @@ geoBatteryStyle.innerHTML = `
         display: flex;
         align-items: center;
         gap: 6px;
-        overflow: hidden;
-        text-overflow: ellipsis; /* Otomatis memberi efek titik-titik (...) jika terlalu panjang di HP */
     }
     .status-accent-red {
         color: #BC002D;
         font-weight: bold;
     }
+    /* Style tambahan untuk memisahkan teks lokasi agar rapi */
     .meta-geo-info {
         color: #888;
         font-weight: 400;
@@ -61,7 +52,6 @@ geoBatteryStyle.innerHTML = `
         background: #f5f5f5;
         padding: 2px 6px;
         border-radius: 4px;
-        flex-shrink: 0; /* Lokasi dan bendera tetap utuh terlihat */
     }
     
 `;
