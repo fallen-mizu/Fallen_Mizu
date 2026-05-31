@@ -113,35 +113,39 @@ async function initBatteryTracker() {
     }
 }
 
-// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION (IPWHO.IS)
+// 3. LOGIKA UTAMA PENGAMBILAN ALAMAT IP & GEOLOCATION (MENGGUNAKAN IPAPI.CO)
 async function initIpAddressTracker() {
     const ipStatusEl = document.getElementById('mizu-ip-status');
     if (!ipStatusEl) return;
 
     try {
-        const response = await fetch('https://ipwho.is/');
+        // Menggunakan ipapi.co sebagai alternatif yang sangat stabil
+        const response = await fetch('https://https://ipapi.co/json/');
         if (!response.ok) throw new Error("Network response was not ok");
         
         const data = await response.json();
         
-        if(data.success) {
-            const ipAddress = data.ip;
-            const region = data.region || data.city;
-            const flagEmoji = data.flag.emoji;
-            
-            // Output terstruktur dengan class CSS baru yang fleksibel mencegah overflow
-            ipStatusEl.innerHTML = `
-                <span style="overflow: hidden; text-overflow: ellipsis;">${ipAddress}</span> 
-                <span class="meta-geo-info"><span>${flagEmoji}</span> <span>${region}</span></span>
-            `;
-        } else {
-            ipStatusEl.innerText = "Gagal memuat info lokasi";
-        }
+        const ipAddress = data.ip;
+        const region = data.region || data.city;
+        
+        // Mengubah Country Code (misal: ID, JP) menjadi Emoji Bendera secara otomatis
+        const countryCode = data.country_code;
+        const flagEmoji = countryCode 
+            ? countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) 
+            : "🌐";
+        
+        // Output dengan inline-style pendukung Solusi 2 agar IPv6 panjang otomatis terpotong (...)
+        ipStatusEl.innerHTML = `
+            <span style="overflow: hidden; text-overflow: ellipsis;">${ipAddress}</span> 
+            <span class="meta-geo-info"><span>${flagEmoji}</span> <span>${region}</span></span>
+        `;
     } catch (error) {
         console.error("Error fetching IP Address & Geo:", error);
+        // Jika gagal total (masalah koneksi/CORS), teks cadangan ini tetap muncul agar tidak kosong
         ipStatusEl.innerText = "127.0.0.1 (Local/Proxy)";
     }
 }
+
 
 // 4. RENDERING DAN INJEKSI DI BAGIAN PALING ATAS BODY WEBSITE
 function injectMetaPanel() {
